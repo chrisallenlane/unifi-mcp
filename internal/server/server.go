@@ -72,6 +72,38 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_firewall_policies"] = tools.NewListFirewallPolicies(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_policy"] = tools.NewGetFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_firewall_policy"] = tools.NewCreateFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_policy"] = tools.NewUpdateFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_firewall_policy"] = tools.NewDeleteFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["patch_firewall_policy"] = tools.NewPatchFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_policy_ordering"] = tools.NewGetFirewallPolicyOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_policy_ordering"] = tools.NewUpdateFirewallPolicyOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
