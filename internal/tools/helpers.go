@@ -1,49 +1,50 @@
+// Package tools implements MCP tool definitions for the UniFi MCP server.
 package tools
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
-	"github.com/chrisallenlane/go-mcp-server/internal/client"
+	"github.com/google/uuid"
 )
 
-// doAPIRequest performs an API request and returns the response body.
-// It handles common patterns: making the request, checking status, reading body.
-// Includes response body in error messages when status is not OK.
-func doAPIRequest(
-	ctx context.Context,
-	c *client.Client,
-	path string,
-) ([]byte, error) {
-	resp, err := c.Get(ctx, path)
-	if err != nil {
-		return nil, err
+// resolveSiteID resolves a site ID from an explicit parameter or the
+// default. Returns an error if neither is provided.
+func resolveSiteID(
+	explicit string,
+	defaultID string,
+) (uuid.UUID, error) {
+	id := explicit
+	if id == "" {
+		id = defaultID
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
+	if id == "" {
+		return uuid.UUID{}, fmt.Errorf(
+			"siteId is required (provide it as a parameter or set UNIFI_SITE_ID)",
+		)
 	}
+	return resolveUUID("siteId", id)
+}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(
-			"unexpected status code %d: %s",
-			resp.StatusCode,
-			string(body),
+// resolveUUID parses and validates a UUID string.
+func resolveUUID(
+	name string,
+	value string,
+) (uuid.UUID, error) {
+	if value == "" {
+		return uuid.UUID{}, fmt.Errorf(
+			"%s is required",
+			name,
 		)
 	}
 
-	return body, nil
-}
-
-// ParseJSONResponse unmarshals a JSON response body into the provided interface.
-func ParseJSONResponse(body []byte, v interface{}) error {
-	if err := json.Unmarshal(body, v); err != nil {
-		return fmt.Errorf("failed to parse response: %w", err)
+	parsed, err := uuid.Parse(value)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf(
+			"invalid %s: %w",
+			name,
+			err,
+		)
 	}
-	return nil
+
+	return parsed, nil
 }
