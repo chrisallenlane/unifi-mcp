@@ -47,7 +47,11 @@ func New(
 
 // registerTools registers all available tools
 func (s *Server) registerTools() {
-	// Tools are registered by subsequent tickets
+	s.tools["get_info"] = tools.NewGetInfo(s.client)
+	s.tools["list_sites"] = tools.NewListSites(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
