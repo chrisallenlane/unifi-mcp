@@ -52,6 +52,26 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_firewall_zones"] = tools.NewListFirewallZones(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_zone"] = tools.NewGetFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_firewall_zone"] = tools.NewCreateFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_zone"] = tools.NewUpdateFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_firewall_zone"] = tools.NewDeleteFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
