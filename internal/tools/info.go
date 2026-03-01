@@ -42,10 +42,9 @@ func (t *GetInfo) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 

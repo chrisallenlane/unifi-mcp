@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
 )
 
@@ -62,10 +60,7 @@ func (t *ListFirewallZones) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"limit": map[string]interface{}{
 				"type":        "integer",
 				"description": "Maximum number of zones to return",
@@ -121,10 +116,9 @@ func (t *ListFirewallZones) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -177,10 +171,7 @@ func (t *GetFirewallZone) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallZoneId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall zone UUID",
@@ -235,10 +226,9 @@ func (t *GetFirewallZone) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -272,10 +262,7 @@ func (t *CreateFirewallZone) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"name": map[string]interface{}{
 				"type":        "string",
 				"description": "Name of the firewall zone",
@@ -321,13 +308,12 @@ func (t *CreateFirewallZone) Execute(
 		return "", err
 	}
 
-	networkIDs := make([]uuid.UUID, len(params.NetworkIDs))
-	for i, id := range params.NetworkIDs {
-		parsed, err := resolveUUID("networkIds", id)
-		if err != nil {
-			return "", err
-		}
-		networkIDs[i] = parsed
+	networkIDs, err := resolveUUIDs(
+		"networkIds",
+		params.NetworkIDs,
+	)
+	if err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.CreateFirewallZoneWithResponse(
@@ -346,10 +332,9 @@ func (t *CreateFirewallZone) Execute(
 	}
 
 	if resp.JSON201 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -386,10 +371,7 @@ func (t *UpdateFirewallZone) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallZoneId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall zone UUID to update",
@@ -452,13 +434,12 @@ func (t *UpdateFirewallZone) Execute(
 		return "", err
 	}
 
-	networkIDs := make([]uuid.UUID, len(params.NetworkIDs))
-	for i, id := range params.NetworkIDs {
-		parsed, err := resolveUUID("networkIds", id)
-		if err != nil {
-			return "", err
-		}
-		networkIDs[i] = parsed
+	networkIDs, err := resolveUUIDs(
+		"networkIds",
+		params.NetworkIDs,
+	)
+	if err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.UpdateFirewallZoneWithResponse(
@@ -478,10 +459,9 @@ func (t *UpdateFirewallZone) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -518,10 +498,7 @@ func (t *DeleteFirewallZone) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallZoneId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall zone UUID to delete",
@@ -576,10 +553,9 @@ func (t *DeleteFirewallZone) Execute(
 	}
 
 	if resp.StatusCode() != 200 {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 

@@ -48,3 +48,41 @@ func resolveUUID(
 
 	return parsed, nil
 }
+
+// resolveUUIDs parses a slice of UUID strings.
+func resolveUUIDs(
+	name string,
+	values []string,
+) ([]uuid.UUID, error) {
+	ids := make([]uuid.UUID, len(values))
+	for i, v := range values {
+		parsed, err := resolveUUID(name, v)
+		if err != nil {
+			return nil, err
+		}
+		ids[i] = parsed
+	}
+	return ids, nil
+}
+
+// unexpectedStatusError returns a formatted error for unexpected
+// HTTP status codes.
+func unexpectedStatusError(
+	statusCode int,
+	body []byte,
+) error {
+	return fmt.Errorf(
+		"unexpected status %d: %s",
+		statusCode,
+		string(body),
+	)
+}
+
+// siteIDSchema returns the standard JSON schema for the siteId
+// parameter.
+func siteIDSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"type":        "string",
+		"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
+	}
+}

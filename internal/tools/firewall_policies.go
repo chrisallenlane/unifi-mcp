@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
 )
 
@@ -356,10 +354,7 @@ func (t *ListFirewallPolicies) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"limit": map[string]interface{}{
 				"type":        "integer",
 				"description": "Maximum number of policies to return",
@@ -415,10 +410,9 @@ func (t *ListFirewallPolicies) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -471,10 +465,7 @@ func (t *GetFirewallPolicy) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallPolicyId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall policy UUID",
@@ -529,10 +520,9 @@ func (t *GetFirewallPolicy) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -564,10 +554,7 @@ func (t *CreateFirewallPolicy) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateFirewallPolicy) InputSchema() map[string]interface{} {
 	props := policyInputSchema()
-	props["siteId"] = map[string]interface{}{
-		"type":        "string",
-		"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-	}
+	props["siteId"] = siteIDSchema()
 
 	return map[string]interface{}{
 		"type":       "object",
@@ -630,10 +617,9 @@ func (t *CreateFirewallPolicy) Execute(
 	}
 
 	if resp.JSON201 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -668,10 +654,7 @@ func (t *UpdateFirewallPolicy) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateFirewallPolicy) InputSchema() map[string]interface{} {
 	props := policyInputSchema()
-	props["siteId"] = map[string]interface{}{
-		"type":        "string",
-		"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-	}
+	props["siteId"] = siteIDSchema()
 	props["firewallPolicyId"] = map[string]interface{}{
 		"type":        "string",
 		"description": "Firewall policy UUID to update",
@@ -745,10 +728,9 @@ func (t *UpdateFirewallPolicy) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -785,10 +767,7 @@ func (t *DeleteFirewallPolicy) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallPolicyId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall policy UUID to delete",
@@ -843,10 +822,9 @@ func (t *DeleteFirewallPolicy) Execute(
 	}
 
 	if resp.StatusCode() != 200 {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -883,10 +861,7 @@ func (t *PatchFirewallPolicy) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"firewallPolicyId": map[string]interface{}{
 				"type":        "string",
 				"description": "Firewall policy UUID to patch",
@@ -949,10 +924,9 @@ func (t *PatchFirewallPolicy) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -990,10 +964,7 @@ func (t *GetFirewallPolicyOrdering) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"sourceZoneId": map[string]interface{}{
 				"type":        "string",
 				"description": "Source firewall zone UUID",
@@ -1067,10 +1038,9 @@ func (t *GetFirewallPolicyOrdering) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
@@ -1123,10 +1093,7 @@ func (t *UpdateFirewallPolicyOrdering) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"siteId": map[string]interface{}{
-				"type":        "string",
-				"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
-			},
+			"siteId": siteIDSchema(),
 			"sourceZoneId": map[string]interface{}{
 				"type":        "string",
 				"description": "Source firewall zone UUID",
@@ -1202,28 +1169,20 @@ func (t *UpdateFirewallPolicyOrdering) Execute(
 		return "", err
 	}
 
-	beforeIDs := make(
-		[]uuid.UUID,
-		len(params.BeforeSystemDefined),
+	beforeIDs, err := resolveUUIDs(
+		"beforeSystemDefined",
+		params.BeforeSystemDefined,
 	)
-	for i, id := range params.BeforeSystemDefined {
-		parsed, err := resolveUUID("beforeSystemDefined", id)
-		if err != nil {
-			return "", err
-		}
-		beforeIDs[i] = parsed
+	if err != nil {
+		return "", err
 	}
 
-	afterIDs := make(
-		[]uuid.UUID,
-		len(params.AfterSystemDefined),
+	afterIDs, err := resolveUUIDs(
+		"afterSystemDefined",
+		params.AfterSystemDefined,
 	)
-	for i, id := range params.AfterSystemDefined {
-		parsed, err := resolveUUID("afterSystemDefined", id)
-		if err != nil {
-			return "", err
-		}
-		afterIDs[i] = parsed
+	if err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.UpdateFirewallPolicyOrderingWithResponse(
@@ -1248,10 +1207,9 @@ func (t *UpdateFirewallPolicyOrdering) Execute(
 	}
 
 	if resp.JSON200 == nil {
-		return "", fmt.Errorf(
-			"unexpected status %d: %s",
+		return "", unexpectedStatusError(
 			resp.StatusCode(),
-			string(resp.Body),
+			resp.Body,
 		)
 	}
 
