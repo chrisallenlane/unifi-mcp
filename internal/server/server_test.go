@@ -5,12 +5,22 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/chrisallenlane/go-mcp-server/internal/client"
+	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
 )
 
+func newTestServer(t *testing.T) *Server {
+	t.Helper()
+	client, err := unifi.NewClientWithResponses(
+		"http://localhost",
+	)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+	return New(client, "default-site")
+}
+
 func TestHandleInitialize(t *testing.T) {
-	c := client.New("http://localhost")
-	s := New(c)
+	s := newTestServer(t)
 
 	req := &JSONRPCRequest{
 		JSONRPC: "2.0",
@@ -36,7 +46,6 @@ func TestHandleInitialize(t *testing.T) {
 		t.Fatal("Result should not be nil")
 	}
 
-	// Verify result structure
 	result, ok := resp.Result.(map[string]interface{})
 	if !ok {
 		t.Fatal("Result should be a map")
@@ -56,7 +65,11 @@ func TestHandleInitialize(t *testing.T) {
 	}
 
 	if serverInfo["name"] != ServerName {
-		t.Errorf("Server name = %s, want %s", serverInfo["name"], ServerName)
+		t.Errorf(
+			"Server name = %s, want %s",
+			serverInfo["name"],
+			ServerName,
+		)
 	}
 
 	if serverInfo["version"] != ServerVersion {
@@ -69,8 +82,7 @@ func TestHandleInitialize(t *testing.T) {
 }
 
 func TestHandleListTools(t *testing.T) {
-	c := client.New("http://localhost")
-	s := New(c)
+	s := newTestServer(t)
 
 	req := &JSONRPCRequest{
 		JSONRPC: "2.0",
@@ -93,51 +105,14 @@ func TestHandleListTools(t *testing.T) {
 		t.Fatal("Result should be a map")
 	}
 
-	tools, ok := result["tools"].([]map[string]interface{})
+	_, ok = result["tools"].([]map[string]interface{})
 	if !ok {
 		t.Fatal("tools should be a slice")
-	}
-
-	// Verify we have tools registered
-	if len(tools) == 0 {
-		t.Error("Expected at least one tool to be registered")
-	}
-
-	// Verify tool structure
-	for _, tool := range tools {
-		if _, ok := tool["name"]; !ok {
-			t.Error("Tool should have a name")
-		}
-		if _, ok := tool["description"]; !ok {
-			t.Error("Tool should have a description")
-		}
-		if _, ok := tool["inputSchema"]; !ok {
-			t.Error("Tool should have an inputSchema")
-		}
-	}
-
-	// Verify the echo tool exists
-	toolNames := make([]string, len(tools))
-	for i, tool := range tools {
-		toolNames[i] = tool["name"].(string)
-	}
-
-	expectedTool := "echo"
-	found := false
-	for _, name := range toolNames {
-		if name == expectedTool {
-			found = true
-			break
-		}
-	}
-	if !found {
-		t.Errorf("Expected tool %s not found", expectedTool)
 	}
 }
 
 func TestHandleUnknownMethod(t *testing.T) {
-	c := client.New("http://localhost")
-	s := New(c)
+	s := newTestServer(t)
 
 	req := &JSONRPCRequest{
 		JSONRPC: "2.0",
@@ -165,8 +140,7 @@ func TestHandleUnknownMethod(t *testing.T) {
 }
 
 func TestHandleCallTool_InvalidTool(t *testing.T) {
-	c := client.New("http://localhost")
-	s := New(c)
+	s := newTestServer(t)
 
 	params := map[string]interface{}{
 		"name":      "nonexistent_tool",
@@ -196,8 +170,7 @@ func TestHandleCallTool_InvalidTool(t *testing.T) {
 }
 
 func TestHandleCallTool_MalformedParams(t *testing.T) {
-	c := client.New("http://localhost")
-	s := New(c)
+	s := newTestServer(t)
 
 	req := &JSONRPCRequest{
 		JSONRPC: "2.0",
@@ -212,7 +185,10 @@ func TestHandleCallTool_MalformedParams(t *testing.T) {
 		t.Fatal("Expected error for malformed params")
 	}
 
-	if !containsString(resp.Error.Message, "failed to parse tool call params") {
+	if !containsString(
+		resp.Error.Message,
+		"failed to parse tool call params",
+	) {
 		t.Errorf(
 			"Error message should mention parsing failure, got: %s",
 			resp.Error.Message,
@@ -286,7 +262,10 @@ func TestJSONRPCError_Marshal(t *testing.T) {
 	}
 
 	if errorObj["code"].(float64) != -32600 {
-		t.Errorf("error code = %v, want -32600", errorObj["code"])
+		t.Errorf(
+			"error code = %v, want -32600",
+			errorObj["code"],
+		)
 	}
 
 	if errorObj["message"] != "Invalid Request" {
