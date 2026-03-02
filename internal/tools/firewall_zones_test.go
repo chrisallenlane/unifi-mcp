@@ -204,7 +204,7 @@ func TestGetFirewallZone_Execute(t *testing.T) {
 }
 
 func TestGetFirewallZone_Execute_MissingZoneID(t *testing.T) {
-	tool := &GetFirewallZone{defaultSiteID: testSiteID}
+	tool := &GetFirewallZone{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -218,7 +218,7 @@ func TestGetFirewallZone_Execute_MissingZoneID(t *testing.T) {
 }
 
 func TestGetFirewallZone_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetFirewallZone{defaultSiteID: testSiteID}
+	tool := &GetFirewallZone{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -299,7 +299,7 @@ func TestCreateFirewallZone_Execute(t *testing.T) {
 }
 
 func TestCreateFirewallZone_Execute_MissingName(t *testing.T) {
-	tool := &CreateFirewallZone{defaultSiteID: testSiteID}
+	tool := &CreateFirewallZone{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkIds": []}`),
@@ -367,7 +367,7 @@ func TestUpdateFirewallZone_Execute(t *testing.T) {
 }
 
 func TestUpdateFirewallZone_Execute_MissingZoneID(t *testing.T) {
-	tool := &UpdateFirewallZone{defaultSiteID: testSiteID}
+	tool := &UpdateFirewallZone{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"name": "test", "networkIds": []}`),
@@ -416,7 +416,7 @@ func TestDeleteFirewallZone_Execute(t *testing.T) {
 }
 
 func TestDeleteFirewallZone_Execute_MissingZoneID(t *testing.T) {
-	tool := &DeleteFirewallZone{defaultSiteID: testSiteID}
+	tool := &DeleteFirewallZone{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),

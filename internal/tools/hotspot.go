@@ -13,8 +13,7 @@ import (
 
 // ListVouchers implements the list_vouchers MCP tool.
 type ListVouchers struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListVouchers creates a new ListVouchers tool.
@@ -22,10 +21,7 @@ func NewListVouchers(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListVouchers {
-	return &ListVouchers{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListVouchers{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -114,8 +110,7 @@ func (t *ListVouchers) Execute(
 
 // GetVoucher implements the get_voucher MCP tool.
 type GetVoucher struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetVoucher creates a new GetVoucher tool.
@@ -123,10 +118,7 @@ func NewGetVoucher(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetVoucher {
-	return &GetVoucher{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetVoucher{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -270,8 +262,7 @@ func formatVoucher(v *unifi.HotspotVoucherDetails) string {
 
 // CreateVouchers implements the create_vouchers MCP tool.
 type CreateVouchers struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateVouchers creates a new CreateVouchers tool.
@@ -279,10 +270,7 @@ func NewCreateVouchers(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateVouchers {
-	return &CreateVouchers{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateVouchers{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -417,8 +405,7 @@ func (t *CreateVouchers) Execute(
 
 // DeleteVouchers implements the delete_vouchers MCP tool.
 type DeleteVouchers struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteVouchers creates a new DeleteVouchers tool.
@@ -426,10 +413,7 @@ func NewDeleteVouchers(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteVouchers {
-	return &DeleteVouchers{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteVouchers{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -513,8 +497,7 @@ func (t *DeleteVouchers) Execute(
 
 // DeleteVoucher implements the delete_voucher MCP tool.
 type DeleteVoucher struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteVoucher creates a new DeleteVoucher tool.
@@ -522,10 +505,7 @@ func NewDeleteVoucher(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteVoucher {
-	return &DeleteVoucher{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteVoucher{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

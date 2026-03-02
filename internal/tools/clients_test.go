@@ -189,7 +189,7 @@ func TestGetClient_Execute(t *testing.T) {
 }
 
 func TestGetClient_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetClient{defaultSiteID: testSiteID}
+	tool := &GetClient{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"clientId": "not-valid"}`),
@@ -260,7 +260,7 @@ func TestExecuteClientAction_Execute(t *testing.T) {
 }
 
 func TestExecuteClientAction_Execute_MissingAction(t *testing.T) {
-	tool := &ExecuteClientAction{defaultSiteID: testSiteID}
+	tool := &ExecuteClientAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(

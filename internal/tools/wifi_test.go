@@ -206,7 +206,7 @@ func TestGetWiFiBroadcast_Execute(t *testing.T) {
 }
 
 func TestGetWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetWiFiBroadcast{defaultSiteID: testSiteID}
+	tool := &GetWiFiBroadcast{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -379,7 +379,7 @@ func TestUpdateWiFiBroadcast_Execute(t *testing.T) {
 }
 
 func TestUpdateWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateWiFiBroadcast{defaultSiteID: testSiteID}
+	tool := &UpdateWiFiBroadcast{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -446,7 +446,7 @@ func TestDeleteWiFiBroadcast_Execute(t *testing.T) {
 }
 
 func TestDeleteWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteWiFiBroadcast{defaultSiteID: testSiteID}
+	tool := &DeleteWiFiBroadcast{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(

@@ -14,8 +14,7 @@ import (
 
 // ListNetworks implements the list_networks MCP tool.
 type ListNetworks struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListNetworks creates a new ListNetworks tool.
@@ -23,10 +22,7 @@ func NewListNetworks(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListNetworks {
-	return &ListNetworks{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListNetworks{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -116,8 +112,7 @@ func (t *ListNetworks) Execute(
 
 // GetNetwork implements the get_network MCP tool.
 type GetNetwork struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetNetwork creates a new GetNetwork tool.
@@ -125,10 +120,7 @@ func NewGetNetwork(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetNetwork {
-	return &GetNetwork{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetNetwork{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -277,8 +269,7 @@ func networkInputSchema() map[string]interface{} {
 
 // CreateNetwork implements the create_network MCP tool.
 type CreateNetwork struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateNetwork creates a new CreateNetwork tool.
@@ -286,10 +277,7 @@ func NewCreateNetwork(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateNetwork {
-	return &CreateNetwork{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateNetwork{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -361,8 +349,7 @@ func (t *CreateNetwork) Execute(
 
 // UpdateNetwork implements the update_network MCP tool.
 type UpdateNetwork struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateNetwork creates a new UpdateNetwork tool.
@@ -370,10 +357,7 @@ func NewUpdateNetwork(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateNetwork {
-	return &UpdateNetwork{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateNetwork{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -461,8 +445,7 @@ func (t *UpdateNetwork) Execute(
 
 // DeleteNetwork implements the delete_network MCP tool.
 type DeleteNetwork struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteNetwork creates a new DeleteNetwork tool.
@@ -470,10 +453,7 @@ func NewDeleteNetwork(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteNetwork {
-	return &DeleteNetwork{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteNetwork{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -560,8 +540,7 @@ func (t *DeleteNetwork) Execute(
 // GetNetworkReferences implements the get_network_references
 // MCP tool.
 type GetNetworkReferences struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetNetworkReferences creates a new GetNetworkReferences
@@ -570,10 +549,7 @@ func NewGetNetworkReferences(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetNetworkReferences {
-	return &GetNetworkReferences{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetNetworkReferences{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

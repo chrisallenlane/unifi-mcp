@@ -193,7 +193,7 @@ func TestGetACLRule_Execute(t *testing.T) {
 }
 
 func TestGetACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetACLRule{defaultSiteID: testSiteID}
+	tool := &GetACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"aclRuleId": "not-valid"}`),
@@ -354,7 +354,7 @@ func TestUpdateACLRule_Execute(t *testing.T) {
 }
 
 func TestUpdateACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateACLRule{defaultSiteID: testSiteID}
+	tool := &UpdateACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -421,7 +421,7 @@ func TestDeleteACLRule_Execute(t *testing.T) {
 }
 
 func TestDeleteACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteACLRule{defaultSiteID: testSiteID}
+	tool := &DeleteACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"aclRuleId": "not-valid"}`),

@@ -15,8 +15,7 @@ import (
 // ListWiFiBroadcasts implements the list_wifi_broadcasts
 // MCP tool.
 type ListWiFiBroadcasts struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListWiFiBroadcasts creates a new ListWiFiBroadcasts
@@ -25,10 +24,7 @@ func NewListWiFiBroadcasts(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListWiFiBroadcasts {
-	return &ListWiFiBroadcasts{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListWiFiBroadcasts{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -118,8 +114,7 @@ func (t *ListWiFiBroadcasts) Execute(
 // GetWiFiBroadcast implements the get_wifi_broadcast
 // MCP tool.
 type GetWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetWiFiBroadcast creates a new GetWiFiBroadcast tool.
@@ -127,10 +122,7 @@ func NewGetWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetWiFiBroadcast {
-	return &GetWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -311,8 +303,7 @@ func wifiBroadcastInputSchema() map[string]interface{} {
 // CreateWiFiBroadcast implements the create_wifi_broadcast
 // MCP tool.
 type CreateWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateWiFiBroadcast creates a new CreateWiFiBroadcast
@@ -321,10 +312,7 @@ func NewCreateWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateWiFiBroadcast {
-	return &CreateWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -406,8 +394,7 @@ func (t *CreateWiFiBroadcast) Execute(
 // UpdateWiFiBroadcast implements the update_wifi_broadcast
 // MCP tool.
 type UpdateWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateWiFiBroadcast creates a new UpdateWiFiBroadcast
@@ -416,10 +403,7 @@ func NewUpdateWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateWiFiBroadcast {
-	return &UpdateWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -508,8 +492,7 @@ func (t *UpdateWiFiBroadcast) Execute(
 // DeleteWiFiBroadcast implements the delete_wifi_broadcast
 // MCP tool.
 type DeleteWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteWiFiBroadcast creates a new DeleteWiFiBroadcast
@@ -518,10 +501,7 @@ func NewDeleteWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteWiFiBroadcast {
-	return &DeleteWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

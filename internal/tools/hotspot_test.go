@@ -179,7 +179,7 @@ func TestGetVoucher_Execute(t *testing.T) {
 }
 
 func TestGetVoucher_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetVoucher{defaultSiteID: testSiteID}
+	tool := &GetVoucher{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"voucherId": "not-valid"}`),
@@ -332,7 +332,7 @@ func TestDeleteVouchers_Execute(t *testing.T) {
 }
 
 func TestDeleteVouchers_Execute_MissingFilter(t *testing.T) {
-	tool := &DeleteVouchers{defaultSiteID: testSiteID}
+	tool := &DeleteVouchers{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -400,7 +400,7 @@ func TestDeleteVoucher_Execute(t *testing.T) {
 }
 
 func TestDeleteVoucher_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteVoucher{defaultSiteID: testSiteID}
+	tool := &DeleteVoucher{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"voucherId": "not-valid"}`),

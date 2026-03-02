@@ -14,8 +14,7 @@ import (
 
 // ListDNSPolicies implements the list_dns_policies MCP tool.
 type ListDNSPolicies struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListDNSPolicies creates a new ListDNSPolicies tool.
@@ -23,10 +22,7 @@ func NewListDNSPolicies(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListDNSPolicies {
-	return &ListDNSPolicies{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListDNSPolicies{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -132,8 +128,7 @@ func (t *ListDNSPolicies) Execute(
 
 // GetDNSPolicy implements the get_dns_policy MCP tool.
 type GetDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetDNSPolicy creates a new GetDNSPolicy tool.
@@ -141,10 +136,7 @@ func NewGetDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetDNSPolicy {
-	return &GetDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -399,8 +391,7 @@ func dnsPolicyInputSchema() map[string]interface{} {
 
 // CreateDNSPolicy implements the create_dns_policy MCP tool.
 type CreateDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateDNSPolicy creates a new CreateDNSPolicy tool.
@@ -408,10 +399,7 @@ func NewCreateDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateDNSPolicy {
-	return &CreateDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -478,8 +466,7 @@ func (t *CreateDNSPolicy) Execute(
 
 // UpdateDNSPolicy implements the update_dns_policy MCP tool.
 type UpdateDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateDNSPolicy creates a new UpdateDNSPolicy tool.
@@ -487,10 +474,7 @@ func NewUpdateDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateDNSPolicy {
-	return &UpdateDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -576,8 +560,7 @@ func (t *UpdateDNSPolicy) Execute(
 
 // DeleteDNSPolicy implements the delete_dns_policy MCP tool.
 type DeleteDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteDNSPolicy creates a new DeleteDNSPolicy tool.
@@ -585,10 +568,7 @@ func NewDeleteDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteDNSPolicy {
-	return &DeleteDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

@@ -11,8 +11,7 @@ import (
 
 // ListSites implements the list_sites MCP tool.
 type ListSites struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListSites creates a new ListSites tool.
@@ -20,10 +19,7 @@ func NewListSites(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListSites {
-	return &ListSites{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListSites{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

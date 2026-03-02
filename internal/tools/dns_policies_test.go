@@ -175,7 +175,7 @@ func TestGetDNSPolicy_Execute(t *testing.T) {
 }
 
 func TestGetDNSPolicy_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetDNSPolicy{defaultSiteID: testSiteID}
+	tool := &GetDNSPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"dnsPolicyId": "not-valid"}`),
@@ -328,7 +328,7 @@ func TestUpdateDNSPolicy_Execute(t *testing.T) {
 }
 
 func TestUpdateDNSPolicy_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateDNSPolicy{defaultSiteID: testSiteID}
+	tool := &UpdateDNSPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -395,7 +395,7 @@ func TestDeleteDNSPolicy_Execute(t *testing.T) {
 }
 
 func TestDeleteDNSPolicy_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteDNSPolicy{defaultSiteID: testSiteID}
+	tool := &DeleteDNSPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"dnsPolicyId": "not-valid"}`),

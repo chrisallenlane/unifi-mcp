@@ -14,8 +14,7 @@ import (
 
 // ListACLRules implements the list_acl_rules MCP tool.
 type ListACLRules struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListACLRules creates a new ListACLRules tool.
@@ -23,10 +22,7 @@ func NewListACLRules(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListACLRules {
-	return &ListACLRules{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListACLRules{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -116,8 +112,7 @@ func (t *ListACLRules) Execute(
 
 // GetACLRule implements the get_acl_rule MCP tool.
 type GetACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetACLRule creates a new GetACLRule tool.
@@ -125,10 +120,7 @@ func NewGetACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetACLRule {
-	return &GetACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -285,8 +277,7 @@ func aclRuleInputSchema() map[string]interface{} {
 
 // CreateACLRule implements the create_acl_rule MCP tool.
 type CreateACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateACLRule creates a new CreateACLRule tool.
@@ -294,10 +285,7 @@ func NewCreateACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateACLRule {
-	return &CreateACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -369,8 +357,7 @@ func (t *CreateACLRule) Execute(
 
 // UpdateACLRule implements the update_acl_rule MCP tool.
 type UpdateACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateACLRule creates a new UpdateACLRule tool.
@@ -378,10 +365,7 @@ func NewUpdateACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateACLRule {
-	return &UpdateACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -469,8 +453,7 @@ func (t *UpdateACLRule) Execute(
 
 // DeleteACLRule implements the delete_acl_rule MCP tool.
 type DeleteACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteACLRule creates a new DeleteACLRule tool.
@@ -478,10 +461,7 @@ func NewDeleteACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteACLRule {
-	return &DeleteACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -560,8 +540,7 @@ func (t *DeleteACLRule) Execute(
 // GetACLRuleOrdering implements the get_acl_rule_ordering
 // MCP tool.
 type GetACLRuleOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetACLRuleOrdering creates a new GetACLRuleOrdering tool.
@@ -569,10 +548,7 @@ func NewGetACLRuleOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetACLRuleOrdering {
-	return &GetACLRuleOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetACLRuleOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -651,8 +627,7 @@ func (t *GetACLRuleOrdering) Execute(
 // UpdateACLRuleOrdering implements the
 // update_acl_rule_ordering MCP tool.
 type UpdateACLRuleOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateACLRuleOrdering creates a new
@@ -661,10 +636,7 @@ func NewUpdateACLRuleOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateACLRuleOrdering {
-	return &UpdateACLRuleOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateACLRuleOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

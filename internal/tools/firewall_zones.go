@@ -35,8 +35,7 @@ func formatZone(zone *unifi.FirewallZone) string {
 
 // ListFirewallZones implements the list_firewall_zones MCP tool.
 type ListFirewallZones struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListFirewallZones creates a new ListFirewallZones tool.
@@ -44,10 +43,7 @@ func NewListFirewallZones(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListFirewallZones {
-	return &ListFirewallZones{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListFirewallZones{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -128,8 +124,7 @@ func (t *ListFirewallZones) Execute(
 
 // GetFirewallZone implements the get_firewall_zone MCP tool.
 type GetFirewallZone struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetFirewallZone creates a new GetFirewallZone tool.
@@ -137,10 +132,7 @@ func NewGetFirewallZone(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetFirewallZone {
-	return &GetFirewallZone{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetFirewallZone{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -216,8 +208,7 @@ func (t *GetFirewallZone) Execute(
 
 // CreateFirewallZone implements the create_firewall_zone MCP tool.
 type CreateFirewallZone struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateFirewallZone creates a new CreateFirewallZone tool.
@@ -225,10 +216,7 @@ func NewCreateFirewallZone(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateFirewallZone {
-	return &CreateFirewallZone{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateFirewallZone{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -322,8 +310,7 @@ func (t *CreateFirewallZone) Execute(
 
 // UpdateFirewallZone implements the update_firewall_zone MCP tool.
 type UpdateFirewallZone struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateFirewallZone creates a new UpdateFirewallZone tool.
@@ -331,10 +318,7 @@ func NewUpdateFirewallZone(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateFirewallZone {
-	return &UpdateFirewallZone{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateFirewallZone{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -446,8 +430,7 @@ func (t *UpdateFirewallZone) Execute(
 
 // DeleteFirewallZone implements the delete_firewall_zone MCP tool.
 type DeleteFirewallZone struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteFirewallZone creates a new DeleteFirewallZone tool.
@@ -455,10 +438,7 @@ func NewDeleteFirewallZone(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteFirewallZone {
-	return &DeleteFirewallZone{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteFirewallZone{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

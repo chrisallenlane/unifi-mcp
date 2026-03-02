@@ -13,8 +13,7 @@ import (
 
 // ListDevices implements the list_devices MCP tool.
 type ListDevices struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListDevices creates a new ListDevices tool.
@@ -22,10 +21,7 @@ func NewListDevices(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListDevices {
-	return &ListDevices{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListDevices{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -115,8 +111,7 @@ func (t *ListDevices) Execute(
 
 // GetDevice implements the get_device MCP tool.
 type GetDevice struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetDevice creates a new GetDevice tool.
@@ -124,10 +119,7 @@ func NewGetDevice(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetDevice {
-	return &GetDevice{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetDevice{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -226,8 +218,7 @@ func formatDeviceDetails(d *unifi.AdoptedDeviceDetails) string {
 
 // AdoptDevice implements the adopt_device MCP tool.
 type AdoptDevice struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewAdoptDevice creates a new AdoptDevice tool.
@@ -235,10 +226,7 @@ func NewAdoptDevice(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *AdoptDevice {
-	return &AdoptDevice{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &AdoptDevice{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -309,8 +297,7 @@ func (t *AdoptDevice) Execute(
 
 // RemoveDevice implements the remove_device MCP tool.
 type RemoveDevice struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewRemoveDevice creates a new RemoveDevice tool.
@@ -318,10 +305,7 @@ func NewRemoveDevice(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *RemoveDevice {
-	return &RemoveDevice{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &RemoveDevice{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -393,8 +377,7 @@ func (t *RemoveDevice) Execute(
 
 // ExecuteDeviceAction implements the execute_device_action MCP tool.
 type ExecuteDeviceAction struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewExecuteDeviceAction creates a new ExecuteDeviceAction tool.
@@ -402,10 +385,7 @@ func NewExecuteDeviceAction(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ExecuteDeviceAction {
-	return &ExecuteDeviceAction{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ExecuteDeviceAction{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -493,8 +473,7 @@ func (t *ExecuteDeviceAction) Execute(
 
 // ExecutePortAction implements the execute_port_action MCP tool.
 type ExecutePortAction struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewExecutePortAction creates a new ExecutePortAction tool.
@@ -502,10 +481,7 @@ func NewExecutePortAction(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ExecutePortAction {
-	return &ExecutePortAction{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ExecutePortAction{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -604,8 +580,7 @@ func (t *ExecutePortAction) Execute(
 
 // GetDeviceStatistics implements the get_device_statistics MCP tool.
 type GetDeviceStatistics struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetDeviceStatistics creates a new GetDeviceStatistics tool.
@@ -613,10 +588,7 @@ func NewGetDeviceStatistics(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetDeviceStatistics {
-	return &GetDeviceStatistics{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetDeviceStatistics{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -760,14 +732,14 @@ func ptrFloat64OrZero(p *float64) float64 {
 // ListPendingDevices implements the list_pending_devices MCP tool.
 // This tool is not site-scoped.
 type ListPendingDevices struct {
-	client *unifi.ClientWithResponses
+	baseTool
 }
 
 // NewListPendingDevices creates a new ListPendingDevices tool.
 func NewListPendingDevices(
 	c *unifi.ClientWithResponses,
 ) *ListPendingDevices {
-	return &ListPendingDevices{client: c}
+	return &ListPendingDevices{baseTool{client: c}}
 }
 
 // Description returns a description of the tool.

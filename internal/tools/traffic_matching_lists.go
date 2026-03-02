@@ -25,8 +25,7 @@ func formatTrafficMatchingList(l *unifi.TrafficMatchingList) string {
 // ListTrafficMatchingLists implements the list_traffic_matching_lists
 // MCP tool.
 type ListTrafficMatchingLists struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListTrafficMatchingLists creates a new ListTrafficMatchingLists
@@ -35,10 +34,7 @@ func NewListTrafficMatchingLists(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListTrafficMatchingLists {
-	return &ListTrafficMatchingLists{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListTrafficMatchingLists{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -122,8 +118,7 @@ func (t *ListTrafficMatchingLists) Execute(
 // GetTrafficMatchingList implements the get_traffic_matching_list
 // MCP tool.
 type GetTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetTrafficMatchingList creates a new GetTrafficMatchingList tool.
@@ -131,10 +126,7 @@ func NewGetTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetTrafficMatchingList {
-	return &GetTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -234,8 +226,7 @@ func trafficMatchingListInputSchema() map[string]interface{} {
 // CreateTrafficMatchingList implements the create_traffic_matching_list
 // MCP tool.
 type CreateTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateTrafficMatchingList creates a new CreateTrafficMatchingList
@@ -244,10 +235,7 @@ func NewCreateTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateTrafficMatchingList {
-	return &CreateTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -315,8 +303,7 @@ func (t *CreateTrafficMatchingList) Execute(
 // UpdateTrafficMatchingList implements the update_traffic_matching_list
 // MCP tool.
 type UpdateTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateTrafficMatchingList creates a new UpdateTrafficMatchingList
@@ -325,10 +312,7 @@ func NewUpdateTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateTrafficMatchingList {
-	return &UpdateTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -415,8 +399,7 @@ func (t *UpdateTrafficMatchingList) Execute(
 // DeleteTrafficMatchingList implements the delete_traffic_matching_list
 // MCP tool.
 type DeleteTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteTrafficMatchingList creates a new DeleteTrafficMatchingList
@@ -425,10 +408,7 @@ func NewDeleteTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteTrafficMatchingList {
-	return &DeleteTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

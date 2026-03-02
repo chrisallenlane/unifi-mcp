@@ -5,8 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 	"github.com/google/uuid"
 )
+
+// baseTool holds the common fields shared by all tool implementations.
+type baseTool struct {
+	client        *unifi.ClientWithResponses
+	defaultSiteID string
+}
 
 // resolveSiteID resolves a site ID from an explicit parameter or the
 // default. Returns an error if neither is provided.

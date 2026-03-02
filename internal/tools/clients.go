@@ -13,8 +13,7 @@ import (
 
 // ListClients implements the list_clients MCP tool.
 type ListClients struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListClients creates a new ListClients tool.
@@ -22,10 +21,7 @@ func NewListClients(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListClients {
-	return &ListClients{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListClients{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -122,8 +118,7 @@ func (t *ListClients) Execute(
 
 // GetClient implements the get_client MCP tool.
 type GetClient struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetClient creates a new GetClient tool.
@@ -131,10 +126,7 @@ func NewGetClient(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetClient {
-	return &GetClient{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetClient{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -243,8 +235,7 @@ func formatClientDetails(
 
 // ExecuteClientAction implements the execute_client_action MCP tool.
 type ExecuteClientAction struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewExecuteClientAction creates a new ExecuteClientAction tool.
@@ -252,10 +243,7 @@ func NewExecuteClientAction(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ExecuteClientAction {
-	return &ExecuteClientAction{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ExecuteClientAction{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

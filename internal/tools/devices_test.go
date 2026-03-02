@@ -194,7 +194,7 @@ func TestGetDevice_Execute(t *testing.T) {
 }
 
 func TestGetDevice_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetDevice{defaultSiteID: testSiteID}
+	tool := &GetDevice{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"deviceId": "not-a-uuid"}`),
@@ -277,7 +277,7 @@ func TestAdoptDevice_Execute(t *testing.T) {
 }
 
 func TestAdoptDevice_Execute_MissingMac(t *testing.T) {
-	tool := &AdoptDevice{defaultSiteID: testSiteID}
+	tool := &AdoptDevice{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -344,7 +344,7 @@ func TestRemoveDevice_Execute(t *testing.T) {
 }
 
 func TestRemoveDevice_Execute_InvalidUUID(t *testing.T) {
-	tool := &RemoveDevice{defaultSiteID: testSiteID}
+	tool := &RemoveDevice{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"deviceId": "bad-uuid"}`),
@@ -411,7 +411,7 @@ func TestExecuteDeviceAction_Execute(t *testing.T) {
 }
 
 func TestExecuteDeviceAction_Execute_MissingAction(t *testing.T) {
-	tool := &ExecuteDeviceAction{defaultSiteID: testSiteID}
+	tool := &ExecuteDeviceAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -424,7 +424,7 @@ func TestExecuteDeviceAction_Execute_MissingAction(t *testing.T) {
 }
 
 func TestExecuteDeviceAction_Execute_InvalidUUID(t *testing.T) {
-	tool := &ExecuteDeviceAction{defaultSiteID: testSiteID}
+	tool := &ExecuteDeviceAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -503,7 +503,7 @@ func TestExecutePortAction_Execute(t *testing.T) {
 }
 
 func TestExecutePortAction_Execute_MissingPortIdx(t *testing.T) {
-	tool := &ExecutePortAction{defaultSiteID: testSiteID}
+	tool := &ExecutePortAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -516,7 +516,7 @@ func TestExecutePortAction_Execute_MissingPortIdx(t *testing.T) {
 }
 
 func TestExecutePortAction_Execute_MissingAction(t *testing.T) {
-	tool := &ExecutePortAction{defaultSiteID: testSiteID}
+	tool := &ExecutePortAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -529,7 +529,7 @@ func TestExecutePortAction_Execute_MissingAction(t *testing.T) {
 }
 
 func TestExecutePortAction_Execute_InvalidUUID(t *testing.T) {
-	tool := &ExecutePortAction{defaultSiteID: testSiteID}
+	tool := &ExecutePortAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -628,7 +628,7 @@ func TestGetDeviceStatistics_Execute(t *testing.T) {
 }
 
 func TestGetDeviceStatistics_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetDeviceStatistics{defaultSiteID: testSiteID}
+	tool := &GetDeviceStatistics{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"deviceId": "not-a-uuid"}`),

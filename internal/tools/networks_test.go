@@ -202,7 +202,7 @@ func TestGetNetwork_Execute(t *testing.T) {
 }
 
 func TestGetNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetNetwork{defaultSiteID: testSiteID}
+	tool := &GetNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),
@@ -359,7 +359,7 @@ func TestUpdateNetwork_Execute(t *testing.T) {
 }
 
 func TestUpdateNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateNetwork{defaultSiteID: testSiteID}
+	tool := &UpdateNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -426,7 +426,7 @@ func TestDeleteNetwork_Execute(t *testing.T) {
 }
 
 func TestDeleteNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteNetwork{defaultSiteID: testSiteID}
+	tool := &DeleteNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),
@@ -558,7 +558,7 @@ func TestGetNetworkReferences_Execute_Empty(t *testing.T) {
 }
 
 func TestGetNetworkReferences_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetNetworkReferences{defaultSiteID: testSiteID}
+	tool := &GetNetworkReferences{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),
