@@ -5,8 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 	"github.com/google/uuid"
 )
+
+// baseTool holds the common fields shared by all tool implementations.
+type baseTool struct {
+	client        *unifi.ClientWithResponses
+	defaultSiteID string
+}
 
 // resolveSiteID resolves a site ID from an explicit parameter or the
 // default. Returns an error if neither is provided.
@@ -116,5 +123,39 @@ func paginationSchema() map[string]interface{} {
 			"type":        "integer",
 			"description": "Number of items to skip",
 		},
+	}
+}
+
+// siteAndIDSchema returns the standard JSON schema for operations
+// that take a siteId and a single resource ID.
+func siteAndIDSchema(
+	idName string,
+	idDesc string,
+) map[string]interface{} {
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"siteId": siteIDSchema(),
+			idName: map[string]interface{}{
+				"type":        "string",
+				"description": idDesc,
+			},
+		},
+		"required": []string{idName},
+	}
+}
+
+// listSchema returns the standard JSON schema for list operations
+// with siteId + pagination parameters.
+func listSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
+	return map[string]interface{}{
+		"type":       "object",
+		"properties": props,
 	}
 }

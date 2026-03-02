@@ -329,8 +329,7 @@ func buildRequestBody(
 
 // ListFirewallPolicies implements the list_firewall_policies MCP tool.
 type ListFirewallPolicies struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListFirewallPolicies creates a new ListFirewallPolicies tool.
@@ -338,10 +337,7 @@ func NewListFirewallPolicies(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListFirewallPolicies {
-	return &ListFirewallPolicies{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListFirewallPolicies{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -351,16 +347,7 @@ func (t *ListFirewallPolicies) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListFirewallPolicies) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -431,8 +418,7 @@ func (t *ListFirewallPolicies) Execute(
 
 // GetFirewallPolicy implements the get_firewall_policy MCP tool.
 type GetFirewallPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetFirewallPolicy creates a new GetFirewallPolicy tool.
@@ -440,10 +426,7 @@ func NewGetFirewallPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetFirewallPolicy {
-	return &GetFirewallPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetFirewallPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -453,17 +436,10 @@ func (t *GetFirewallPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetFirewallPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"firewallPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "Firewall policy UUID",
-			},
-		},
-		"required": []string{"firewallPolicyId"},
-	}
+	return siteAndIDSchema(
+		"firewallPolicyId",
+		"Firewall policy UUID",
+	)
 }
 
 // Execute runs the tool.
@@ -519,8 +495,7 @@ func (t *GetFirewallPolicy) Execute(
 
 // CreateFirewallPolicy implements the create_firewall_policy MCP tool.
 type CreateFirewallPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateFirewallPolicy creates a new CreateFirewallPolicy tool.
@@ -528,10 +503,7 @@ func NewCreateFirewallPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateFirewallPolicy {
-	return &CreateFirewallPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateFirewallPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -616,8 +588,7 @@ func (t *CreateFirewallPolicy) Execute(
 
 // UpdateFirewallPolicy implements the update_firewall_policy tool.
 type UpdateFirewallPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateFirewallPolicy creates a new UpdateFirewallPolicy tool.
@@ -625,10 +596,7 @@ func NewUpdateFirewallPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateFirewallPolicy {
-	return &UpdateFirewallPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateFirewallPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -724,8 +692,7 @@ func (t *UpdateFirewallPolicy) Execute(
 
 // DeleteFirewallPolicy implements the delete_firewall_policy tool.
 type DeleteFirewallPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteFirewallPolicy creates a new DeleteFirewallPolicy tool.
@@ -733,10 +700,7 @@ func NewDeleteFirewallPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteFirewallPolicy {
-	return &DeleteFirewallPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteFirewallPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -746,17 +710,10 @@ func (t *DeleteFirewallPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteFirewallPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"firewallPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "Firewall policy UUID to delete",
-			},
-		},
-		"required": []string{"firewallPolicyId"},
-	}
+	return siteAndIDSchema(
+		"firewallPolicyId",
+		"Firewall policy UUID to delete",
+	)
 }
 
 // Execute runs the tool.
@@ -815,8 +772,7 @@ func (t *DeleteFirewallPolicy) Execute(
 
 // PatchFirewallPolicy implements the patch_firewall_policy tool.
 type PatchFirewallPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewPatchFirewallPolicy creates a new PatchFirewallPolicy tool.
@@ -824,10 +780,7 @@ func NewPatchFirewallPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *PatchFirewallPolicy {
-	return &PatchFirewallPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &PatchFirewallPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -915,8 +868,7 @@ func (t *PatchFirewallPolicy) Execute(
 // GetFirewallPolicyOrdering implements the
 // get_firewall_policy_ordering MCP tool.
 type GetFirewallPolicyOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetFirewallPolicyOrdering creates a new tool.
@@ -924,10 +876,7 @@ func NewGetFirewallPolicyOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetFirewallPolicyOrdering {
-	return &GetFirewallPolicyOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetFirewallPolicyOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -1041,8 +990,7 @@ func (t *GetFirewallPolicyOrdering) Execute(
 // UpdateFirewallPolicyOrdering implements the
 // update_firewall_policy_ordering MCP tool.
 type UpdateFirewallPolicyOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateFirewallPolicyOrdering creates a new tool.
@@ -1050,10 +998,7 @@ func NewUpdateFirewallPolicyOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateFirewallPolicyOrdering {
-	return &UpdateFirewallPolicyOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateFirewallPolicyOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

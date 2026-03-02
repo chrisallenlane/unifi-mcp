@@ -15,8 +15,7 @@ import (
 // ListWiFiBroadcasts implements the list_wifi_broadcasts
 // MCP tool.
 type ListWiFiBroadcasts struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListWiFiBroadcasts creates a new ListWiFiBroadcasts
@@ -25,10 +24,7 @@ func NewListWiFiBroadcasts(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListWiFiBroadcasts {
-	return &ListWiFiBroadcasts{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListWiFiBroadcasts{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -38,16 +34,7 @@ func (t *ListWiFiBroadcasts) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWiFiBroadcasts) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -127,8 +114,7 @@ func (t *ListWiFiBroadcasts) Execute(
 // GetWiFiBroadcast implements the get_wifi_broadcast
 // MCP tool.
 type GetWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetWiFiBroadcast creates a new GetWiFiBroadcast tool.
@@ -136,10 +122,7 @@ func NewGetWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetWiFiBroadcast {
-	return &GetWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -149,17 +132,10 @@ func (t *GetWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetWiFiBroadcast) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"wifiBroadcastId": map[string]interface{}{
-				"type":        "string",
-				"description": "WiFi broadcast UUID",
-			},
-		},
-		"required": []string{"wifiBroadcastId"},
-	}
+	return siteAndIDSchema(
+		"wifiBroadcastId",
+		"WiFi broadcast UUID",
+	)
 }
 
 // Execute runs the tool.
@@ -279,13 +255,48 @@ func formatWiFiBroadcast(
 	return b.String()
 }
 
+// wifiBroadcastInputSchema returns the common JSON schema properties
+// for create/update WiFi broadcast tools.
+func wifiBroadcastInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "SSID name",
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the broadcast is enabled",
+		},
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "Broadcast type",
+			"enum": []string{
+				"STANDARD",
+				"IOT_OPTIMIZED",
+			},
+		},
+		"securityConfiguration": map[string]interface{}{
+			"type":        "object",
+			"description": "Security settings (type: OPEN, WPA2, WPA3, WPA2_WPA3, WPA2_ENTERPRISE, WPA3_ENTERPRISE, WPA2_WPA3_ENTERPRISE)",
+		},
+		"hideName": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether to hide the SSID",
+		},
+		"clientIsolationEnabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether client isolation is enabled",
+		},
+	}
+}
+
 // --- create_wifi_broadcast ---
 
 // CreateWiFiBroadcast implements the create_wifi_broadcast
 // MCP tool.
 type CreateWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateWiFiBroadcast creates a new CreateWiFiBroadcast
@@ -294,10 +305,7 @@ func NewCreateWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateWiFiBroadcast {
-	return &CreateWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -307,47 +315,18 @@ func (t *CreateWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateWiFiBroadcast) InputSchema() map[string]interface{} {
+	props := wifiBroadcastInputSchema()
+	props["network"] = map[string]interface{}{
+		"type":        "object",
+		"description": "Network reference (optional)",
+	}
+	props["broadcastingDeviceFilter"] = map[string]interface{}{
+		"type":        "object",
+		"description": "Device filter for broadcasting (optional)",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "SSID name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the broadcast is enabled",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Broadcast type",
-				"enum": []string{
-					"STANDARD",
-					"IOT_OPTIMIZED",
-				},
-			},
-			"securityConfiguration": map[string]interface{}{
-				"type":        "object",
-				"description": "Security settings (type: OPEN, WPA2, WPA3, WPA2_WPA3, WPA2_ENTERPRISE, WPA3_ENTERPRISE, WPA2_WPA3_ENTERPRISE)",
-			},
-			"hideName": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether to hide the SSID",
-			},
-			"clientIsolationEnabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether client isolation is enabled",
-			},
-			"network": map[string]interface{}{
-				"type":        "object",
-				"description": "Network reference (optional)",
-			},
-			"broadcastingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for broadcasting (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"name",
 			"enabled",
@@ -408,8 +387,7 @@ func (t *CreateWiFiBroadcast) Execute(
 // UpdateWiFiBroadcast implements the update_wifi_broadcast
 // MCP tool.
 type UpdateWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateWiFiBroadcast creates a new UpdateWiFiBroadcast
@@ -418,10 +396,7 @@ func NewUpdateWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateWiFiBroadcast {
-	return &UpdateWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -431,43 +406,14 @@ func (t *UpdateWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateWiFiBroadcast) InputSchema() map[string]interface{} {
+	props := wifiBroadcastInputSchema()
+	props["wifiBroadcastId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "WiFi broadcast UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"wifiBroadcastId": map[string]interface{}{
-				"type":        "string",
-				"description": "WiFi broadcast UUID",
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "SSID name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the broadcast is enabled",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Broadcast type",
-				"enum": []string{
-					"STANDARD",
-					"IOT_OPTIMIZED",
-				},
-			},
-			"securityConfiguration": map[string]interface{}{
-				"type":        "object",
-				"description": "Security settings",
-			},
-			"hideName": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether to hide the SSID",
-			},
-			"clientIsolationEnabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether client isolation is enabled",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"wifiBroadcastId",
 			"name",
@@ -539,8 +485,7 @@ func (t *UpdateWiFiBroadcast) Execute(
 // DeleteWiFiBroadcast implements the delete_wifi_broadcast
 // MCP tool.
 type DeleteWiFiBroadcast struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteWiFiBroadcast creates a new DeleteWiFiBroadcast
@@ -549,10 +494,7 @@ func NewDeleteWiFiBroadcast(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteWiFiBroadcast {
-	return &DeleteWiFiBroadcast{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteWiFiBroadcast{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -589,13 +531,8 @@ func (t *DeleteWiFiBroadcast) Execute(
 		WiFiBroadcastID string `json:"wifiBroadcastId"`
 		Force           *bool  `json:"force"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

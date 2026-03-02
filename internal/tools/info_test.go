@@ -4,14 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestGetInfo_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/v1/info" {
 				t.Errorf("unexpected path: %s", r.URL.Path)
@@ -23,11 +20,6 @@ func TestGetInfo_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetInfo(client)
 	result, err := tool.Execute(
@@ -44,7 +36,7 @@ func TestGetInfo_Execute(t *testing.T) {
 }
 
 func TestGetInfo_Execute_Error(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("unauthorized"))
@@ -52,13 +44,8 @@ func TestGetInfo_Execute_Error(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewGetInfo(client)
-	_, err = tool.Execute(
+	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
 	)

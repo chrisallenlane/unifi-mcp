@@ -130,7 +130,7 @@ func TestGetTrafficMatchingList_Execute(t *testing.T) {
 }
 
 func TestGetTrafficMatchingList_Execute_MissingID(t *testing.T) {
-	tool := &GetTrafficMatchingList{defaultSiteID: testSiteID}
+	tool := &GetTrafficMatchingList{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -277,7 +277,7 @@ func TestUpdateTrafficMatchingList_Execute(t *testing.T) {
 }
 
 func TestUpdateTrafficMatchingList_Execute_MissingID(t *testing.T) {
-	tool := &UpdateTrafficMatchingList{defaultSiteID: testSiteID}
+	tool := &UpdateTrafficMatchingList{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"name": "Test", "type": "PORTS"}`),
@@ -336,7 +336,7 @@ func TestDeleteTrafficMatchingList_Execute(t *testing.T) {
 }
 
 func TestDeleteTrafficMatchingList_Execute_MissingID(t *testing.T) {
-	tool := &DeleteTrafficMatchingList{defaultSiteID: testSiteID}
+	tool := &DeleteTrafficMatchingList{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),

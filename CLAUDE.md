@@ -35,8 +35,9 @@ unifi-mcp/
 │   │   └── types.go                 # JSON-RPC request/response types
 │   ├── tools/
 │   │   ├── tool.go                  # Tool interface
-│   │   ├── helpers.go               # UUID helpers, siteId resolution, error helpers
+│   │   ├── helpers.go               # baseTool struct, UUID helpers, siteId resolution, error helpers, shared schema builders
 │   │   ├── helpers_test.go
+│   │   ├── test_helpers_test.go     # Shared test helpers (testClient, testSiteID)
 │   │   ├── info.go                  # get_info tool
 │   │   ├── info_test.go
 │   │   ├── sites.go                 # list_sites tool
@@ -123,6 +124,17 @@ The server exposes all registered tools via `tools/list`.
 
 ### Helpers (`internal/tools/helpers.go`)
 
+`helpers.go` also defines `baseTool`, a struct embedded by all tool implementations:
+
+```go
+type baseTool struct {
+    client        *unifi.ClientWithResponses
+    defaultSiteID string
+}
+```
+
+Helper functions:
+
 - `resolveSiteID(explicit, default)` - resolves site UUID from param or env default
 - `resolveUUID(name, value)` - parses and validates a UUID string
 - `resolveUUIDs(name, values)` - parses a slice of UUID strings
@@ -130,6 +142,8 @@ The server exposes all registered tools via `tools/list`.
 - `parseArgs(args, dst)` - unmarshals JSON-RPC args into a typed struct
 - `siteIDSchema()` - standard JSON schema snippet for the `siteId` parameter
 - `paginationSchema()` - standard JSON schema snippet for `limit` and `offset` parameters
+- `siteAndIDSchema(idName, idDesc)` - schema for operations taking a siteId + one resource ID
+- `listSchema()` - schema for list operations with siteId + pagination parameters
 
 ## Environment Variables
 
@@ -222,8 +236,10 @@ make coverage   # test coverage report
 
 ### Tool Conventions
 
+- Embed `baseTool` in each tool struct (provides `client` and `defaultSiteID` via promotion)
 - Accept `siteId` as an optional parameter; call `resolveSiteID` to resolve it
 - Use `resolveUUID` / `resolveUUIDs` for UUID parameters
+- Use `listSchema()` for list operations and `siteAndIDSchema()` for single-resource operations
 - Call the generated client method (e.g., `t.client.GetXyzWithResponse(ctx, ...)`)
 - Check `resp.JSON200 == nil` and call `unexpectedStatusError` on failure
 - Return human-readable strings, not JSON
@@ -237,8 +253,9 @@ Runtime:
 Test (indirect):
 - `github.com/stretchr/testify` - test assertions
 
-Build-time only: `oapi-codegen` (for `make generate`), `golines`, `gofumpt`,
-`revive` (invoked via `go run` in the Makefile, no manual install needed).
+Build-time only:
+- `golines`, `gofumpt`, `revive` - invoked via `go run` in the Makefile, no manual install needed
+- `oapi-codegen` - called directly by `make generate`; must be installed separately if you need to regenerate the client
 
 ## Version Information
 

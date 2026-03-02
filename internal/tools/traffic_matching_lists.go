@@ -25,8 +25,7 @@ func formatTrafficMatchingList(l *unifi.TrafficMatchingList) string {
 // ListTrafficMatchingLists implements the list_traffic_matching_lists
 // MCP tool.
 type ListTrafficMatchingLists struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListTrafficMatchingLists creates a new ListTrafficMatchingLists
@@ -35,10 +34,7 @@ func NewListTrafficMatchingLists(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListTrafficMatchingLists {
-	return &ListTrafficMatchingLists{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListTrafficMatchingLists{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -48,16 +44,7 @@ func (t *ListTrafficMatchingLists) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListTrafficMatchingLists) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -131,8 +118,7 @@ func (t *ListTrafficMatchingLists) Execute(
 // GetTrafficMatchingList implements the get_traffic_matching_list
 // MCP tool.
 type GetTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetTrafficMatchingList creates a new GetTrafficMatchingList tool.
@@ -140,10 +126,7 @@ func NewGetTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetTrafficMatchingList {
-	return &GetTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -153,17 +136,10 @@ func (t *GetTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetTrafficMatchingList) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID",
-			},
-		},
-		"required": []string{"trafficMatchingListId"},
-	}
+	return siteAndIDSchema(
+		"trafficMatchingListId",
+		"Traffic matching list UUID",
+	)
 }
 
 // Execute runs the tool.
@@ -217,13 +193,33 @@ func (t *GetTrafficMatchingList) Execute(
 	return formatTrafficMatchingList(resp.JSON200), nil
 }
 
+// trafficMatchingListInputSchema returns the common JSON schema
+// properties for create/update traffic matching list tools.
+func trafficMatchingListInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "Name of the traffic matching list",
+		},
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "Type of traffic matching list",
+			"enum": []string{
+				"IPV4_ADDRESSES",
+				"IPV6_ADDRESSES",
+				"PORTS",
+			},
+		},
+	}
+}
+
 // --- create_traffic_matching_list ---
 
 // CreateTrafficMatchingList implements the create_traffic_matching_list
 // MCP tool.
 type CreateTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateTrafficMatchingList creates a new CreateTrafficMatchingList
@@ -232,10 +228,7 @@ func NewCreateTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateTrafficMatchingList {
-	return &CreateTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -246,24 +239,9 @@ func (t *CreateTrafficMatchingList) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateTrafficMatchingList) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Name of the traffic matching list",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Type of traffic matching list",
-				"enum": []string{
-					"IPV4_ADDRESSES",
-					"IPV6_ADDRESSES",
-					"PORTS",
-				},
-			},
-		},
-		"required": []string{"name", "type"},
+		"type":       "object",
+		"properties": trafficMatchingListInputSchema(),
+		"required":   []string{"name", "type"},
 	}
 }
 
@@ -318,8 +296,7 @@ func (t *CreateTrafficMatchingList) Execute(
 // UpdateTrafficMatchingList implements the update_traffic_matching_list
 // MCP tool.
 type UpdateTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateTrafficMatchingList creates a new UpdateTrafficMatchingList
@@ -328,10 +305,7 @@ func NewUpdateTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateTrafficMatchingList {
-	return &UpdateTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -341,28 +315,14 @@ func (t *UpdateTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateTrafficMatchingList) InputSchema() map[string]interface{} {
+	props := trafficMatchingListInputSchema()
+	props["trafficMatchingListId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Traffic matching list UUID to update",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID to update",
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Name of the traffic matching list",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Type of traffic matching list",
-				"enum": []string{
-					"IPV4_ADDRESSES",
-					"IPV6_ADDRESSES",
-					"PORTS",
-				},
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"trafficMatchingListId",
 			"name",
@@ -432,8 +392,7 @@ func (t *UpdateTrafficMatchingList) Execute(
 // DeleteTrafficMatchingList implements the delete_traffic_matching_list
 // MCP tool.
 type DeleteTrafficMatchingList struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteTrafficMatchingList creates a new DeleteTrafficMatchingList
@@ -442,10 +401,7 @@ func NewDeleteTrafficMatchingList(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteTrafficMatchingList {
-	return &DeleteTrafficMatchingList{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteTrafficMatchingList{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -455,17 +411,10 @@ func (t *DeleteTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteTrafficMatchingList) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID to delete",
-			},
-		},
-		"required": []string{"trafficMatchingListId"},
-	}
+	return siteAndIDSchema(
+		"trafficMatchingListId",
+		"Traffic matching list UUID to delete",
+	)
 }
 
 // Execute runs the tool.

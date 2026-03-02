@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListClients_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -41,11 +38,6 @@ func TestListClients_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListClients(client, testSiteID)
 	result, err := tool.Execute(
@@ -77,7 +69,7 @@ func TestListClients_Execute(t *testing.T) {
 }
 
 func TestListClients_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -90,11 +82,6 @@ func TestListClients_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListClients(client, testSiteID)
 	result, err := tool.Execute(
@@ -137,7 +124,7 @@ func TestListClients_InputSchema(t *testing.T) {
 }
 
 func TestGetClient_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -151,11 +138,6 @@ func TestGetClient_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetClient(client, testSiteID)
 	result, err := tool.Execute(
@@ -189,7 +171,7 @@ func TestGetClient_Execute(t *testing.T) {
 }
 
 func TestGetClient_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetClient{defaultSiteID: testSiteID}
+	tool := &GetClient{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"clientId": "not-valid"}`),
@@ -225,7 +207,7 @@ func TestGetClient_InputSchema(t *testing.T) {
 }
 
 func TestExecuteClientAction_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -234,11 +216,6 @@ func TestExecuteClientAction_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewExecuteClientAction(client, testSiteID)
 	result, err := tool.Execute(
@@ -260,7 +237,7 @@ func TestExecuteClientAction_Execute(t *testing.T) {
 }
 
 func TestExecuteClientAction_Execute_MissingAction(t *testing.T) {
-	tool := &ExecuteClientAction{defaultSiteID: testSiteID}
+	tool := &ExecuteClientAction{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(

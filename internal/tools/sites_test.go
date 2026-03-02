@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListSites_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path != "/v1/sites" {
 				t.Errorf("unexpected path: %s", r.URL.Path)
@@ -39,11 +36,6 @@ func TestListSites_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListSites(client, "")
 	result, err := tool.Execute(
@@ -72,7 +64,7 @@ func TestListSites_Execute(t *testing.T) {
 }
 
 func TestListSites_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -85,11 +77,6 @@ func TestListSites_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListSites(client, "")
 	result, err := tool.Execute(
@@ -107,7 +94,7 @@ func TestListSites_Execute_Empty(t *testing.T) {
 
 func TestListSites_Execute_WithParams(t *testing.T) {
 	var gotLimit, gotOffset string
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			gotLimit = r.URL.Query().Get("limit")
 			gotOffset = r.URL.Query().Get("offset")
@@ -123,13 +110,8 @@ func TestListSites_Execute_WithParams(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListSites(client, "")
-	_, err = tool.Execute(
+	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"limit": 10, "offset": 5}`),
 	)

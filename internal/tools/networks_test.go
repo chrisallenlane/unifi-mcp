@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListNetworks_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -49,11 +46,6 @@ func TestListNetworks_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListNetworks(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -84,7 +76,7 @@ func TestListNetworks_Execute(t *testing.T) {
 }
 
 func TestListNetworks_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -97,11 +89,6 @@ func TestListNetworks_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListNetworks(client, testSiteID)
 	result, err := tool.Execute(
@@ -144,7 +131,7 @@ func TestListNetworks_InputSchema(t *testing.T) {
 }
 
 func TestGetNetwork_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -164,11 +151,6 @@ func TestGetNetwork_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetNetwork(client, testSiteID)
 	result, err := tool.Execute(
@@ -202,7 +184,7 @@ func TestGetNetwork_Execute(t *testing.T) {
 }
 
 func TestGetNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetNetwork{defaultSiteID: testSiteID}
+	tool := &GetNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),
@@ -238,7 +220,7 @@ func TestGetNetwork_InputSchema(t *testing.T) {
 }
 
 func TestCreateNetwork_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -254,11 +236,6 @@ func TestCreateNetwork_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewCreateNetwork(client, testSiteID)
 	result, err := tool.Execute(
@@ -318,7 +295,7 @@ func TestCreateNetwork_InputSchema(t *testing.T) {
 }
 
 func TestUpdateNetwork_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -333,11 +310,6 @@ func TestUpdateNetwork_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewUpdateNetwork(client, testSiteID)
 	result, err := tool.Execute(
@@ -359,7 +331,7 @@ func TestUpdateNetwork_Execute(t *testing.T) {
 }
 
 func TestUpdateNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateNetwork{defaultSiteID: testSiteID}
+	tool := &UpdateNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -397,17 +369,12 @@ func TestUpdateNetwork_InputSchema(t *testing.T) {
 }
 
 func TestDeleteNetwork_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteNetwork(client, testSiteID)
 	result, err := tool.Execute(
@@ -426,7 +393,7 @@ func TestDeleteNetwork_Execute(t *testing.T) {
 }
 
 func TestDeleteNetwork_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteNetwork{defaultSiteID: testSiteID}
+	tool := &DeleteNetwork{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),
@@ -462,7 +429,7 @@ func TestDeleteNetwork_InputSchema(t *testing.T) {
 }
 
 func TestGetNetworkReferences_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -488,11 +455,6 @@ func TestGetNetworkReferences_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetNetworkReferences(client, testSiteID)
 	result, err := tool.Execute(
@@ -526,7 +488,7 @@ func TestGetNetworkReferences_Execute(t *testing.T) {
 }
 
 func TestGetNetworkReferences_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -535,11 +497,6 @@ func TestGetNetworkReferences_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetNetworkReferences(client, testSiteID)
 	result, err := tool.Execute(
@@ -558,7 +515,7 @@ func TestGetNetworkReferences_Execute_Empty(t *testing.T) {
 }
 
 func TestGetNetworkReferences_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetNetworkReferences{defaultSiteID: testSiteID}
+	tool := &GetNetworkReferences{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"networkId": "not-valid"}`),

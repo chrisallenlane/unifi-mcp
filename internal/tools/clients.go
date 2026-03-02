@@ -13,8 +13,7 @@ import (
 
 // ListClients implements the list_clients MCP tool.
 type ListClients struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListClients creates a new ListClients tool.
@@ -22,10 +21,7 @@ func NewListClients(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListClients {
-	return &ListClients{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListClients{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -35,16 +31,7 @@ func (t *ListClients) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListClients) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -131,8 +118,7 @@ func (t *ListClients) Execute(
 
 // GetClient implements the get_client MCP tool.
 type GetClient struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetClient creates a new GetClient tool.
@@ -140,10 +126,7 @@ func NewGetClient(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetClient {
-	return &GetClient{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetClient{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -153,17 +136,7 @@ func (t *GetClient) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetClient) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"clientId": map[string]interface{}{
-				"type":        "string",
-				"description": "Client UUID",
-			},
-		},
-		"required": []string{"clientId"},
-	}
+	return siteAndIDSchema("clientId", "Client UUID")
 }
 
 // Execute runs the tool.
@@ -252,8 +225,7 @@ func formatClientDetails(
 
 // ExecuteClientAction implements the execute_client_action MCP tool.
 type ExecuteClientAction struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewExecuteClientAction creates a new ExecuteClientAction tool.
@@ -261,10 +233,7 @@ func NewExecuteClientAction(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ExecuteClientAction {
-	return &ExecuteClientAction{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ExecuteClientAction{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

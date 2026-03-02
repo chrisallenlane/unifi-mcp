@@ -37,7 +37,6 @@ func New(
 	s := &Server{
 		client:        client,
 		defaultSiteID: defaultSiteID,
-		tools:         make(map[string]tools.Tool),
 	}
 
 	s.registerTools()
@@ -47,267 +46,130 @@ func New(
 
 // registerTools registers all available tools
 func (s *Server) registerTools() {
-	s.tools["get_info"] = tools.NewGetInfo(s.client)
-	s.tools["list_sites"] = tools.NewListSites(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_firewall_zones"] = tools.NewListFirewallZones(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_firewall_zone"] = tools.NewGetFirewallZone(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_firewall_zone"] = tools.NewCreateFirewallZone(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_firewall_zone"] = tools.NewUpdateFirewallZone(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_firewall_zone"] = tools.NewDeleteFirewallZone(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_firewall_policies"] = tools.NewListFirewallPolicies(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_firewall_policy"] = tools.NewGetFirewallPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_firewall_policy"] = tools.NewCreateFirewallPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_firewall_policy"] = tools.NewUpdateFirewallPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_firewall_policy"] = tools.NewDeleteFirewallPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["patch_firewall_policy"] = tools.NewPatchFirewallPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_firewall_policy_ordering"] = tools.NewGetFirewallPolicyOrdering(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_firewall_policy_ordering"] = tools.NewUpdateFirewallPolicyOrdering(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_wans"] = tools.NewListWans(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_vpn_tunnels"] = tools.NewListVpnTunnels(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_vpn_servers"] = tools.NewListVpnServers(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_radius_profiles"] = tools.NewListRadiusProfiles(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_device_tags"] = tools.NewListDeviceTags(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_dpi_categories"] = tools.NewListDpiCategories(
-		s.client,
-	)
-	s.tools["list_dpi_applications"] = tools.NewListDpiApplications(
-		s.client,
-	)
-	s.tools["list_countries"] = tools.NewListCountries(
-		s.client,
-	)
-	s.tools["list_clients"] = tools.NewListClients(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_client"] = tools.NewGetClient(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["execute_client_action"] = tools.NewExecuteClientAction(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_dns_policies"] = tools.NewListDNSPolicies(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_dns_policy"] = tools.NewGetDNSPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_dns_policy"] = tools.NewCreateDNSPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_dns_policy"] = tools.NewUpdateDNSPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_dns_policy"] = tools.NewDeleteDNSPolicy(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_traffic_matching_lists"] = tools.NewListTrafficMatchingLists(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_traffic_matching_list"] = tools.NewGetTrafficMatchingList(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_traffic_matching_list"] = tools.NewCreateTrafficMatchingList(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_traffic_matching_list"] = tools.NewUpdateTrafficMatchingList(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_traffic_matching_list"] = tools.NewDeleteTrafficMatchingList(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_vouchers"] = tools.NewListVouchers(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_voucher"] = tools.NewGetVoucher(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_vouchers"] = tools.NewCreateVouchers(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_vouchers"] = tools.NewDeleteVouchers(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_voucher"] = tools.NewDeleteVoucher(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_networks"] = tools.NewListNetworks(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_network"] = tools.NewGetNetwork(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_network"] = tools.NewCreateNetwork(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_network"] = tools.NewUpdateNetwork(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_network"] = tools.NewDeleteNetwork(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_network_references"] = tools.NewGetNetworkReferences(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_acl_rules"] = tools.NewListACLRules(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_acl_rule"] = tools.NewGetACLRule(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_acl_rule"] = tools.NewCreateACLRule(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_acl_rule"] = tools.NewUpdateACLRule(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_acl_rule"] = tools.NewDeleteACLRule(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_acl_rule_ordering"] = tools.NewGetACLRuleOrdering(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_acl_rule_ordering"] = tools.NewUpdateACLRuleOrdering(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_devices"] = tools.NewListDevices(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_device"] = tools.NewGetDevice(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["adopt_device"] = tools.NewAdoptDevice(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["remove_device"] = tools.NewRemoveDevice(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["execute_device_action"] = tools.NewExecuteDeviceAction(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["execute_port_action"] = tools.NewExecutePortAction(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_device_statistics"] = tools.NewGetDeviceStatistics(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["list_pending_devices"] = tools.NewListPendingDevices(
-		s.client,
-	)
-	s.tools["list_wifi_broadcasts"] = tools.NewListWiFiBroadcasts(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["get_wifi_broadcast"] = tools.NewGetWiFiBroadcast(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["create_wifi_broadcast"] = tools.NewCreateWiFiBroadcast(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["update_wifi_broadcast"] = tools.NewUpdateWiFiBroadcast(
-		s.client,
-		s.defaultSiteID,
-	)
-	s.tools["delete_wifi_broadcast"] = tools.NewDeleteWiFiBroadcast(
-		s.client,
-		s.defaultSiteID,
-	)
+	c, sid := s.client, s.defaultSiteID
+
+	s.tools = map[string]tools.Tool{
+		// Info / Sites
+		"get_info":   tools.NewGetInfo(c),
+		"list_sites": tools.NewListSites(c, sid),
+
+		// Firewall Zones
+		"list_firewall_zones":  tools.NewListFirewallZones(c, sid),
+		"get_firewall_zone":    tools.NewGetFirewallZone(c, sid),
+		"create_firewall_zone": tools.NewCreateFirewallZone(c, sid),
+		"update_firewall_zone": tools.NewUpdateFirewallZone(c, sid),
+		"delete_firewall_zone": tools.NewDeleteFirewallZone(c, sid),
+
+		// Firewall Policies
+		"list_firewall_policies": tools.NewListFirewallPolicies(
+			c,
+			sid,
+		),
+		"get_firewall_policy": tools.NewGetFirewallPolicy(c, sid),
+		"create_firewall_policy": tools.NewCreateFirewallPolicy(
+			c,
+			sid,
+		),
+		"update_firewall_policy": tools.NewUpdateFirewallPolicy(
+			c,
+			sid,
+		),
+		"delete_firewall_policy": tools.NewDeleteFirewallPolicy(
+			c,
+			sid,
+		),
+		"patch_firewall_policy": tools.NewPatchFirewallPolicy(c, sid),
+		"get_firewall_policy_ordering": tools.NewGetFirewallPolicyOrdering(
+			c,
+			sid,
+		),
+		"update_firewall_policy_ordering": tools.NewUpdateFirewallPolicyOrdering(
+			c,
+			sid,
+		),
+
+		// Networks
+		"list_networks":          tools.NewListNetworks(c, sid),
+		"get_network":            tools.NewGetNetwork(c, sid),
+		"create_network":         tools.NewCreateNetwork(c, sid),
+		"update_network":         tools.NewUpdateNetwork(c, sid),
+		"delete_network":         tools.NewDeleteNetwork(c, sid),
+		"get_network_references": tools.NewGetNetworkReferences(c, sid),
+
+		// Clients
+		"list_clients":          tools.NewListClients(c, sid),
+		"get_client":            tools.NewGetClient(c, sid),
+		"execute_client_action": tools.NewExecuteClientAction(c, sid),
+
+		// Devices
+		"list_devices":          tools.NewListDevices(c, sid),
+		"get_device":            tools.NewGetDevice(c, sid),
+		"adopt_device":          tools.NewAdoptDevice(c, sid),
+		"remove_device":         tools.NewRemoveDevice(c, sid),
+		"execute_device_action": tools.NewExecuteDeviceAction(c, sid),
+		"execute_port_action":   tools.NewExecutePortAction(c, sid),
+		"get_device_statistics": tools.NewGetDeviceStatistics(c, sid),
+		"list_pending_devices":  tools.NewListPendingDevices(c),
+
+		// ACL Rules
+		"list_acl_rules":           tools.NewListACLRules(c, sid),
+		"get_acl_rule":             tools.NewGetACLRule(c, sid),
+		"create_acl_rule":          tools.NewCreateACLRule(c, sid),
+		"update_acl_rule":          tools.NewUpdateACLRule(c, sid),
+		"delete_acl_rule":          tools.NewDeleteACLRule(c, sid),
+		"get_acl_rule_ordering":    tools.NewGetACLRuleOrdering(c, sid),
+		"update_acl_rule_ordering": tools.NewUpdateACLRuleOrdering(c, sid),
+
+		// DNS Policies
+		"list_dns_policies": tools.NewListDNSPolicies(c, sid),
+		"get_dns_policy":    tools.NewGetDNSPolicy(c, sid),
+		"create_dns_policy": tools.NewCreateDNSPolicy(c, sid),
+		"update_dns_policy": tools.NewUpdateDNSPolicy(c, sid),
+		"delete_dns_policy": tools.NewDeleteDNSPolicy(c, sid),
+
+		// Traffic Matching Lists
+		"list_traffic_matching_lists": tools.NewListTrafficMatchingLists(
+			c,
+			sid,
+		),
+		"get_traffic_matching_list": tools.NewGetTrafficMatchingList(c, sid),
+		"create_traffic_matching_list": tools.NewCreateTrafficMatchingList(
+			c,
+			sid,
+		),
+		"update_traffic_matching_list": tools.NewUpdateTrafficMatchingList(
+			c,
+			sid,
+		),
+		"delete_traffic_matching_list": tools.NewDeleteTrafficMatchingList(
+			c,
+			sid,
+		),
+
+		// WiFi Broadcasts
+		"list_wifi_broadcasts":  tools.NewListWiFiBroadcasts(c, sid),
+		"get_wifi_broadcast":    tools.NewGetWiFiBroadcast(c, sid),
+		"create_wifi_broadcast": tools.NewCreateWiFiBroadcast(c, sid),
+		"update_wifi_broadcast": tools.NewUpdateWiFiBroadcast(c, sid),
+		"delete_wifi_broadcast": tools.NewDeleteWiFiBroadcast(c, sid),
+
+		// Hotspot Vouchers
+		"list_vouchers":   tools.NewListVouchers(c, sid),
+		"get_voucher":     tools.NewGetVoucher(c, sid),
+		"create_vouchers": tools.NewCreateVouchers(c, sid),
+		"delete_vouchers": tools.NewDeleteVouchers(c, sid),
+		"delete_voucher":  tools.NewDeleteVoucher(c, sid),
+
+		// Supporting Read-Only
+		"list_wans":             tools.NewListWans(c, sid),
+		"list_vpn_tunnels":      tools.NewListVpnTunnels(c, sid),
+		"list_vpn_servers":      tools.NewListVpnServers(c, sid),
+		"list_radius_profiles":  tools.NewListRadiusProfiles(c, sid),
+		"list_device_tags":      tools.NewListDeviceTags(c, sid),
+		"list_dpi_categories":   tools.NewListDpiCategories(c),
+		"list_dpi_applications": tools.NewListDpiApplications(c),
+		"list_countries":        tools.NewListCountries(c),
+	}
 }
 
 // Run starts the MCP server and processes requests

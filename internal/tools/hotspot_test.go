@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListVouchers_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -35,11 +32,6 @@ func TestListVouchers_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVouchers(client, testSiteID)
 	result, err := tool.Execute(
@@ -65,7 +57,7 @@ func TestListVouchers_Execute(t *testing.T) {
 }
 
 func TestListVouchers_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -78,11 +70,6 @@ func TestListVouchers_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVouchers(client, testSiteID)
 	result, err := tool.Execute(
@@ -125,7 +112,7 @@ func TestListVouchers_InputSchema(t *testing.T) {
 }
 
 func TestGetVoucher_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -141,11 +128,6 @@ func TestGetVoucher_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetVoucher(client, testSiteID)
 	result, err := tool.Execute(
@@ -179,7 +161,7 @@ func TestGetVoucher_Execute(t *testing.T) {
 }
 
 func TestGetVoucher_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetVoucher{defaultSiteID: testSiteID}
+	tool := &GetVoucher{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"voucherId": "not-valid"}`),
@@ -215,7 +197,7 @@ func TestGetVoucher_InputSchema(t *testing.T) {
 }
 
 func TestCreateVouchers_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -235,11 +217,6 @@ func TestCreateVouchers_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewCreateVouchers(client, testSiteID)
 	result, err := tool.Execute(
@@ -299,7 +276,7 @@ func TestCreateVouchers_InputSchema(t *testing.T) {
 }
 
 func TestDeleteVouchers_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -308,11 +285,6 @@ func TestDeleteVouchers_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteVouchers(client, testSiteID)
 	result, err := tool.Execute(
@@ -332,7 +304,7 @@ func TestDeleteVouchers_Execute(t *testing.T) {
 }
 
 func TestDeleteVouchers_Execute_MissingFilter(t *testing.T) {
-	tool := &DeleteVouchers{defaultSiteID: testSiteID}
+	tool := &DeleteVouchers{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -368,7 +340,7 @@ func TestDeleteVouchers_InputSchema(t *testing.T) {
 }
 
 func TestDeleteVoucher_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -377,11 +349,6 @@ func TestDeleteVoucher_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteVoucher(client, testSiteID)
 	result, err := tool.Execute(
@@ -400,7 +367,7 @@ func TestDeleteVoucher_Execute(t *testing.T) {
 }
 
 func TestDeleteVoucher_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteVoucher{defaultSiteID: testSiteID}
+	tool := &DeleteVoucher{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"voucherId": "not-valid"}`),

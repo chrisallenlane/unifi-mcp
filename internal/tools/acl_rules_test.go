@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListACLRules_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -38,11 +35,6 @@ func TestListACLRules_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListACLRules(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -67,7 +59,7 @@ func TestListACLRules_Execute(t *testing.T) {
 }
 
 func TestListACLRules_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -80,11 +72,6 @@ func TestListACLRules_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListACLRules(client, testSiteID)
 	result, err := tool.Execute(
@@ -130,7 +117,7 @@ func TestListACLRules_InputSchema(t *testing.T) {
 }
 
 func TestGetACLRule_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -152,11 +139,6 @@ func TestGetACLRule_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetACLRule(client, testSiteID)
 	result, err := tool.Execute(
@@ -193,7 +175,7 @@ func TestGetACLRule_Execute(t *testing.T) {
 }
 
 func TestGetACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &GetACLRule{defaultSiteID: testSiteID}
+	tool := &GetACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"aclRuleId": "not-valid"}`),
@@ -229,7 +211,7 @@ func TestGetACLRule_InputSchema(t *testing.T) {
 }
 
 func TestCreateACLRule_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -247,11 +229,6 @@ func TestCreateACLRule_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewCreateACLRule(client, testSiteID)
 	result, err := tool.Execute(
@@ -311,7 +288,7 @@ func TestCreateACLRule_InputSchema(t *testing.T) {
 }
 
 func TestUpdateACLRule_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -328,11 +305,6 @@ func TestUpdateACLRule_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewUpdateACLRule(client, testSiteID)
 	result, err := tool.Execute(
@@ -354,7 +326,7 @@ func TestUpdateACLRule_Execute(t *testing.T) {
 }
 
 func TestUpdateACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &UpdateACLRule{defaultSiteID: testSiteID}
+	tool := &UpdateACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -392,17 +364,12 @@ func TestUpdateACLRule_InputSchema(t *testing.T) {
 }
 
 func TestDeleteACLRule_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteACLRule(client, testSiteID)
 	result, err := tool.Execute(
@@ -421,7 +388,7 @@ func TestDeleteACLRule_Execute(t *testing.T) {
 }
 
 func TestDeleteACLRule_Execute_InvalidUUID(t *testing.T) {
-	tool := &DeleteACLRule{defaultSiteID: testSiteID}
+	tool := &DeleteACLRule{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{"aclRuleId": "not-valid"}`),
@@ -457,7 +424,7 @@ func TestDeleteACLRule_InputSchema(t *testing.T) {
 }
 
 func TestGetACLRuleOrdering_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -469,11 +436,6 @@ func TestGetACLRuleOrdering_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetACLRuleOrdering(client, testSiteID)
 	result, err := tool.Execute(
@@ -502,7 +464,7 @@ func TestGetACLRuleOrdering_Execute(t *testing.T) {
 }
 
 func TestGetACLRuleOrdering_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -511,11 +473,6 @@ func TestGetACLRuleOrdering_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetACLRuleOrdering(client, testSiteID)
 	result, err := tool.Execute(
@@ -550,7 +507,7 @@ func TestGetACLRuleOrdering_InputSchema(t *testing.T) {
 }
 
 func TestUpdateACLRuleOrdering_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -562,11 +519,6 @@ func TestUpdateACLRuleOrdering_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewUpdateACLRuleOrdering(client, testSiteID)
 	result, err := tool.Execute(

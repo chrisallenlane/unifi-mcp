@@ -13,8 +13,7 @@ import (
 
 // ListWans implements the list_wans MCP tool.
 type ListWans struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListWans creates a new ListWans tool.
@@ -22,10 +21,7 @@ func NewListWans(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListWans {
-	return &ListWans{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListWans{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -35,16 +31,7 @@ func (t *ListWans) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWans) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -117,8 +104,7 @@ func (t *ListWans) Execute(
 
 // ListVpnTunnels implements the list_vpn_tunnels MCP tool.
 type ListVpnTunnels struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListVpnTunnels creates a new ListVpnTunnels tool.
@@ -126,10 +112,7 @@ func NewListVpnTunnels(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListVpnTunnels {
-	return &ListVpnTunnels{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListVpnTunnels{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -139,16 +122,7 @@ func (t *ListVpnTunnels) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnTunnels) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -225,8 +199,7 @@ func (t *ListVpnTunnels) Execute(
 
 // ListVpnServers implements the list_vpn_servers MCP tool.
 type ListVpnServers struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListVpnServers creates a new ListVpnServers tool.
@@ -234,10 +207,7 @@ func NewListVpnServers(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListVpnServers {
-	return &ListVpnServers{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListVpnServers{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -247,16 +217,7 @@ func (t *ListVpnServers) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnServers) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -334,8 +295,7 @@ func (t *ListVpnServers) Execute(
 
 // ListRadiusProfiles implements the list_radius_profiles MCP tool.
 type ListRadiusProfiles struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListRadiusProfiles creates a new ListRadiusProfiles tool.
@@ -343,10 +303,7 @@ func NewListRadiusProfiles(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListRadiusProfiles {
-	return &ListRadiusProfiles{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListRadiusProfiles{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -356,16 +313,7 @@ func (t *ListRadiusProfiles) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListRadiusProfiles) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -441,8 +389,7 @@ func (t *ListRadiusProfiles) Execute(
 
 // ListDeviceTags implements the list_device_tags MCP tool.
 type ListDeviceTags struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListDeviceTags creates a new ListDeviceTags tool.
@@ -450,10 +397,7 @@ func NewListDeviceTags(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListDeviceTags {
-	return &ListDeviceTags{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListDeviceTags{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -463,16 +407,7 @@ func (t *ListDeviceTags) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDeviceTags) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -549,14 +484,14 @@ func (t *ListDeviceTags) Execute(
 
 // ListDpiCategories implements the list_dpi_categories MCP tool.
 type ListDpiCategories struct {
-	client *unifi.ClientWithResponses
+	baseTool
 }
 
 // NewListDpiCategories creates a new ListDpiCategories tool.
 func NewListDpiCategories(
 	c *unifi.ClientWithResponses,
 ) *ListDpiCategories {
-	return &ListDpiCategories{client: c}
+	return &ListDpiCategories{baseTool{client: c}}
 }
 
 // Description returns a description of the tool.
@@ -635,14 +570,14 @@ func (t *ListDpiCategories) Execute(
 
 // ListDpiApplications implements the list_dpi_applications MCP tool.
 type ListDpiApplications struct {
-	client *unifi.ClientWithResponses
+	baseTool
 }
 
 // NewListDpiApplications creates a new ListDpiApplications tool.
 func NewListDpiApplications(
 	c *unifi.ClientWithResponses,
 ) *ListDpiApplications {
-	return &ListDpiApplications{client: c}
+	return &ListDpiApplications{baseTool{client: c}}
 }
 
 // Description returns a description of the tool.
@@ -721,14 +656,14 @@ func (t *ListDpiApplications) Execute(
 
 // ListCountries implements the list_countries MCP tool.
 type ListCountries struct {
-	client *unifi.ClientWithResponses
+	baseTool
 }
 
 // NewListCountries creates a new ListCountries tool.
 func NewListCountries(
 	c *unifi.ClientWithResponses,
 ) *ListCountries {
-	return &ListCountries{client: c}
+	return &ListCountries{baseTool{client: c}}
 }
 
 // Description returns a description of the tool.

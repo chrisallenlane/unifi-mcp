@@ -10,12 +10,12 @@ import (
 
 // GetInfo implements the get_info MCP tool.
 type GetInfo struct {
-	client *unifi.ClientWithResponses
+	baseTool
 }
 
 // NewGetInfo creates a new GetInfo tool.
 func NewGetInfo(c *unifi.ClientWithResponses) *GetInfo {
-	return &GetInfo{client: c}
+	return &GetInfo{baseTool{client: c}}
 }
 
 // Description returns a description of the tool.

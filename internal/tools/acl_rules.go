@@ -14,8 +14,7 @@ import (
 
 // ListACLRules implements the list_acl_rules MCP tool.
 type ListACLRules struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListACLRules creates a new ListACLRules tool.
@@ -23,10 +22,7 @@ func NewListACLRules(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListACLRules {
-	return &ListACLRules{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListACLRules{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -36,16 +32,7 @@ func (t *ListACLRules) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListACLRules) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -125,8 +112,7 @@ func (t *ListACLRules) Execute(
 
 // GetACLRule implements the get_acl_rule MCP tool.
 type GetACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetACLRule creates a new GetACLRule tool.
@@ -134,10 +120,7 @@ func NewGetACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetACLRule {
-	return &GetACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -147,17 +130,7 @@ func (t *GetACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetACLRule) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-		},
-		"required": []string{"aclRuleId"},
-	}
+	return siteAndIDSchema("aclRuleId", "ACL rule UUID")
 }
 
 // Execute runs the tool.
@@ -248,12 +221,53 @@ func formatACLRule(r *unifi.ACLRule) string {
 	return b.String()
 }
 
+// aclRuleInputSchema returns the common JSON schema properties for
+// create/update ACL rule tools.
+func aclRuleInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule type",
+			"enum":        []string{"IPV4", "MAC"},
+		},
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule name",
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the rule is enabled",
+		},
+		"action": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule action",
+			"enum":        []string{"ALLOW", "BLOCK"},
+		},
+		"description": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule description (optional)",
+		},
+		"sourceFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Traffic source filter (type-specific)",
+		},
+		"destinationFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Traffic destination filter (type-specific)",
+		},
+		"enforcingDeviceFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Device filter for enforcement (optional)",
+		},
+	}
+}
+
 // --- create_acl_rule ---
 
 // CreateACLRule implements the create_acl_rule MCP tool.
 type CreateACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateACLRule creates a new CreateACLRule tool.
@@ -261,10 +275,7 @@ func NewCreateACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateACLRule {
-	return &CreateACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -275,44 +286,8 @@ func (t *CreateACLRule) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateACLRule) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule type",
-				"enum":        []string{"IPV4", "MAC"},
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the rule is enabled",
-			},
-			"action": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule action",
-				"enum":        []string{"ALLOW", "BLOCK"},
-			},
-			"description": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule description (optional)",
-			},
-			"sourceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic source filter (type-specific)",
-			},
-			"destinationFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic destination filter (type-specific)",
-			},
-			"enforcingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for enforcement (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": aclRuleInputSchema(),
 		"required": []string{
 			"type",
 			"name",
@@ -372,8 +347,7 @@ func (t *CreateACLRule) Execute(
 
 // UpdateACLRule implements the update_acl_rule MCP tool.
 type UpdateACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateACLRule creates a new UpdateACLRule tool.
@@ -381,10 +355,7 @@ func NewUpdateACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateACLRule {
-	return &UpdateACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -394,49 +365,14 @@ func (t *UpdateACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateACLRule) InputSchema() map[string]interface{} {
+	props := aclRuleInputSchema()
+	props["aclRuleId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "ACL rule UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule type",
-				"enum":        []string{"IPV4", "MAC"},
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the rule is enabled",
-			},
-			"action": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule action",
-				"enum":        []string{"ALLOW", "BLOCK"},
-			},
-			"description": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule description (optional)",
-			},
-			"sourceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic source filter (type-specific)",
-			},
-			"destinationFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic destination filter (type-specific)",
-			},
-			"enforcingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for enforcement (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"aclRuleId",
 			"type",
@@ -507,8 +443,7 @@ func (t *UpdateACLRule) Execute(
 
 // DeleteACLRule implements the delete_acl_rule MCP tool.
 type DeleteACLRule struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteACLRule creates a new DeleteACLRule tool.
@@ -516,10 +451,7 @@ func NewDeleteACLRule(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteACLRule {
-	return &DeleteACLRule{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteACLRule{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -529,17 +461,7 @@ func (t *DeleteACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteACLRule) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-		},
-		"required": []string{"aclRuleId"},
-	}
+	return siteAndIDSchema("aclRuleId", "ACL rule UUID")
 }
 
 // Execute runs the tool.
@@ -598,8 +520,7 @@ func (t *DeleteACLRule) Execute(
 // GetACLRuleOrdering implements the get_acl_rule_ordering
 // MCP tool.
 type GetACLRuleOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetACLRuleOrdering creates a new GetACLRuleOrdering tool.
@@ -607,10 +528,7 @@ func NewGetACLRuleOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetACLRuleOrdering {
-	return &GetACLRuleOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetACLRuleOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -689,8 +607,7 @@ func (t *GetACLRuleOrdering) Execute(
 // UpdateACLRuleOrdering implements the
 // update_acl_rule_ordering MCP tool.
 type UpdateACLRuleOrdering struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateACLRuleOrdering creates a new
@@ -699,10 +616,7 @@ func NewUpdateACLRuleOrdering(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateACLRuleOrdering {
-	return &UpdateACLRuleOrdering{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateACLRuleOrdering{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.

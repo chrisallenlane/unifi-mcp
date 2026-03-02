@@ -14,8 +14,7 @@ import (
 
 // ListDNSPolicies implements the list_dns_policies MCP tool.
 type ListDNSPolicies struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewListDNSPolicies creates a new ListDNSPolicies tool.
@@ -23,10 +22,7 @@ func NewListDNSPolicies(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *ListDNSPolicies {
-	return &ListDNSPolicies{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &ListDNSPolicies{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -36,16 +32,7 @@ func (t *ListDNSPolicies) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDNSPolicies) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -141,8 +128,7 @@ func (t *ListDNSPolicies) Execute(
 
 // GetDNSPolicy implements the get_dns_policy MCP tool.
 type GetDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewGetDNSPolicy creates a new GetDNSPolicy tool.
@@ -150,10 +136,7 @@ func NewGetDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *GetDNSPolicy {
-	return &GetDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &GetDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -163,17 +146,7 @@ func (t *GetDNSPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetDNSPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"dnsPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS policy UUID",
-			},
-		},
-		"required": []string{"dnsPolicyId"},
-	}
+	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
 // Execute runs the tool.
@@ -343,12 +316,72 @@ func formatDNSRecordDetails(
 	return b.String()
 }
 
+// dnsPolicyInputSchema returns the common JSON schema properties for
+// create/update DNS policy tools.
+func dnsPolicyInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "DNS record type",
+			"enum": []string{
+				"A_RECORD",
+				"AAAA_RECORD",
+				"CNAME_RECORD",
+				"FORWARD_DOMAIN",
+				"MX_RECORD",
+				"SRV_RECORD",
+				"TXT_RECORD",
+			},
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the policy is enabled",
+		},
+		"domain": map[string]interface{}{
+			"type":        "string",
+			"description": "Domain name",
+		},
+		"address": map[string]interface{}{
+			"type":        "string",
+			"description": "IP address (for A/AAAA records)",
+		},
+		"target": map[string]interface{}{
+			"type":        "string",
+			"description": "Target hostname (for CNAME/SRV records)",
+		},
+		"server": map[string]interface{}{
+			"type":        "string",
+			"description": "Mail server (for MX records)",
+		},
+		"priority": map[string]interface{}{
+			"type":        "integer",
+			"description": "Priority (for MX/SRV records)",
+		},
+		"weight": map[string]interface{}{
+			"type":        "integer",
+			"description": "Weight (for SRV records)",
+		},
+		"port": map[string]interface{}{
+			"type":        "integer",
+			"description": "Port (for SRV records)",
+		},
+		"value": map[string]interface{}{
+			"type":        "string",
+			"description": "Text value (for TXT records)",
+		},
+		"forwardTo": map[string]interface{}{
+			"type":        "string",
+			"description": "DNS server to forward to (for FORWARD_DOMAIN)",
+		},
+	}
+}
+
 // --- create_dns_policy ---
 
 // CreateDNSPolicy implements the create_dns_policy MCP tool.
 type CreateDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewCreateDNSPolicy creates a new CreateDNSPolicy tool.
@@ -356,10 +389,7 @@ func NewCreateDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *CreateDNSPolicy {
-	return &CreateDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &CreateDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -370,64 +400,9 @@ func (t *CreateDNSPolicy) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateDNSPolicy) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS record type",
-				"enum": []string{
-					"A_RECORD",
-					"AAAA_RECORD",
-					"CNAME_RECORD",
-					"FORWARD_DOMAIN",
-					"MX_RECORD",
-					"SRV_RECORD",
-					"TXT_RECORD",
-				},
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the policy is enabled",
-			},
-			"domain": map[string]interface{}{
-				"type":        "string",
-				"description": "Domain name",
-			},
-			"address": map[string]interface{}{
-				"type":        "string",
-				"description": "IP address (for A/AAAA records)",
-			},
-			"target": map[string]interface{}{
-				"type":        "string",
-				"description": "Target hostname (for CNAME/SRV records)",
-			},
-			"server": map[string]interface{}{
-				"type":        "string",
-				"description": "Mail server (for MX records)",
-			},
-			"priority": map[string]interface{}{
-				"type":        "integer",
-				"description": "Priority (for MX/SRV records)",
-			},
-			"weight": map[string]interface{}{
-				"type":        "integer",
-				"description": "Weight (for SRV records)",
-			},
-			"port": map[string]interface{}{
-				"type":        "integer",
-				"description": "Port (for SRV records)",
-			},
-			"value": map[string]interface{}{
-				"type":        "string",
-				"description": "Text value (for TXT records)",
-			},
-			"forwardTo": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS server to forward to (for FORWARD_DOMAIN)",
-			},
-		},
-		"required": []string{"type", "enabled"},
+		"type":       "object",
+		"properties": dnsPolicyInputSchema(),
+		"required":   []string{"type", "enabled"},
 	}
 }
 
@@ -481,8 +456,7 @@ func (t *CreateDNSPolicy) Execute(
 
 // UpdateDNSPolicy implements the update_dns_policy MCP tool.
 type UpdateDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewUpdateDNSPolicy creates a new UpdateDNSPolicy tool.
@@ -490,10 +464,7 @@ func NewUpdateDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *UpdateDNSPolicy {
-	return &UpdateDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &UpdateDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -503,68 +474,14 @@ func (t *UpdateDNSPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateDNSPolicy) InputSchema() map[string]interface{} {
+	props := dnsPolicyInputSchema()
+	props["dnsPolicyId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "DNS policy UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"dnsPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS policy UUID",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS record type",
-				"enum": []string{
-					"A_RECORD",
-					"AAAA_RECORD",
-					"CNAME_RECORD",
-					"FORWARD_DOMAIN",
-					"MX_RECORD",
-					"SRV_RECORD",
-					"TXT_RECORD",
-				},
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the policy is enabled",
-			},
-			"domain": map[string]interface{}{
-				"type":        "string",
-				"description": "Domain name",
-			},
-			"address": map[string]interface{}{
-				"type":        "string",
-				"description": "IP address (for A/AAAA records)",
-			},
-			"target": map[string]interface{}{
-				"type":        "string",
-				"description": "Target hostname (for CNAME/SRV records)",
-			},
-			"server": map[string]interface{}{
-				"type":        "string",
-				"description": "Mail server (for MX records)",
-			},
-			"priority": map[string]interface{}{
-				"type":        "integer",
-				"description": "Priority (for MX/SRV records)",
-			},
-			"weight": map[string]interface{}{
-				"type":        "integer",
-				"description": "Weight (for SRV records)",
-			},
-			"port": map[string]interface{}{
-				"type":        "integer",
-				"description": "Port (for SRV records)",
-			},
-			"value": map[string]interface{}{
-				"type":        "string",
-				"description": "Text value (for TXT records)",
-			},
-			"forwardTo": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS server to forward to (for FORWARD_DOMAIN)",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"dnsPolicyId",
 			"type",
@@ -633,8 +550,7 @@ func (t *UpdateDNSPolicy) Execute(
 
 // DeleteDNSPolicy implements the delete_dns_policy MCP tool.
 type DeleteDNSPolicy struct {
-	client        *unifi.ClientWithResponses
-	defaultSiteID string
+	baseTool
 }
 
 // NewDeleteDNSPolicy creates a new DeleteDNSPolicy tool.
@@ -642,10 +558,7 @@ func NewDeleteDNSPolicy(
 	c *unifi.ClientWithResponses,
 	defaultSiteID string,
 ) *DeleteDNSPolicy {
-	return &DeleteDNSPolicy{
-		client:        c,
-		defaultSiteID: defaultSiteID,
-	}
+	return &DeleteDNSPolicy{baseTool{c, defaultSiteID}}
 }
 
 // Description returns a description of the tool.
@@ -655,17 +568,7 @@ func (t *DeleteDNSPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteDNSPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"dnsPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS policy UUID",
-			},
-		},
-		"required": []string{"dnsPolicyId"},
-	}
+	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
 // Execute runs the tool.

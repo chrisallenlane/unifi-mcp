@@ -145,7 +145,7 @@ func TestGetFirewallPolicy_Execute(t *testing.T) {
 }
 
 func TestGetFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
-	tool := &GetFirewallPolicy{defaultSiteID: testSiteID}
+	tool := &GetFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -290,7 +290,7 @@ func TestCreateFirewallPolicy_Execute_WithOptionalFields(
 }
 
 func TestCreateFirewallPolicy_Execute_MissingName(t *testing.T) {
-	tool := &CreateFirewallPolicy{defaultSiteID: testSiteID}
+	tool := &CreateFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -357,7 +357,7 @@ func TestUpdateFirewallPolicy_Execute(t *testing.T) {
 }
 
 func TestUpdateFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
-	tool := &UpdateFirewallPolicy{defaultSiteID: testSiteID}
+	tool := &UpdateFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(
@@ -402,7 +402,7 @@ func TestDeleteFirewallPolicy_Execute(t *testing.T) {
 func TestDeleteFirewallPolicy_Execute_MissingPolicyID(
 	t *testing.T,
 ) {
-	tool := &DeleteFirewallPolicy{defaultSiteID: testSiteID}
+	tool := &DeleteFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -469,7 +469,7 @@ func TestPatchFirewallPolicy_Execute(t *testing.T) {
 func TestPatchFirewallPolicy_Execute_MissingPolicyID(
 	t *testing.T,
 ) {
-	tool := &PatchFirewallPolicy{defaultSiteID: testSiteID}
+	tool := &PatchFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
 	_, err := tool.Execute(
 		context.Background(),
 		json.RawMessage(`{}`),
@@ -557,7 +557,7 @@ func TestGetFirewallPolicyOrdering_Execute_MissingParams(
 	t *testing.T,
 ) {
 	tool := &GetFirewallPolicyOrdering{
-		defaultSiteID: testSiteID,
+		baseTool{defaultSiteID: testSiteID},
 	}
 	_, err := tool.Execute(
 		context.Background(),
@@ -641,7 +641,7 @@ func TestUpdateFirewallPolicyOrdering_Execute_MissingParams(
 	t *testing.T,
 ) {
 	tool := &UpdateFirewallPolicyOrdering{
-		defaultSiteID: testSiteID,
+		baseTool{defaultSiteID: testSiteID},
 	}
 	_, err := tool.Execute(
 		context.Background(),
