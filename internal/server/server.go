@@ -145,6 +145,26 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_dns_policies"] = tools.NewListDNSPolicies(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_dns_policy"] = tools.NewGetDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_dns_policy"] = tools.NewCreateDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_dns_policy"] = tools.NewUpdateDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_dns_policy"] = tools.NewDeleteDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
