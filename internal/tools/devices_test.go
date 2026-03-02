@@ -4,17 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // --- list_devices ---
 
 func TestListDevices_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -54,11 +51,6 @@ func TestListDevices_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListDevices(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -83,7 +75,7 @@ func TestListDevices_Execute(t *testing.T) {
 }
 
 func TestListDevices_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -96,11 +88,6 @@ func TestListDevices_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDevices(client, testSiteID)
 	result, err := tool.Execute(
@@ -145,7 +132,7 @@ func TestListDevices_InputSchema(t *testing.T) {
 // --- get_device ---
 
 func TestGetDevice_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -165,11 +152,6 @@ func TestGetDevice_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetDevice(client, testSiteID)
 	result, err := tool.Execute(
@@ -232,7 +214,7 @@ func TestGetDevice_InputSchema(t *testing.T) {
 // --- adopt_device ---
 
 func TestAdoptDevice_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -251,11 +233,6 @@ func TestAdoptDevice_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewAdoptDevice(client, testSiteID)
 	result, err := tool.Execute(
@@ -315,17 +292,12 @@ func TestAdoptDevice_InputSchema(t *testing.T) {
 // --- remove_device ---
 
 func TestRemoveDevice_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewRemoveDevice(client, testSiteID)
 	result, err := tool.Execute(
@@ -382,17 +354,12 @@ func TestRemoveDevice_InputSchema(t *testing.T) {
 // --- execute_device_action ---
 
 func TestExecuteDeviceAction_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewExecuteDeviceAction(client, testSiteID)
 	result, err := tool.Execute(
@@ -471,17 +438,12 @@ func TestExecuteDeviceAction_InputSchema(t *testing.T) {
 // --- execute_port_action ---
 
 func TestExecutePortAction_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewExecutePortAction(client, testSiteID)
 	result, err := tool.Execute(
@@ -582,7 +544,7 @@ func TestExecutePortAction_InputSchema(t *testing.T) {
 // --- get_device_statistics ---
 
 func TestGetDeviceStatistics_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -602,11 +564,6 @@ func TestGetDeviceStatistics_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetDeviceStatistics(client, testSiteID)
 	result, err := tool.Execute(
@@ -666,7 +623,7 @@ func TestGetDeviceStatistics_InputSchema(t *testing.T) {
 // --- list_pending_devices ---
 
 func TestListPendingDevices_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -692,11 +649,6 @@ func TestListPendingDevices_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListPendingDevices(client)
 	result, err := tool.Execute(
 		context.Background(),
@@ -718,7 +670,7 @@ func TestListPendingDevices_Execute(t *testing.T) {
 }
 
 func TestListPendingDevices_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -731,11 +683,6 @@ func TestListPendingDevices_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListPendingDevices(client)
 	result, err := tool.Execute(

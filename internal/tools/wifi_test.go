@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListWiFiBroadcasts_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -51,11 +48,6 @@ func TestListWiFiBroadcasts_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListWiFiBroadcasts(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -80,7 +72,7 @@ func TestListWiFiBroadcasts_Execute(t *testing.T) {
 }
 
 func TestListWiFiBroadcasts_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -93,11 +85,6 @@ func TestListWiFiBroadcasts_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListWiFiBroadcasts(client, testSiteID)
 	result, err := tool.Execute(
@@ -143,7 +130,7 @@ func TestListWiFiBroadcasts_InputSchema(t *testing.T) {
 }
 
 func TestGetWiFiBroadcast_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -168,11 +155,6 @@ func TestGetWiFiBroadcast_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetWiFiBroadcast(client, testSiteID)
 	result, err := tool.Execute(
@@ -244,7 +226,7 @@ func TestGetWiFiBroadcast_InputSchema(t *testing.T) {
 }
 
 func TestCreateWiFiBroadcast_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -267,11 +249,6 @@ func TestCreateWiFiBroadcast_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewCreateWiFiBroadcast(client, testSiteID)
 	result, err := tool.Execute(
@@ -331,7 +308,7 @@ func TestCreateWiFiBroadcast_InputSchema(t *testing.T) {
 }
 
 func TestUpdateWiFiBroadcast_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -353,11 +330,6 @@ func TestUpdateWiFiBroadcast_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewUpdateWiFiBroadcast(client, testSiteID)
 	result, err := tool.Execute(
@@ -417,17 +389,12 @@ func TestUpdateWiFiBroadcast_InputSchema(t *testing.T) {
 }
 
 func TestDeleteWiFiBroadcast_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteWiFiBroadcast(client, testSiteID)
 	result, err := tool.Execute(

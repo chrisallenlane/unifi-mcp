@@ -4,17 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // --- list_wans tests ---
 
 func TestListWans_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -37,11 +34,6 @@ func TestListWans_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListWans(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -60,7 +52,7 @@ func TestListWans_Execute(t *testing.T) {
 }
 
 func TestListWans_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -73,11 +65,6 @@ func TestListWans_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListWans(client, testSiteID)
 	result, err := tool.Execute(
@@ -122,7 +109,7 @@ func TestListWans_InputSchema(t *testing.T) {
 // --- list_vpn_tunnels tests ---
 
 func TestListVpnTunnels_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -142,11 +129,6 @@ func TestListVpnTunnels_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVpnTunnels(client, testSiteID)
 	result, err := tool.Execute(
@@ -169,7 +151,7 @@ func TestListVpnTunnels_Execute(t *testing.T) {
 }
 
 func TestListVpnTunnels_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -182,11 +164,6 @@ func TestListVpnTunnels_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVpnTunnels(client, testSiteID)
 	result, err := tool.Execute(
@@ -220,7 +197,7 @@ func TestListVpnTunnels_InputSchema(t *testing.T) {
 // --- list_vpn_servers tests ---
 
 func TestListVpnServers_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -241,11 +218,6 @@ func TestListVpnServers_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVpnServers(client, testSiteID)
 	result, err := tool.Execute(
@@ -277,7 +249,7 @@ func TestListVpnServers_Execute(t *testing.T) {
 }
 
 func TestListVpnServers_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -290,11 +262,6 @@ func TestListVpnServers_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListVpnServers(client, testSiteID)
 	result, err := tool.Execute(
@@ -328,7 +295,7 @@ func TestListVpnServers_InputSchema(t *testing.T) {
 // --- list_radius_profiles tests ---
 
 func TestListRadiusProfiles_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -348,11 +315,6 @@ func TestListRadiusProfiles_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListRadiusProfiles(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -371,7 +333,7 @@ func TestListRadiusProfiles_Execute(t *testing.T) {
 }
 
 func TestListRadiusProfiles_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -384,11 +346,6 @@ func TestListRadiusProfiles_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListRadiusProfiles(client, testSiteID)
 	result, err := tool.Execute(
@@ -422,7 +379,7 @@ func TestListRadiusProfiles_InputSchema(t *testing.T) {
 // --- list_device_tags tests ---
 
 func TestListDeviceTags_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -445,11 +402,6 @@ func TestListDeviceTags_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDeviceTags(client, testSiteID)
 	result, err := tool.Execute(
@@ -475,7 +427,7 @@ func TestListDeviceTags_Execute(t *testing.T) {
 }
 
 func TestListDeviceTags_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -488,11 +440,6 @@ func TestListDeviceTags_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDeviceTags(client, testSiteID)
 	result, err := tool.Execute(
@@ -526,7 +473,7 @@ func TestListDeviceTags_InputSchema(t *testing.T) {
 // --- list_dpi_categories tests ---
 
 func TestListDpiCategories_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -542,11 +489,6 @@ func TestListDpiCategories_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDpiCategories(client)
 	result, err := tool.Execute(
@@ -572,7 +514,7 @@ func TestListDpiCategories_Execute(t *testing.T) {
 }
 
 func TestListDpiCategories_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -585,11 +527,6 @@ func TestListDpiCategories_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDpiCategories(client)
 	result, err := tool.Execute(
@@ -623,7 +560,7 @@ func TestListDpiCategories_InputSchema(t *testing.T) {
 // --- list_dpi_applications tests ---
 
 func TestListDpiApplications_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -639,11 +576,6 @@ func TestListDpiApplications_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDpiApplications(client)
 	result, err := tool.Execute(
@@ -669,7 +601,7 @@ func TestListDpiApplications_Execute(t *testing.T) {
 }
 
 func TestListDpiApplications_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -682,11 +614,6 @@ func TestListDpiApplications_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDpiApplications(client)
 	result, err := tool.Execute(
@@ -720,7 +647,7 @@ func TestListDpiApplications_InputSchema(t *testing.T) {
 // --- list_countries tests ---
 
 func TestListCountries_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -737,11 +664,6 @@ func TestListCountries_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListCountries(client)
 	result, err := tool.Execute(
@@ -770,7 +692,7 @@ func TestListCountries_Execute(t *testing.T) {
 }
 
 func TestListCountries_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -783,11 +705,6 @@ func TestListCountries_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListCountries(client)
 	result, err := tool.Execute(

@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
-
-	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListDNSPolicies_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -41,11 +38,6 @@ func TestListDNSPolicies_Execute(t *testing.T) {
 	)
 	defer srv.Close()
 
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
-
 	tool := NewListDNSPolicies(client, testSiteID)
 	result, err := tool.Execute(
 		context.Background(),
@@ -70,7 +62,7 @@ func TestListDNSPolicies_Execute(t *testing.T) {
 }
 
 func TestListDNSPolicies_Execute_Empty(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -83,11 +75,6 @@ func TestListDNSPolicies_Execute_Empty(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewListDNSPolicies(client, testSiteID)
 	result, err := tool.Execute(
@@ -130,7 +117,7 @@ func TestListDNSPolicies_InputSchema(t *testing.T) {
 }
 
 func TestGetDNSPolicy_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -143,11 +130,6 @@ func TestGetDNSPolicy_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewGetDNSPolicy(client, testSiteID)
 	result, err := tool.Execute(
@@ -211,7 +193,7 @@ func TestGetDNSPolicy_InputSchema(t *testing.T) {
 }
 
 func TestCreateDNSPolicy_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
@@ -225,11 +207,6 @@ func TestCreateDNSPolicy_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewCreateDNSPolicy(client, testSiteID)
 	result, err := tool.Execute(
@@ -289,7 +266,7 @@ func TestCreateDNSPolicy_InputSchema(t *testing.T) {
 }
 
 func TestUpdateDNSPolicy_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]interface{}{
@@ -302,11 +279,6 @@ func TestUpdateDNSPolicy_Execute(t *testing.T) {
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewUpdateDNSPolicy(client, testSiteID)
 	result, err := tool.Execute(
@@ -366,17 +338,12 @@ func TestUpdateDNSPolicy_InputSchema(t *testing.T) {
 }
 
 func TestDeleteDNSPolicy_Execute(t *testing.T) {
-	srv := httptest.NewServer(
+	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}),
 	)
 	defer srv.Close()
-
-	client, err := unifi.NewClientWithResponses(srv.URL)
-	if err != nil {
-		t.Fatalf("failed to create client: %v", err)
-	}
 
 	tool := NewDeleteDNSPolicy(client, testSiteID)
 	result, err := tool.Execute(
