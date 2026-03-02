@@ -165,6 +165,26 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_traffic_matching_lists"] = tools.NewListTrafficMatchingLists(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_traffic_matching_list"] = tools.NewGetTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_traffic_matching_list"] = tools.NewCreateTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_traffic_matching_list"] = tools.NewUpdateTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_traffic_matching_list"] = tools.NewDeleteTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
