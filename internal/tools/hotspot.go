@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // --- list_vouchers ---

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // formatTrafficMatchingList formats a single traffic matching list for

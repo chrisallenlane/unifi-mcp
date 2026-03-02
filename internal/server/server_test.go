@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func newTestServer(t *testing.T) *Server {

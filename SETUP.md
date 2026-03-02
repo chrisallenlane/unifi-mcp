@@ -4,7 +4,7 @@
 
 ```bash
 make build
-# Binary: dist/unifi-mcp-server
+# Binary: dist/unifi-mcp
 ```
 
 ## Quick connectivity test
@@ -13,13 +13,13 @@ make build
 UNIFI_API_URL=https://192.168.1.1 \
 UNIFI_API_KEY=your-api-key \
 UNIFI_INSECURE=1 \
-echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | ./dist/unifi-mcp-server
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | ./dist/unifi-mcp
 ```
 
 ## Configure with Claude Code
 
 ```bash
-claude mcp add unifi-mcp-server /path/to/dist/unifi-mcp-server \
+claude mcp add unifi-mcp /path/to/dist/unifi-mcp \
   -s user \
   -e UNIFI_API_URL=https://192.168.1.1 \
   -e UNIFI_API_KEY=your-api-key \
@@ -38,7 +38,7 @@ Omit `UNIFI_SITE_ID` if you prefer to pass `siteId` explicitly to each tool.
 **Verify:**
 ```bash
 claude mcp list
-claude mcp get unifi-mcp-server
+claude mcp get unifi-mcp
 ```
 
 ## Configure with Claude Desktop
@@ -52,8 +52,8 @@ Add to your Claude Desktop config file:
 ```json
 {
   "mcpServers": {
-    "unifi-mcp-server": {
-      "command": "/path/to/dist/unifi-mcp-server",
+    "unifi-mcp": {
+      "command": "/path/to/dist/unifi-mcp",
       "env": {
         "UNIFI_API_URL": "https://192.168.1.1",
         "UNIFI_API_KEY": "your-api-key",
@@ -75,8 +75,8 @@ After rebuilding:
 make build
 
 # Claude Code: remove and re-add
-claude mcp remove unifi-mcp-server
-claude mcp add unifi-mcp-server /path/to/dist/unifi-mcp-server \
+claude mcp remove unifi-mcp
+claude mcp add unifi-mcp /path/to/dist/unifi-mcp \
   -s user \
   -e UNIFI_API_URL=https://192.168.1.1 \
   -e UNIFI_API_KEY=your-api-key
@@ -89,7 +89,7 @@ claude mcp add unifi-mcp-server /path/to/dist/unifi-mcp-server \
 **Server not appearing:**
 ```bash
 claude mcp list
-claude mcp get unifi-mcp-server
+claude mcp get unifi-mcp
 ```
 
 **TLS errors:** Set `UNIFI_INSECURE=1` if using a self-signed certificate.
@@ -102,7 +102,7 @@ API uses `X-API-Key` header authentication, not session cookies.
 
 **Binary not found:** Use an absolute path:
 ```bash
-claude mcp add unifi-mcp-server /home/user/unifi-mcp-server/dist/unifi-mcp-server
+claude mcp add unifi-mcp /home/user/unifi-mcp/dist/unifi-mcp
 ```
 
 ## Security Notes

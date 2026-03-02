@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // ListSites implements the list_sites MCP tool.

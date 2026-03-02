@@ -1,4 +1,4 @@
-# unifi-mcp-server
+# unifi-mcp
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server for
 the [UniFi Network Integration API](https://developer.ui.com/). Exposes 67
@@ -26,10 +26,10 @@ assistants.
 ## Installation
 
 ```bash
-git clone https://github.com/chrisallenlane/unifi-mcp-server.git
-cd unifi-mcp-server
+git clone https://github.com/chrisallenlane/unifi-mcp.git
+cd unifi-mcp
 make build
-# Binary: dist/unifi-mcp-server
+# Binary: dist/unifi-mcp
 ```
 
 ## Configuration

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func TestListSites_Execute(t *testing.T) {

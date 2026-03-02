@@ -10,14 +10,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/tools"
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/tools"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // Constants for server configuration
 const (
 	MCPProtocolVersion   = "2024-11-05"
-	ServerName           = "unifi-mcp-server"
+	ServerName           = "unifi-mcp"
 	ServerVersion        = "0.1.0"
 	ToolExecutionTimeout = 30 * time.Second
 )

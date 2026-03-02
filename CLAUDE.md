@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Overview
 
-**unifi-mcp-server** is an MCP (Model Context Protocol) server for the UniFi
+**unifi-mcp** is an MCP (Model Context Protocol) server for the UniFi
 Network Integration API. It exposes 67 UniFi controller operations as MCP
 tools that Claude and other AI assistants can call, covering firewall
 management, networks, clients, devices, ACL rules, DNS policies, traffic
@@ -15,18 +15,18 @@ endpoints.
 - **Language**: Go 1.24+
 - **Protocol**: MCP via JSON-RPC 2.0 over stdio
 - **HTTP Client**: Generated from UniFi OpenAPI 3.1.0 spec via `oapi-codegen`
-- **Module**: `github.com/chrisallenlane/unifi-mcp-server`
+- **Module**: `github.com/chrisallenlane/unifi-mcp`
 
 ## Project Structure
 
 ```
-unifi-mcp-server/
+unifi-mcp/
 ├── api/
 │   └── unifi-network.json           # UniFi OpenAPI 3.1.0 spec (v10.1.84)
 ├── adr/
 │   └── 001-generate-models-from-openapi-spec.md
 ├── cmd/
-│   └── unifi-mcp-server/
+│   └── unifi-mcp/
 │       └── main.go                  # Entry point; reads env vars, wires client
 ├── internal/
 │   ├── server/
@@ -84,7 +84,7 @@ The server implements MCP via JSON-RPC 2.0 over stdio:
 
 Key methods: `initialize`, `tools/list`, `tools/call`
 
-### Entry Point (`cmd/unifi-mcp-server/main.go`)
+### Entry Point (`cmd/unifi-mcp/main.go`)
 
 Reads environment variables, constructs a `unifi.ClientWithResponses` with the
 API key injected as an `X-API-Key` request editor, then starts the server.
@@ -201,7 +201,7 @@ make lint       # lint with revive (excludes internal/unifi/)
 make vet        # go vet
 make test       # go test ./...
 make check      # fmt + lint + vet + test
-make build      # build to dist/unifi-mcp-server
+make build      # build to dist/unifi-mcp
 make generate   # regenerate internal/unifi/ from api/unifi-network.json
 make coverage   # test coverage report
 ```
@@ -243,7 +243,7 @@ Build-time only: `oapi-codegen` (for `make generate`), `golines`, `gofumpt`,
 ## Version Information
 
 - MCP Protocol Version: `2024-11-05`
-- Server Name/Version: `unifi-mcp-server` / `0.1.0`
+- Server Name/Version: `unifi-mcp` / `0.1.0`
 - OpenAPI Spec: UniFi Network v10.1.84
 
 ## Resources
