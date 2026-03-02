@@ -1,0 +1,452 @@
+package tools
+
+import (
+	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
+	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+)
+
+const testSiteID = "550e8400-e29b-41d4-a716-446655440000"
+
+func testClient(
+	t *testing.T,
+	handler http.Handler,
+) (*unifi.ClientWithResponses, *httptest.Server) {
+	t.Helper()
+	srv := httptest.NewServer(handler)
+	client, err := unifi.NewClientWithResponses(srv.URL)
+	if err != nil {
+		t.Fatalf("failed to create client: %v", err)
+	}
+	return client, srv
+}
+
+func TestListFirewallZones_Execute(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":   "aaa00000-0000-0000-0000-000000000001",
+						"name": "LAN",
+						"networkIds": []string{
+							"bbb00000-0000-0000-0000-000000000001",
+						},
+						"metadata": map[string]string{
+							"origin": "SYSTEM_DEFINED",
+						},
+					},
+					{
+						"id":         "aaa00000-0000-0000-0000-000000000002",
+						"name":       "DMZ",
+						"networkIds": []string{},
+						"metadata": map[string]string{
+							"origin": "USER_DEFINED",
+						},
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 2,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "LAN") {
+		t.Errorf("result should contain 'LAN': %s", result)
+	}
+	if !strings.Contains(result, "DMZ") {
+		t.Errorf("result should contain 'DMZ': %s", result)
+	}
+	if !strings.Contains(result, "SYSTEM_DEFINED") {
+		t.Errorf(
+			"result should contain 'SYSTEM_DEFINED': %s",
+			result,
+		)
+	}
+}
+
+func TestListFirewallZones_Execute_Empty(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data":       []interface{}{},
+				"count":      0,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 0,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result != "No firewall zones found." {
+		t.Errorf("unexpected result: %s", result)
+	}
+}
+
+func TestListFirewallZones_Execute_NoSiteID(t *testing.T) {
+	tool := &ListFirewallZones{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error when no site ID provided")
+	}
+	if !strings.Contains(err.Error(), "siteId is required") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestListFirewallZones_DefaultSiteFallback(t *testing.T) {
+	var gotPath string
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			gotPath = r.URL.Path
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data":       []interface{}{},
+				"count":      0,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 0,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(gotPath, testSiteID) {
+		t.Errorf(
+			"expected path to contain default site ID, got: %s",
+			gotPath,
+		)
+	}
+}
+
+func TestListFirewallZones_Description(t *testing.T) {
+	tool := &ListFirewallZones{}
+	if tool.Description() == "" {
+		t.Error("description should not be empty")
+	}
+}
+
+func TestListFirewallZones_InputSchema(t *testing.T) {
+	tool := &ListFirewallZones{}
+	schema := tool.InputSchema()
+	if schema["type"] != "object" {
+		t.Errorf("schema type = %v, want object", schema["type"])
+	}
+}
+
+func TestGetFirewallZone_Execute(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":         "aaa00000-0000-0000-0000-000000000001",
+				"name":       "LAN",
+				"networkIds": []string{"bbb00000-0000-0000-0000-000000000001"},
+				"metadata":   map[string]string{"origin": "SYSTEM_DEFINED"},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallZone(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "LAN") {
+		t.Errorf("result should contain 'LAN': %s", result)
+	}
+}
+
+func TestGetFirewallZone_Execute_MissingZoneID(t *testing.T) {
+	tool := &GetFirewallZone{defaultSiteID: testSiteID}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing zone ID")
+	}
+	if !strings.Contains(err.Error(), "firewallZoneId") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestGetFirewallZone_Execute_InvalidUUID(t *testing.T) {
+	tool := &GetFirewallZone{defaultSiteID: testSiteID}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "not-valid"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid UUID")
+	}
+}
+
+func TestGetFirewallZone_Description(t *testing.T) {
+	tool := &GetFirewallZone{}
+	if tool.Description() == "" {
+		t.Error("description should not be empty")
+	}
+}
+
+func TestGetFirewallZone_InputSchema(t *testing.T) {
+	tool := &GetFirewallZone{}
+	schema := tool.InputSchema()
+	required, ok := schema["required"].([]string)
+	if !ok {
+		t.Fatal("required should be a string slice")
+	}
+	found := false
+	for _, r := range required {
+		if r == "firewallZoneId" {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("firewallZoneId should be required")
+	}
+}
+
+func TestCreateFirewallZone_Execute(t *testing.T) {
+	var gotBody map[string]interface{}
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":         "aaa00000-0000-0000-0000-000000000003",
+				"name":       "TestZone",
+				"networkIds": []string{"bbb00000-0000-0000-0000-000000000001"},
+				"metadata":   map[string]string{"origin": "USER_DEFINED"},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallZone(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "TestZone", "networkIds": ["bbb00000-0000-0000-0000-000000000001"]}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "TestZone") {
+		t.Errorf("result should contain 'TestZone': %s", result)
+	}
+	if !strings.Contains(result, "created") {
+		t.Errorf("result should mention 'created': %s", result)
+	}
+
+	if gotBody["name"] != "TestZone" {
+		t.Errorf(
+			"request body name = %v, want TestZone",
+			gotBody["name"],
+		)
+	}
+}
+
+func TestCreateFirewallZone_Execute_MissingName(t *testing.T) {
+	tool := &CreateFirewallZone{defaultSiteID: testSiteID}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"networkIds": []}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing name")
+	}
+	if !strings.Contains(err.Error(), "name is required") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+func TestCreateFirewallZone_Description(t *testing.T) {
+	tool := &CreateFirewallZone{}
+	if tool.Description() == "" {
+		t.Error("description should not be empty")
+	}
+}
+
+func TestCreateFirewallZone_InputSchema(t *testing.T) {
+	tool := &CreateFirewallZone{}
+	schema := tool.InputSchema()
+	required, ok := schema["required"].([]string)
+	if !ok {
+		t.Fatal("required should be a string slice")
+	}
+	if len(required) < 2 {
+		t.Error("expected at least 2 required fields")
+	}
+}
+
+func TestUpdateFirewallZone_Execute(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":         "aaa00000-0000-0000-0000-000000000001",
+				"name":       "UpdatedZone",
+				"networkIds": []string{},
+				"metadata":   map[string]string{"origin": "USER_DEFINED"},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateFirewallZone(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001", "name": "UpdatedZone", "networkIds": []}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "UpdatedZone") {
+		t.Errorf(
+			"result should contain 'UpdatedZone': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "updated") {
+		t.Errorf("result should mention 'updated': %s", result)
+	}
+}
+
+func TestUpdateFirewallZone_Execute_MissingZoneID(t *testing.T) {
+	tool := &UpdateFirewallZone{defaultSiteID: testSiteID}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"name": "test", "networkIds": []}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing zone ID")
+	}
+}
+
+func TestUpdateFirewallZone_Description(t *testing.T) {
+	tool := &UpdateFirewallZone{}
+	if tool.Description() == "" {
+		t.Error("description should not be empty")
+	}
+}
+
+func TestUpdateFirewallZone_InputSchema(t *testing.T) {
+	tool := &UpdateFirewallZone{}
+	schema := tool.InputSchema()
+	if schema["type"] != "object" {
+		t.Errorf("schema type = %v, want object", schema["type"])
+	}
+}
+
+func TestDeleteFirewallZone_Execute(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteFirewallZone(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "deleted successfully") {
+		t.Errorf("result should confirm deletion: %s", result)
+	}
+}
+
+func TestDeleteFirewallZone_Execute_MissingZoneID(t *testing.T) {
+	tool := &DeleteFirewallZone{defaultSiteID: testSiteID}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing zone ID")
+	}
+}
+
+func TestDeleteFirewallZone_Description(t *testing.T) {
+	tool := &DeleteFirewallZone{}
+	if tool.Description() == "" {
+		t.Error("description should not be empty")
+	}
+}
+
+func TestDeleteFirewallZone_InputSchema(t *testing.T) {
+	tool := &DeleteFirewallZone{}
+	schema := tool.InputSchema()
+	required, ok := schema["required"].([]string)
+	if !ok {
+		t.Fatal("required should be a string slice")
+	}
+	found := false
+	for _, r := range required {
+		if r == "firewallZoneId" {
+			found = true
+		}
+	}
+	if !found {
+		t.Error("firewallZoneId should be required")
+	}
+}

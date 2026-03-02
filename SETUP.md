@@ -1,175 +1,112 @@
-# MCP Server Setup Guide
+# Setup Guide
 
-## Quick Start
-
-1. **Build the server**:
-   ```bash
-   cd ~/path/to/go-mcp-server
-   make build
-   # Binary: dist/go-mcp-server
-   ```
-
-2. **Set environment variables**:
-   ```bash
-   export API_URL="https://api.example.com"
-   # Add any other required environment variables
-   ```
-
-3. **Test the server** (optional):
-   ```bash
-   echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | ./dist/go-mcp-server
-   ```
-
-## Configuration
-
-### For Claude Code (CLI)
-
-Use the `claude mcp add` command to configure the server:
+## Build
 
 ```bash
-claude mcp add my-server /path/to/dist/go-mcp-server \
-  -s user \
-  -e API_URL=https://api.example.com
+make build
+# Binary: dist/unifi-mcp-server
 ```
+
+## Quick connectivity test
+
+```bash
+UNIFI_API_URL=https://192.168.1.1 \
+UNIFI_API_KEY=your-api-key \
+UNIFI_INSECURE=1 \
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize"}' | ./dist/unifi-mcp-server
+```
+
+## Configure with Claude Code
+
+```bash
+claude mcp add unifi-mcp-server /path/to/dist/unifi-mcp-server \
+  -s user \
+  -e UNIFI_API_URL=https://192.168.1.1 \
+  -e UNIFI_API_KEY=your-api-key \
+  -e UNIFI_SITE_ID=your-site-uuid \
+  -e UNIFI_INSECURE=1
+```
+
+Omit `UNIFI_INSECURE` if your controller has a valid TLS certificate.
+Omit `UNIFI_SITE_ID` if you prefer to pass `siteId` explicitly to each tool.
 
 **Scope options:**
-- `-s user` - Available in all projects (recommended)
-- `-s local` - Private to current project only
-- `-s project` - Save to `.mcp.json` for team sharing
+- `-s user` - Available across all projects (recommended)
+- `-s local` - Private to the current project only
+- `-s project` - Saved to `.mcp.json` for team sharing
 
-**Verify configuration:**
+**Verify:**
 ```bash
 claude mcp list
-# Should show "my-server" in the list
-
-claude mcp get my-server
-# Shows configuration details
+claude mcp get unifi-mcp-server
 ```
 
-**Within a Claude Code session:**
-The MCP tools will be automatically available. Test by asking:
-> "What MCP tools are available?"
+## Configure with Claude Desktop
 
-### For Claude Desktop
+Add to your Claude Desktop config file:
 
-Add to your Claude Desktop configuration file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-**Linux**: `~/.config/Claude/claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "my-mcp-server": {
-      "command": "/path/to/dist/go-mcp-server",
+    "unifi-mcp-server": {
+      "command": "/path/to/dist/unifi-mcp-server",
       "env": {
-        "API_URL": "https://api.example.com"
+        "UNIFI_API_URL": "https://192.168.1.1",
+        "UNIFI_API_KEY": "your-api-key",
+        "UNIFI_SITE_ID": "your-site-uuid",
+        "UNIFI_INSECURE": "1"
       }
     }
   }
 }
 ```
 
-**Restart Claude Desktop** after updating the configuration.
+Restart Claude Desktop after saving.
 
-## Development Workflow
+## Updating
 
-### Local Development
-
-1. Make changes to code
-2. Run `make check` to format, lint, and test
-3. Build with `make build`
-4. Test with Claude
-
-### Updating the Server
-
-After making changes:
+After rebuilding:
 
 ```bash
-# Rebuild
 make build
 
-# For Claude Code: remove and re-add
-claude mcp remove my-server
-claude mcp add my-server /path/to/dist/go-mcp-server \
+# Claude Code: remove and re-add
+claude mcp remove unifi-mcp-server
+claude mcp add unifi-mcp-server /path/to/dist/unifi-mcp-server \
   -s user \
-  -e API_URL=https://api.example.com
+  -e UNIFI_API_URL=https://192.168.1.1 \
+  -e UNIFI_API_KEY=your-api-key
 
-# For Claude Desktop: just restart the app
+# Claude Desktop: restart the app
 ```
 
 ## Troubleshooting
 
-### Server not appearing in Claude Code
-
+**Server not appearing:**
 ```bash
-# Check if server is registered
 claude mcp list
-
-# Check configuration details
-claude mcp get my-server
-
-# Try removing and re-adding
-claude mcp remove my-server
-claude mcp add my-server /path/to/dist/go-mcp-server -s user
+claude mcp get unifi-mcp-server
 ```
 
-### Tools not working
+**TLS errors:** Set `UNIFI_INSECURE=1` if using a self-signed certificate.
 
-1. Check environment variables are set correctly
-2. Verify the binary has execute permissions: `chmod +x dist/go-mcp-server`
-3. Test the server directly with stdin/stdout
-4. Check Claude logs for errors
+**Authentication errors:** Verify `UNIFI_API_KEY` is correct. The Integration
+API uses `X-API-Key` header authentication, not session cookies.
 
-### Binary not found
+**Site ID errors:** Use `list_sites` to find the UUID for your site, then set
+`UNIFI_SITE_ID` or pass `siteId` directly to each tool call.
 
-Make sure you're using the absolute path to the binary:
-
+**Binary not found:** Use an absolute path:
 ```bash
-# Good
-claude mcp add my-server /home/user/go-mcp-server/dist/go-mcp-server
-
-# Bad (relative path may not work)
-claude mcp add my-server ./dist/go-mcp-server
-```
-
-## Environment Variables
-
-Common environment variables you might need:
-
-```bash
-# API Configuration
-API_URL=https://api.example.com
-API_KEY=your-api-key
-
-# Authentication
-USERNAME=your-username
-PASSWORD=your-password
-
-# Optional settings
-DEBUG=true
-TIMEOUT=30
+claude mcp add unifi-mcp-server /home/user/unifi-mcp-server/dist/unifi-mcp-server
 ```
 
 ## Security Notes
 
-- Store sensitive credentials in environment variables, not in code
-- Use `claude mcp add` with env flags rather than hardcoding secrets
-- Consider using a credential manager for production use
-- The MCP server runs locally and communicates via stdio (no network exposure)
-
-## Testing Your Configuration
-
-After setup, test your MCP server:
-
-1. **Start a Claude session**
-2. **Ask Claude**: "What MCP tools are available?"
-3. **Try your tools**: "Use the echo tool to say hello"
-
-## Next Steps
-
-- Customize `internal/tools/` with your own tools
-- Update `internal/models/` for your data structures
-- Add authentication to `internal/client/` if needed
-- See `CLAUDE.md` for development guidance
+- Store credentials in environment variables, not in code or config files
+- Use `claude mcp add` with `-e` flags rather than hardcoding secrets
+- The server communicates via stdio only - no network port is opened

@@ -1,228 +1,86 @@
-# go-mcp-server
+# unifi-mcp-server
 
-A template for building [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers in Go.
-
-This template provides a complete, production-ready foundation for creating MCP servers that integrate external services with Claude and other AI assistants.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server for
+the [UniFi Network Integration API](https://developer.ui.com/). Exposes UniFi
+firewall management as MCP tools usable by Claude and other AI assistants.
 
 ## Features
 
-- **Complete MCP Implementation**: Full JSON-RPC 2.0 over stdio
-- **Type-Safe Models**: Structured Go types with JSON marshaling
-- **HTTP Client Example**: Generic HTTP client with customizable authentication
-- **Tool System**: Clean interface for adding new capabilities
-- **Testing Infrastructure**: Comprehensive test examples
-- **Code Quality Tools**: Formatting, linting, and vetting built-in
+- Query controller info and sites
+- Full CRUD for firewall zones and firewall policies
+- Firewall policy ordering
+- Type-safe client generated from the official UniFi OpenAPI 3.1.0 spec
 
-## Project Structure
+## Requirements
 
-```
-go-mcp-server/
-├── cmd/
-│   └── go-mcp-server/    # Main application entry point
-├── internal/
-│   ├── client/           # HTTP client (customize for your API)
-│   ├── models/           # Data structures (replace with your models)
-│   ├── server/           # MCP JSON-RPC server (keep as-is)
-│   └── tools/            # Tool implementations (add yours here)
-├── Makefile              # Build automation
-└── README.md             # This file
-```
+- Go 1.24+
+- UniFi controller running firmware ~7.x/8.x or later (Integration API)
+- An API key from the UniFi controller
 
-## Getting Started
-
-### Prerequisites
-
-- Go 1.21 or later
-- Make (optional, but recommended)
-
-### Installation
+## Installation
 
 ```bash
-# Clone this template
-git clone https://github.com/yourusername/go-mcp-server.git
-cd go-mcp-server
-
-# Install dependencies and build
-make install
+git clone https://github.com/chrisallenlane/unifi-mcp-server.git
+cd unifi-mcp-server
+make build
+# Binary: dist/unifi-mcp-server
 ```
 
-### Configuration
+## Configuration
 
-Set environment variables for your API:
+| Variable | Required | Description |
+|---|---|---|
+| `UNIFI_API_URL` | Yes | Base URL of your UniFi controller (e.g. `https://192.168.1.1`) |
+| `UNIFI_API_KEY` | Yes | API key from the UniFi controller |
+| `UNIFI_SITE_ID` | No | Default site UUID; tools accept `siteId` to override |
+| `UNIFI_INSECURE` | No | Set to any non-empty value to skip TLS verification |
 
-```bash
-export API_URL="https://api.example.com"
-# Add any other environment variables your server needs
-```
+## Tools
 
-### Running
+| Tool | Description |
+|---|---|
+| `get_info` | Get controller application version |
+| `list_sites` | List all sites |
+| `list_firewall_zones` | List firewall zones for a site |
+| `get_firewall_zone` | Get a specific firewall zone |
+| `create_firewall_zone` | Create a new firewall zone |
+| `update_firewall_zone` | Update an existing firewall zone |
+| `delete_firewall_zone` | Delete a firewall zone |
+| `list_firewall_policies` | List firewall policies for a site |
+| `get_firewall_policy` | Get a specific firewall policy |
+| `create_firewall_policy` | Create a new firewall policy |
+| `update_firewall_policy` | Update an existing firewall policy |
+| `delete_firewall_policy` | Delete a firewall policy |
+| `patch_firewall_policy` | Partially update a firewall policy |
+| `get_firewall_policy_ordering` | Get firewall policy ordering for a site |
+| `update_firewall_policy_ordering` | Update firewall policy ordering for a site |
 
-The MCP server communicates via stdin/stdout:
+## Usage
 
-```bash
-# Direct execution
-./dist/go-mcp-server
-
-# Or via Claude Desktop (see SETUP.md)
-```
-
-## Customizing for Your Use Case
-
-### 1. Update Models (`internal/models/models.go`)
-
-Replace the placeholder models with your domain-specific types:
-
-```go
-type MyResource struct {
-    ID   int    `json:"id"`
-    Name string `json:"name"`
-    // Add your fields
-}
-```
-
-### 2. Customize HTTP Client (`internal/client/client.go`)
-
-Add authentication, custom headers, etc.:
-
-```go
-// Add your auth fields
-type Client struct {
-    BaseURL string
-    HTTPClient HTTPDoer
-    APIKey string  // Add your auth
-}
-
-// Update doRequest to include auth
-req.Header.Set("Authorization", "Bearer "+c.APIKey)
-```
-
-### 3. Create Tools (`internal/tools/`)
-
-Each tool needs:
-- Implementation file (e.g., `my_tool.go`)
-- Test file (e.g., `my_tool_test.go`)
-
-Example tool structure:
-
-```go
-type MyTool struct {
-    client *client.Client
-}
-
-func (t *MyTool) Execute(ctx context.Context, args json.RawMessage) (string, error) {
-    // Your implementation
-}
-
-func (t *MyTool) Description() string {
-    return "What your tool does"
-}
-
-func (t *MyTool) InputSchema() map[string]interface{} {
-    return map[string]interface{}{
-        "type": "object",
-        "properties": map[string]interface{}{
-            "param": map[string]interface{}{
-                "type": "string",
-                "description": "Parameter description",
-            },
-        },
-        "required": []string{"param"},
-    }
-}
-```
-
-### 4. Register Tools (`internal/server/server.go`)
-
-Add your tools to the `registerTools()` function:
-
-```go
-func (s *Server) registerTools() {
-    s.tools["echo"] = tools.NewEcho(s.client)
-    s.tools["my_tool"] = tools.NewMyTool(s.client)  // Add yours
-}
-```
+See [SETUP.md](SETUP.md) for configuration with Claude Code or Claude Desktop.
 
 ## Development
 
-### Build
-
 ```bash
-make build
-```
-
-### Test
-
-```bash
-# Run all tests
-make test
-
-# Run tests with coverage
-make coverage
-```
-
-### Code Quality
-
-```bash
-# Format code
-make fmt
-
-# Lint code
-make lint
-
-# Vet code
-make vet
-
-# Run all checks
+# Format, lint, vet, and test
 make check
+
+# Build binary
+make build
+
+# Regenerate types/client from OpenAPI spec
+make generate
 ```
 
-## Project Conventions
-
-- **Formatting**: 80-column line wrapping with golines + gofumpt
-- **Testing**: Standard library `testing` package
-- **Dependencies**: Minimal - only Go stdlib for production code
-- **Error Handling**: Always wrap errors with context
-- **Type Safety**: Use structs, not `map[string]interface{}`
+For development guidance, see [CLAUDE.md](CLAUDE.md).
 
 ## Architecture
 
-### MCP Protocol Flow
-
-```
-Claude → stdin → JSON-RPC Request → Tool Execution → JSON-RPC Response → stdout → Claude
-```
-
-### Key Components
-
-- **Server** (`internal/server`): Handles JSON-RPC protocol
-- **Client** (`internal/client`): Makes HTTP requests to your API
-- **Tools** (`internal/tools`): Implements MCP tools
-- **Models** (`internal/models`): Type-safe data structures
+Types and HTTP client are generated from the official UniFi Network OpenAPI
+3.1.0 spec (`api/unifi-network.json`) using `oapi-codegen`. See
+[adr/001-generate-models-from-openapi-spec.md](adr/001-generate-models-from-openapi-spec.md)
+for rationale.
 
 ## License
 
 MIT License - see LICENSE file for details
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `make check` to ensure code quality
-5. Submit a pull request
-
-## Resources
-
-- [MCP Specification](https://modelcontextprotocol.io/)
-- [Go Documentation](https://golang.org/doc/)
-- [Standard Project Layout](https://github.com/golang-standards/project-layout)
-
-## Next Steps
-
-1. Customize `internal/models/` for your data structures
-2. Update `internal/client/` for your API authentication
-3. Create tools in `internal/tools/` for your use case
-4. Update `cmd/go-mcp-server/main.go` for configuration
-5. Test with Claude Desktop (see SETUP.md)
-
-For detailed development guidance, see `CLAUDE.md`.

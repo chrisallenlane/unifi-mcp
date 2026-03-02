@@ -10,45 +10,100 @@ import (
 	"log"
 	"time"
 
-	"github.com/chrisallenlane/go-mcp-server/internal/client"
-	"github.com/chrisallenlane/go-mcp-server/internal/tools"
+	"github.com/chrisallenlane/unifi-mcp-server/internal/tools"
+	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
 )
 
 // Constants for server configuration
 const (
 	MCPProtocolVersion   = "2024-11-05"
-	ServerName           = "go-mcp-server"
+	ServerName           = "unifi-mcp-server"
 	ServerVersion        = "0.1.0"
 	ToolExecutionTimeout = 30 * time.Second
 )
 
 // Server represents an MCP server
 type Server struct {
-	client *client.Client
-	tools  map[string]tools.Tool
+	client        *unifi.ClientWithResponses
+	defaultSiteID string
+	tools         map[string]tools.Tool
 }
 
 // New creates a new MCP server
-func New(c *client.Client) *Server {
+func New(
+	client *unifi.ClientWithResponses,
+	defaultSiteID string,
+) *Server {
 	s := &Server{
-		client: c,
-		tools:  make(map[string]tools.Tool),
+		client:        client,
+		defaultSiteID: defaultSiteID,
+		tools:         make(map[string]tools.Tool),
 	}
 
-	// Register tools
 	s.registerTools()
 
 	return s
 }
 
 // registerTools registers all available tools
-// Add your custom tools here
 func (s *Server) registerTools() {
-	// Example tool - replace with your own
-	s.tools["echo"] = tools.NewEcho(s.client)
-
-	// Add more tools as needed:
-	// s.tools["my_tool"] = tools.NewMyTool(s.client)
+	s.tools["get_info"] = tools.NewGetInfo(s.client)
+	s.tools["list_sites"] = tools.NewListSites(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_firewall_zones"] = tools.NewListFirewallZones(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_zone"] = tools.NewGetFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_firewall_zone"] = tools.NewCreateFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_zone"] = tools.NewUpdateFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_firewall_zone"] = tools.NewDeleteFirewallZone(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_firewall_policies"] = tools.NewListFirewallPolicies(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_policy"] = tools.NewGetFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_firewall_policy"] = tools.NewCreateFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_policy"] = tools.NewUpdateFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_firewall_policy"] = tools.NewDeleteFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["patch_firewall_policy"] = tools.NewPatchFirewallPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_firewall_policy_ordering"] = tools.NewGetFirewallPolicyOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_firewall_policy_ordering"] = tools.NewUpdateFirewallPolicyOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
@@ -69,14 +124,17 @@ func (s *Server) Run(
 			// Send error response for malformed JSON-RPC request
 			errResp := &JSONRPCResponse{
 				JSONRPC: "2.0",
-				ID:      nil, // ID is unknown for malformed requests
+				ID:      nil,
 				Error: &JSONRPCError{
-					Code:    -32700, // Parse error
+					Code:    -32700,
 					Message: fmt.Sprintf("Parse error: %v", err),
 				},
 			}
 			if encErr := encoder.Encode(errResp); encErr != nil {
-				log.Printf("Failed to encode error response: %v", encErr)
+				log.Printf(
+					"Failed to encode error response: %v",
+					encErr,
+				)
 			}
 			continue
 		}
@@ -118,8 +176,11 @@ func (s *Server) handleRequest(
 		}
 	default:
 		resp.Error = &JSONRPCError{
-			Code:    -32601,
-			Message: fmt.Sprintf("Method not found: %s", req.Method),
+			Code: -32601,
+			Message: fmt.Sprintf(
+				"Method not found: %s",
+				req.Method,
+			),
 		}
 	}
 
@@ -144,15 +205,24 @@ func (s *Server) handleInitialize(
 }
 
 // handleListTools returns the list of available tools
-func (s *Server) handleListTools(_ context.Context) interface{} {
-	toolList := make([]map[string]interface{}, 0, len(s.tools))
+func (s *Server) handleListTools(
+	_ context.Context,
+) interface{} {
+	toolList := make(
+		[]map[string]interface{},
+		0,
+		len(s.tools),
+	)
 
 	for name, tool := range s.tools {
-		toolList = append(toolList, map[string]interface{}{
-			"name":        name,
-			"description": tool.Description(),
-			"inputSchema": tool.InputSchema(),
-		})
+		toolList = append(
+			toolList,
+			map[string]interface{}{
+				"name":        name,
+				"description": tool.Description(),
+				"inputSchema": tool.InputSchema(),
+			},
+		)
 	}
 
 	return map[string]interface{}{
@@ -171,7 +241,10 @@ func (s *Server) handleCallTool(
 	}
 
 	if err := json.Unmarshal(params, &callParams); err != nil {
-		return nil, fmt.Errorf("failed to parse tool call params: %w", err)
+		return nil, fmt.Errorf(
+			"failed to parse tool call params: %w",
+			err,
+		)
 	}
 
 	tool, exists := s.tools[callParams.Name]
@@ -179,8 +252,10 @@ func (s *Server) handleCallTool(
 		return nil, fmt.Errorf("tool not found: %s", callParams.Name)
 	}
 
-	// Create context with timeout for tool execution
-	toolCtx, cancel := context.WithTimeout(ctx, ToolExecutionTimeout)
+	toolCtx, cancel := context.WithTimeout(
+		ctx,
+		ToolExecutionTimeout,
+	)
 	defer cancel()
 
 	result, err := tool.Execute(toolCtx, callParams.Arguments)
