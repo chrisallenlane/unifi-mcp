@@ -205,6 +205,30 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_networks"] = tools.NewListNetworks(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_network"] = tools.NewGetNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_network"] = tools.NewCreateNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_network"] = tools.NewUpdateNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_network"] = tools.NewDeleteNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_network_references"] = tools.NewGetNetworkReferences(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
