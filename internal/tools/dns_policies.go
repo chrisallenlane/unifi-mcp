@@ -97,6 +97,13 @@ func (t *ListDNSPolicies) Execute(
 		return "No DNS policies found.", nil
 	}
 
+	// Re-parse raw body to access type-specific fields
+	// that the generated DNSPolicy struct doesn't capture.
+	var rawPage struct {
+		Data []json.RawMessage `json:"data"`
+	}
+	_ = json.Unmarshal(resp.Body, &rawPage)
+
 	var b strings.Builder
 	fmt.Fprintf(
 		&b,
@@ -118,6 +125,11 @@ func (t *ListDNSPolicies) Execute(
 				&b,
 				"   Domain: %s\n",
 				*policy.Domain,
+			)
+		}
+		if i < len(rawPage.Data) {
+			b.WriteString(
+				formatDNSRecordDetails(rawPage.Data[i]),
 			)
 		}
 	}
@@ -212,16 +224,121 @@ func (t *GetDNSPolicy) Execute(
 		)
 	}
 
-	return formatDNSPolicy(resp.JSON200), nil
+	return formatDNSPolicy(resp.JSON200, resp.Body), nil
 }
 
-func formatDNSPolicy(p *unifi.DNSPolicy) string {
+func formatDNSPolicy(
+	p *unifi.DNSPolicy,
+	raw []byte,
+) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "Type: %s\n", p.Type)
 	fmt.Fprintf(&b, "ID: %s\n", p.Id.String())
 	fmt.Fprintf(&b, "Enabled: %t\n", p.Enabled)
 	if p.Domain != nil {
 		fmt.Fprintf(&b, "Domain: %s\n", *p.Domain)
+	}
+	if len(raw) > 0 {
+		b.WriteString(formatDNSRecordDetails(raw))
+	}
+	return b.String()
+}
+
+// formatDNSRecordDetails extracts type-specific fields
+// from a raw DNS policy JSON object. The generated
+// DNSPolicy struct only captures common fields due to
+// the discriminated union in the OpenAPI spec.
+func formatDNSRecordDetails(
+	raw json.RawMessage,
+) string {
+	var fields struct {
+		IPv4Address      *string `json:"ipv4Address"`
+		IPv6Address      *string `json:"ipv6Address"`
+		TargetDomain     *string `json:"targetDomain"`
+		MailServerDomain *string `json:"mailServerDomain"`
+		ServerDomain     *string `json:"serverDomain"`
+		Service          *string `json:"service"`
+		Protocol         *string `json:"protocol"`
+		Text             *string `json:"text"`
+		IPAddress        *string `json:"ipAddress"`
+		TTLSeconds       *int32  `json:"ttlSeconds"`
+		Priority         *int32  `json:"priority"`
+		Weight           *int32  `json:"weight"`
+		Port             *int32  `json:"port"`
+	}
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		return ""
+	}
+
+	var b strings.Builder
+	if fields.IPv4Address != nil {
+		fmt.Fprintf(&b, "   Address: %s\n", *fields.IPv4Address)
+	}
+	if fields.IPv6Address != nil {
+		fmt.Fprintf(&b, "   Address: %s\n", *fields.IPv6Address)
+	}
+	if fields.TargetDomain != nil {
+		fmt.Fprintf(
+			&b,
+			"   Target: %s\n",
+			*fields.TargetDomain,
+		)
+	}
+	if fields.MailServerDomain != nil {
+		fmt.Fprintf(
+			&b,
+			"   Mail Server: %s\n",
+			*fields.MailServerDomain,
+		)
+	}
+	if fields.ServerDomain != nil {
+		fmt.Fprintf(
+			&b,
+			"   Server: %s\n",
+			*fields.ServerDomain,
+		)
+	}
+	if fields.Service != nil {
+		fmt.Fprintf(
+			&b,
+			"   Service: %s\n",
+			*fields.Service,
+		)
+	}
+	if fields.Protocol != nil {
+		fmt.Fprintf(
+			&b,
+			"   Protocol: %s\n",
+			*fields.Protocol,
+		)
+	}
+	if fields.Text != nil {
+		fmt.Fprintf(&b, "   Text: %s\n", *fields.Text)
+	}
+	if fields.IPAddress != nil {
+		fmt.Fprintf(
+			&b,
+			"   Forward To: %s\n",
+			*fields.IPAddress,
+		)
+	}
+	if fields.TTLSeconds != nil {
+		fmt.Fprintf(
+			&b,
+			"   TTL: %d seconds\n",
+			*fields.TTLSeconds,
+		)
+	}
+	if fields.Priority != nil {
+		fmt.Fprintf(
+			&b, "   Priority: %d\n", *fields.Priority,
+		)
+	}
+	if fields.Weight != nil {
+		fmt.Fprintf(&b, "   Weight: %d\n", *fields.Weight)
+	}
+	if fields.Port != nil {
+		fmt.Fprintf(&b, "   Port: %d\n", *fields.Port)
 	}
 	return b.String()
 }
@@ -356,7 +473,7 @@ func (t *CreateDNSPolicy) Execute(
 
 	return fmt.Sprintf(
 		"DNS policy created:\n%s",
-		formatDNSPolicy(resp.JSON201),
+		formatDNSPolicy(resp.JSON201, resp.Body),
 	), nil
 }
 
@@ -508,7 +625,7 @@ func (t *UpdateDNSPolicy) Execute(
 
 	return fmt.Sprintf(
 		"DNS policy updated:\n%s",
-		formatDNSPolicy(resp.JSON200),
+		formatDNSPolicy(resp.JSON200, resp.Body),
 	), nil
 }
 
