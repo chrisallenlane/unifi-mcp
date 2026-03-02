@@ -132,12 +132,31 @@
       "insights": ["All 7 original survivors now killed: NetworkIds condition, numbering, separator, parseArgs, network error"]
     },
     "internal/tools/firewall_policies.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/firewall_policies_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 20,
+          "killed": 20,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 3,
+          "killed": 3,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 11,
+          "killed": 11,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All 8 original survivors killed: descriptions, formatting, delete message, empty ConnectionStateFilter handling"]
     },
     "internal/tools/firewall_policy_ordering.go": {
       "status": "pending",
@@ -254,10 +273,10 @@
   },
   "global_statistics": {
     "total_modules": 19,
-    "completed_modules": 4,
-    "total_mutations": 68,
-    "total_killed": 67,
+    "completed_modules": 5,
+    "total_mutations": 102,
+    "total_killed": 101,
     "total_survived": 1,
-    "overall_score": 98.5
+    "overall_score": 99.0
   }
 }

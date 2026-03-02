@@ -683,6 +683,184 @@ func TestCreateFirewallPolicy_Execute_WithAllOptionalFields(
 	}
 }
 
+func TestListFirewallPolicies_Description(t *testing.T) {
+	tool := &ListFirewallPolicies{}
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "firewall") {
+		t.Error("Description() should mention firewall")
+	}
+}
+
+func TestCreateFirewallPolicy_Description(t *testing.T) {
+	tool := &CreateFirewallPolicy{}
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "firewall") {
+		t.Error("Description() should mention firewall")
+	}
+}
+
+func TestListFirewallPolicies_Execute_Formatting(t *testing.T) {
+	p1 := mockPolicyJSON()
+	p2 := mockPolicyJSON()
+	p2["id"] = "ccc00000-0000-0000-0000-000000000002"
+	p2["name"] = "Block WAN to LAN"
+
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(
+				paginatedResponse(p1, p2),
+			)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallPolicies(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify 1-based numbering
+	if !strings.Contains(result, "1. Name: Allow LAN to WAN") {
+		t.Errorf(
+			"result should contain '1. Name: Allow LAN to WAN': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Name: Block WAN to LAN") {
+		t.Errorf(
+			"result should contain '2. Name: Block WAN to LAN': %s",
+			result,
+		)
+	}
+
+	// Verify blank line separator between policies
+	if !strings.Contains(result, "\n\n2. ") {
+		t.Errorf(
+			"result should have blank line between policies: %s",
+			result,
+		)
+	}
+}
+
+func TestDeleteFirewallPolicy_Execute_Message(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteFirewallPolicy(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(
+		result,
+		"ccc00000-0000-0000-0000-000000000001",
+	) {
+		t.Errorf(
+			"result should contain policy ID: %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Firewall policy") {
+		t.Errorf(
+			"result should mention 'Firewall policy': %s",
+			result,
+		)
+	}
+}
+
+func TestFormatPolicy_EmptyConnectionStateFilter(t *testing.T) {
+	// Policy with non-nil but empty ConnectionStateFilter
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			p := mockPolicyJSON()
+			p["connectionStateFilter"] = []string{}
+			json.NewEncoder(w).Encode(p)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallPolicy(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Empty filter should not appear in output
+	if strings.Contains(result, "Connection State Filter") {
+		t.Errorf(
+			"result should not show empty connection state filter: %s",
+			result,
+		)
+	}
+}
+
+func TestCreateFirewallPolicy_EmptyConnectionStateFilter(
+	t *testing.T,
+) {
+	var gotBody map[string]interface{}
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"},
+		"destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false,
+		"connectionStateFilter": []
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// Empty connectionStateFilter should NOT be sent in body
+	if gotBody["connectionStateFilter"] != nil {
+		t.Errorf(
+			"empty connectionStateFilter should not be sent: %v",
+			gotBody["connectionStateFilter"],
+		)
+	}
+}
+
 func TestListFirewallPolicies_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
