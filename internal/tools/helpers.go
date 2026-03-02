@@ -118,3 +118,18 @@ func paginationSchema() map[string]interface{} {
 		},
 	}
 }
+
+// listSchema returns the standard JSON schema for list operations
+// with siteId + pagination parameters.
+func listSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
+	return map[string]interface{}{
+		"type":       "object",
+		"properties": props,
+	}
+}

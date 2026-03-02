@@ -38,16 +38,7 @@ func (t *ListWiFiBroadcasts) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWiFiBroadcasts) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -279,6 +270,42 @@ func formatWiFiBroadcast(
 	return b.String()
 }
 
+// wifiBroadcastInputSchema returns the common JSON schema properties
+// for create/update WiFi broadcast tools.
+func wifiBroadcastInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "SSID name",
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the broadcast is enabled",
+		},
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "Broadcast type",
+			"enum": []string{
+				"STANDARD",
+				"IOT_OPTIMIZED",
+			},
+		},
+		"securityConfiguration": map[string]interface{}{
+			"type":        "object",
+			"description": "Security settings (type: OPEN, WPA2, WPA3, WPA2_WPA3, WPA2_ENTERPRISE, WPA3_ENTERPRISE, WPA2_WPA3_ENTERPRISE)",
+		},
+		"hideName": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether to hide the SSID",
+		},
+		"clientIsolationEnabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether client isolation is enabled",
+		},
+	}
+}
+
 // --- create_wifi_broadcast ---
 
 // CreateWiFiBroadcast implements the create_wifi_broadcast
@@ -307,47 +334,18 @@ func (t *CreateWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateWiFiBroadcast) InputSchema() map[string]interface{} {
+	props := wifiBroadcastInputSchema()
+	props["network"] = map[string]interface{}{
+		"type":        "object",
+		"description": "Network reference (optional)",
+	}
+	props["broadcastingDeviceFilter"] = map[string]interface{}{
+		"type":        "object",
+		"description": "Device filter for broadcasting (optional)",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "SSID name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the broadcast is enabled",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Broadcast type",
-				"enum": []string{
-					"STANDARD",
-					"IOT_OPTIMIZED",
-				},
-			},
-			"securityConfiguration": map[string]interface{}{
-				"type":        "object",
-				"description": "Security settings (type: OPEN, WPA2, WPA3, WPA2_WPA3, WPA2_ENTERPRISE, WPA3_ENTERPRISE, WPA2_WPA3_ENTERPRISE)",
-			},
-			"hideName": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether to hide the SSID",
-			},
-			"clientIsolationEnabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether client isolation is enabled",
-			},
-			"network": map[string]interface{}{
-				"type":        "object",
-				"description": "Network reference (optional)",
-			},
-			"broadcastingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for broadcasting (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"name",
 			"enabled",
@@ -431,43 +429,14 @@ func (t *UpdateWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateWiFiBroadcast) InputSchema() map[string]interface{} {
+	props := wifiBroadcastInputSchema()
+	props["wifiBroadcastId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "WiFi broadcast UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"wifiBroadcastId": map[string]interface{}{
-				"type":        "string",
-				"description": "WiFi broadcast UUID",
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "SSID name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the broadcast is enabled",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Broadcast type",
-				"enum": []string{
-					"STANDARD",
-					"IOT_OPTIMIZED",
-				},
-			},
-			"securityConfiguration": map[string]interface{}{
-				"type":        "object",
-				"description": "Security settings",
-			},
-			"hideName": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether to hide the SSID",
-			},
-			"clientIsolationEnabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether client isolation is enabled",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"wifiBroadcastId",
 			"name",

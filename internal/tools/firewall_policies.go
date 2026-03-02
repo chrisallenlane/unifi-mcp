@@ -351,16 +351,7 @@ func (t *ListFirewallPolicies) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListFirewallPolicies) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.

@@ -36,16 +36,7 @@ func (t *ListNetworks) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListNetworks) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -240,6 +231,48 @@ func formatNetworkDetails(n *unifi.NetworkDetails) string {
 	return b.String()
 }
 
+// networkInputSchema returns the common JSON schema properties for
+// create/update network tools.
+func networkInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "Network name",
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the network is enabled",
+		},
+		"management": map[string]interface{}{
+			"type":        "string",
+			"description": "Network management type",
+			"enum": []string{
+				"GATEWAY",
+				"SWITCH",
+				"UNMANAGED",
+			},
+		},
+		"vlanId": map[string]interface{}{
+			"type":        "integer",
+			"description": "VLAN ID (1 for default, >= 2 for additional)",
+		},
+		"dhcpGuarding": map[string]interface{}{
+			"type":        "object",
+			"description": "DHCP guarding settings (optional)",
+			"properties": map[string]interface{}{
+				"trustedDhcpServerIpAddresses": map[string]interface{}{
+					"type":        "array",
+					"description": "List of trusted DHCP server IP addresses",
+					"items": map[string]interface{}{
+						"type": "string",
+					},
+				},
+			},
+		},
+	}
+}
+
 // --- create_network ---
 
 // CreateNetwork implements the create_network MCP tool.
@@ -267,44 +300,8 @@ func (t *CreateNetwork) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateNetwork) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Network name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the network is enabled",
-			},
-			"management": map[string]interface{}{
-				"type":        "string",
-				"description": "Network management type",
-				"enum": []string{
-					"GATEWAY",
-					"SWITCH",
-					"UNMANAGED",
-				},
-			},
-			"vlanId": map[string]interface{}{
-				"type":        "integer",
-				"description": "VLAN ID (1 for default, >= 2 for additional)",
-			},
-			"dhcpGuarding": map[string]interface{}{
-				"type":        "object",
-				"description": "DHCP guarding settings (optional)",
-				"properties": map[string]interface{}{
-					"trustedDhcpServerIpAddresses": map[string]interface{}{
-						"type":        "array",
-						"description": "List of trusted DHCP server IP addresses",
-						"items": map[string]interface{}{
-							"type": "string",
-						},
-					},
-				},
-			},
-		},
+		"type":       "object",
+		"properties": networkInputSchema(),
 		"required": []string{
 			"name",
 			"enabled",
@@ -386,49 +383,14 @@ func (t *UpdateNetwork) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateNetwork) InputSchema() map[string]interface{} {
+	props := networkInputSchema()
+	props["networkId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Network UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"networkId": map[string]interface{}{
-				"type":        "string",
-				"description": "Network UUID",
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Network name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the network is enabled",
-			},
-			"management": map[string]interface{}{
-				"type":        "string",
-				"description": "Network management type",
-				"enum": []string{
-					"GATEWAY",
-					"SWITCH",
-					"UNMANAGED",
-				},
-			},
-			"vlanId": map[string]interface{}{
-				"type":        "integer",
-				"description": "VLAN ID",
-			},
-			"dhcpGuarding": map[string]interface{}{
-				"type":        "object",
-				"description": "DHCP guarding settings (optional)",
-				"properties": map[string]interface{}{
-					"trustedDhcpServerIpAddresses": map[string]interface{}{
-						"type":        "array",
-						"description": "List of trusted DHCP server IP addresses",
-						"items": map[string]interface{}{
-							"type": "string",
-						},
-					},
-				},
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"networkId",
 			"name",

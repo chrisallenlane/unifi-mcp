@@ -36,16 +36,7 @@ func (t *ListACLRules) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListACLRules) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -248,6 +239,48 @@ func formatACLRule(r *unifi.ACLRule) string {
 	return b.String()
 }
 
+// aclRuleInputSchema returns the common JSON schema properties for
+// create/update ACL rule tools.
+func aclRuleInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule type",
+			"enum":        []string{"IPV4", "MAC"},
+		},
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule name",
+		},
+		"enabled": map[string]interface{}{
+			"type":        "boolean",
+			"description": "Whether the rule is enabled",
+		},
+		"action": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule action",
+			"enum":        []string{"ALLOW", "BLOCK"},
+		},
+		"description": map[string]interface{}{
+			"type":        "string",
+			"description": "ACL rule description (optional)",
+		},
+		"sourceFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Traffic source filter (type-specific)",
+		},
+		"destinationFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Traffic destination filter (type-specific)",
+		},
+		"enforcingDeviceFilter": map[string]interface{}{
+			"type":        "object",
+			"description": "Device filter for enforcement (optional)",
+		},
+	}
+}
+
 // --- create_acl_rule ---
 
 // CreateACLRule implements the create_acl_rule MCP tool.
@@ -275,44 +308,8 @@ func (t *CreateACLRule) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateACLRule) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule type",
-				"enum":        []string{"IPV4", "MAC"},
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the rule is enabled",
-			},
-			"action": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule action",
-				"enum":        []string{"ALLOW", "BLOCK"},
-			},
-			"description": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule description (optional)",
-			},
-			"sourceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic source filter (type-specific)",
-			},
-			"destinationFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic destination filter (type-specific)",
-			},
-			"enforcingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for enforcement (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": aclRuleInputSchema(),
 		"required": []string{
 			"type",
 			"name",
@@ -394,49 +391,14 @@ func (t *UpdateACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateACLRule) InputSchema() map[string]interface{} {
+	props := aclRuleInputSchema()
+	props["aclRuleId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "ACL rule UUID",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule type",
-				"enum":        []string{"IPV4", "MAC"},
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule name",
-			},
-			"enabled": map[string]interface{}{
-				"type":        "boolean",
-				"description": "Whether the rule is enabled",
-			},
-			"action": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule action",
-				"enum":        []string{"ALLOW", "BLOCK"},
-			},
-			"description": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule description (optional)",
-			},
-			"sourceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic source filter (type-specific)",
-			},
-			"destinationFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Traffic destination filter (type-specific)",
-			},
-			"enforcingDeviceFilter": map[string]interface{}{
-				"type":        "object",
-				"description": "Device filter for enforcement (optional)",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"aclRuleId",
 			"type",

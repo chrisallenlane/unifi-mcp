@@ -48,16 +48,7 @@ func (t *ListTrafficMatchingLists) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListTrafficMatchingLists) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -217,6 +208,27 @@ func (t *GetTrafficMatchingList) Execute(
 	return formatTrafficMatchingList(resp.JSON200), nil
 }
 
+// trafficMatchingListInputSchema returns the common JSON schema
+// properties for create/update traffic matching list tools.
+func trafficMatchingListInputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"siteId": siteIDSchema(),
+		"name": map[string]interface{}{
+			"type":        "string",
+			"description": "Name of the traffic matching list",
+		},
+		"type": map[string]interface{}{
+			"type":        "string",
+			"description": "Type of traffic matching list",
+			"enum": []string{
+				"IPV4_ADDRESSES",
+				"IPV6_ADDRESSES",
+				"PORTS",
+			},
+		},
+	}
+}
+
 // --- create_traffic_matching_list ---
 
 // CreateTrafficMatchingList implements the create_traffic_matching_list
@@ -246,24 +258,9 @@ func (t *CreateTrafficMatchingList) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *CreateTrafficMatchingList) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Name of the traffic matching list",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Type of traffic matching list",
-				"enum": []string{
-					"IPV4_ADDRESSES",
-					"IPV6_ADDRESSES",
-					"PORTS",
-				},
-			},
-		},
-		"required": []string{"name", "type"},
+		"type":       "object",
+		"properties": trafficMatchingListInputSchema(),
+		"required":   []string{"name", "type"},
 	}
 }
 
@@ -341,28 +338,14 @@ func (t *UpdateTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *UpdateTrafficMatchingList) InputSchema() map[string]interface{} {
+	props := trafficMatchingListInputSchema()
+	props["trafficMatchingListId"] = map[string]interface{}{
+		"type":        "string",
+		"description": "Traffic matching list UUID to update",
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID to update",
-			},
-			"name": map[string]interface{}{
-				"type":        "string",
-				"description": "Name of the traffic matching list",
-			},
-			"type": map[string]interface{}{
-				"type":        "string",
-				"description": "Type of traffic matching list",
-				"enum": []string{
-					"IPV4_ADDRESSES",
-					"IPV6_ADDRESSES",
-					"PORTS",
-				},
-			},
-		},
+		"type":       "object",
+		"properties": props,
 		"required": []string{
 			"trafficMatchingListId",
 			"name",

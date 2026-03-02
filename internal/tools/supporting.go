@@ -35,16 +35,7 @@ func (t *ListWans) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWans) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -139,16 +130,7 @@ func (t *ListVpnTunnels) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnTunnels) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -247,16 +229,7 @@ func (t *ListVpnServers) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnServers) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -356,16 +329,7 @@ func (t *ListRadiusProfiles) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListRadiusProfiles) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
@@ -463,16 +427,7 @@ func (t *ListDeviceTags) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDeviceTags) InputSchema() map[string]interface{} {
-	props := map[string]interface{}{
-		"siteId": siteIDSchema(),
-	}
-	for k, v := range paginationSchema() {
-		props[k] = v
-	}
-	return map[string]interface{}{
-		"type":       "object",
-		"properties": props,
-	}
+	return listSchema()
 }
 
 // Execute runs the tool.
