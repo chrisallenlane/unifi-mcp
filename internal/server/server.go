@@ -229,6 +229,34 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_acl_rules"] = tools.NewListACLRules(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_acl_rule"] = tools.NewGetACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_acl_rule"] = tools.NewCreateACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_acl_rule"] = tools.NewUpdateACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_acl_rule"] = tools.NewDeleteACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_acl_rule_ordering"] = tools.NewGetACLRuleOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_acl_rule_ordering"] = tools.NewUpdateACLRuleOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
