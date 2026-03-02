@@ -71,3 +71,27 @@ func TestListPendingDevices_Execute_Empty(t *testing.T) {
 		t.Errorf("unexpected result: %s", result)
 	}
 }
+
+func TestListPendingDevices_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListPendingDevices(client)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}

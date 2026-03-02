@@ -346,3 +346,200 @@ func TestDeleteVoucher_InputSchema(t *testing.T) {
 		t.Error("voucherId should be required")
 	}
 }
+
+func TestGetVoucher_Execute_WithOptionalFields(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":                   "aaa00000-0000-0000-0000-000000000001",
+				"code":                 "ABCD-1234",
+				"name":                 "Guest WiFi",
+				"timeLimitMinutes":     60,
+				"expired":              false,
+				"authorizedGuestCount": 0,
+				"authorizedGuestLimit": 5,
+				"createdAt":            "2025-01-01T00:00:00Z",
+				"activatedAt":          "2025-01-01T00:00:00Z",
+				"expiresAt":            "2025-02-01T00:00:00Z",
+				"dataUsageLimitMBytes": 1024,
+				"rxRateLimitKbps":      5000,
+				"txRateLimitKbps":      1000,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetVoucher(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"voucherId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	checks := []string{
+		"Guest Limit:",
+		"Activated At:",
+		"Expires At:",
+		"Data Limit:",
+		"Download Limit:",
+		"Upload Limit:",
+	}
+	for _, s := range checks {
+		if !strings.Contains(result, s) {
+			t.Errorf(
+				"result should contain %q: %s",
+				s,
+				result,
+			)
+		}
+	}
+}
+
+func TestCreateVouchers_Execute_EmptyResult(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"vouchers": []interface{}{},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateVouchers(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Event Pass", "timeLimitMinutes": 60}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if result != "No vouchers generated." {
+		t.Errorf("unexpected result: %s", result)
+	}
+}
+
+func TestListVouchers_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetVoucher_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetVoucher(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"voucherId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateVouchers_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Event Pass", "timeLimitMinutes": 60}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteVouchers_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"filter": "expired eq true"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteVoucher_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteVoucher(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"voucherId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

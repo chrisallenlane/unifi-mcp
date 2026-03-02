@@ -360,3 +360,121 @@ func TestDeleteFirewallZone_InputSchema(t *testing.T) {
 		t.Error("firewallZoneId should be required")
 	}
 }
+
+func TestListFirewallZones_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetFirewallZone_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallZone(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateFirewallZone_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallZone(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "TestZone", "networkIds": ["bbb00000-0000-0000-0000-000000000001"]}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateFirewallZone_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateFirewallZone(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001", "name": "TestZone", "networkIds": []}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteFirewallZone_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteFirewallZone(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallZoneId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

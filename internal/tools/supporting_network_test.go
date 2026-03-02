@@ -210,3 +210,69 @@ func TestListVpnServers_Execute_Empty(t *testing.T) {
 		t.Errorf("unexpected result: %s", result)
 	}
 }
+
+func TestListWans_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListWans(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestListVpnTunnels_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListVpnTunnels(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestListVpnServers_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListVpnServers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

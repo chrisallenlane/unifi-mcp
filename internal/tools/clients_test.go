@@ -239,3 +239,129 @@ func TestExecuteClientAction_InputSchema(t *testing.T) {
 		t.Error("action should be required")
 	}
 }
+
+// --- optional field branches ---
+
+func TestListClients_Execute_WithOptionalFields(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":          "aaa00000-0000-0000-0000-000000000001",
+					"name":        "Chris's Laptop",
+					"type":        "WIRED",
+					"ipAddress":   "192.168.1.100",
+					"connectedAt": "2025-01-01T00:00:00Z",
+				},
+			))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListClients(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "IP:") {
+		t.Errorf(
+			"result should contain 'IP:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Connected At:") {
+		t.Errorf(
+			"result should contain 'Connected At:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "192.168.1.100") {
+		t.Errorf(
+			"result should contain IP address: %s",
+			result,
+		)
+	}
+}
+
+// --- API error tests ---
+
+func TestListClients_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListClients(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestGetClient_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetClient(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestExecuteClientAction_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewExecuteClientAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "aaa00000-0000-0000-0000-000000000001", "action": "AUTHORIZE_GUEST_ACCESS"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}

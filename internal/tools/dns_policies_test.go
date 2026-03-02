@@ -8,6 +8,90 @@ import (
 	"testing"
 )
 
+func TestFormatDNSRecordDetails(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  string
+		expect []string
+	}{
+		{
+			name:   "A record",
+			input:  `{"ipv4Address": "192.168.1.1", "ttlSeconds": 300}`,
+			expect: []string{"Address: 192.168.1.1", "TTL: 300"},
+		},
+		{
+			name:   "AAAA record",
+			input:  `{"ipv6Address": "::1"}`,
+			expect: []string{"Address: ::1"},
+		},
+		{
+			name:   "CNAME record",
+			input:  `{"targetDomain": "target.local"}`,
+			expect: []string{"Target: target.local"},
+		},
+		{
+			name:  "MX record",
+			input: `{"mailServerDomain": "mail.local", "priority": 10}`,
+			expect: []string{
+				"Mail Server: mail.local",
+				"Priority: 10",
+			},
+		},
+		{
+			name:  "SRV record",
+			input: `{"serverDomain": "srv.local", "service": "_http", "protocol": "_tcp", "priority": 10, "weight": 20, "port": 80}`,
+			expect: []string{
+				"Server: srv.local",
+				"Service: _http",
+				"Protocol: _tcp",
+				"Priority: 10",
+				"Weight: 20",
+				"Port: 80",
+			},
+		},
+		{
+			name:   "TXT record",
+			input:  `{"text": "v=spf1"}`,
+			expect: []string{"Text: v=spf1"},
+		},
+		{
+			name:   "FORWARD_DOMAIN",
+			input:  `{"ipAddress": "8.8.8.8"}`,
+			expect: []string{"Forward To: 8.8.8.8"},
+		},
+		{
+			name:   "invalid JSON",
+			input:  `{invalid}`,
+			expect: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := formatDNSRecordDetails(
+				json.RawMessage(tt.input),
+			)
+			if tt.expect == nil {
+				if result != "" {
+					t.Errorf(
+						"expected empty result, got: %s",
+						result,
+					)
+				}
+				return
+			}
+			for _, s := range tt.expect {
+				if !strings.Contains(result, s) {
+					t.Errorf(
+						"expected %q in result: %s",
+						s,
+						result,
+					)
+				}
+			}
+		})
+	}
+}
+
 func TestListDNSPolicies_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -339,5 +423,123 @@ func TestDeleteDNSPolicy_InputSchema(t *testing.T) {
 	}
 	if !found {
 		t.Error("dnsPolicyId should be required")
+	}
+}
+
+func TestListDNSPolicies_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListDNSPolicies(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetDNSPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateDNSPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"type": "A_RECORD", "enabled": true}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateDNSPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001", "type": "A_RECORD", "enabled": true}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteDNSPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
 	}
 }

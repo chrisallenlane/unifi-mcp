@@ -317,3 +317,119 @@ func TestDeleteTrafficMatchingList_InputSchema(t *testing.T) {
 		t.Error("trafficMatchingListId should be required")
 	}
 }
+
+func TestListTrafficMatchingLists_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListTrafficMatchingLists(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetTrafficMatchingList_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateTrafficMatchingList_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"name": "Test List", "type": "IPV4_ADDRESSES"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateTrafficMatchingList_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001", "name": "Test", "type": "IPV4_ADDRESSES"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteTrafficMatchingList_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

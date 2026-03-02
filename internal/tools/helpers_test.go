@@ -211,6 +211,25 @@ func TestParseArgs(t *testing.T) {
 	})
 }
 
+func TestListSchema(t *testing.T) {
+	schema := listSchema()
+
+	if schema["type"] != "object" {
+		t.Errorf("type = %v, want object", schema["type"])
+	}
+
+	props, ok := schema["properties"].(map[string]interface{})
+	if !ok {
+		t.Fatal("properties should be a map")
+	}
+
+	for _, key := range []string{"siteId", "limit", "offset"} {
+		if _, ok := props[key]; !ok {
+			t.Errorf("properties missing key %q", key)
+		}
+	}
+}
+
 func TestUnexpectedStatusError(t *testing.T) {
 	err := unexpectedStatusError(401, []byte("unauthorized"))
 	if err == nil {

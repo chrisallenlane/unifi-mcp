@@ -480,3 +480,228 @@ func TestUpdateACLRuleOrdering_InputSchema(t *testing.T) {
 		t.Error("orderedAclRuleIds should be required")
 	}
 }
+
+func TestGetACLRule_Execute_WithAllFilters(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":      "aaa00000-0000-0000-0000-000000000001",
+				"name":    "Block All",
+				"type":    "IPV4",
+				"action":  "BLOCK",
+				"enabled": true,
+				"index":   0,
+				"metadata": map[string]string{
+					"origin": "USER_DEFINED",
+				},
+				"sourceFilter": map[string]interface{}{
+					"type":      "NETWORK",
+					"networkId": "bbb00000-0000-0000-0000-000000000001",
+				},
+				"destinationFilter": map[string]interface{}{
+					"type":      "NETWORK",
+					"networkId": "bbb00000-0000-0000-0000-000000000002",
+				},
+				"enforcingDeviceFilter": map[string]interface{}{
+					"type": "ALL",
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetACLRule(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"aclRuleId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "Source Filter:") {
+		t.Errorf(
+			"result should contain 'Source Filter:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Destination Filter:") {
+		t.Errorf(
+			"result should contain 'Destination Filter:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Enforcing Device Filter Type: ALL") {
+		t.Errorf(
+			"result should contain 'Enforcing Device Filter Type: ALL': %s",
+			result,
+		)
+	}
+}
+
+func TestListACLRules_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListACLRules(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetACLRule_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetACLRule(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"aclRuleId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateACLRule_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateACLRule(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"type": "IPV4", "name": "Test Rule", "enabled": true, "action": "ALLOW"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateACLRule_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateACLRule(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"aclRuleId": "aaa00000-0000-0000-0000-000000000001", "type": "IPV4", "name": "Test", "enabled": true, "action": "ALLOW"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteACLRule_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteACLRule(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"aclRuleId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetACLRuleOrdering_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetACLRuleOrdering(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateACLRuleOrdering_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateACLRuleOrdering(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"orderedAclRuleIds": ["aaa00000-0000-0000-0000-000000000001"]}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for API error response")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

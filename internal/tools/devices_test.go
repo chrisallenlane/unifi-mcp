@@ -550,3 +550,265 @@ func TestGetDeviceStatistics_InputSchema(t *testing.T) {
 		t.Error("deviceId should be required")
 	}
 }
+
+// --- optional field branches ---
+
+func TestGetDevice_Execute_WithOptionalFields(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":                "bbb00000-0000-0000-0000-000000000001",
+				"name":              "US-8-60W",
+				"model":             "US860W",
+				"macAddress":        "aa:bb:cc:dd:ee:ff",
+				"ipAddress":         "192.168.1.2",
+				"state":             "ONLINE",
+				"firmwareVersion":   "6.6.57",
+				"firmwareUpdatable": false,
+				"supported":         true,
+				"features":          map[string]interface{}{},
+				"interfaces":        map[string]interface{}{},
+				"adoptedAt":         "2025-01-01T00:00:00Z",
+				"provisionedAt":     "2025-01-02T00:00:00Z",
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDevice(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "Adopted At:") {
+		t.Errorf(
+			"result should contain 'Adopted At:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Provisioned At:") {
+		t.Errorf(
+			"result should contain 'Provisioned At:': %s",
+			result,
+		)
+	}
+}
+
+func TestGetDeviceStatistics_Execute_WithNextHeartbeat(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"lastHeartbeatAt": "2026-03-01T10:00:00Z",
+				"nextHeartbeatAt": "2026-03-01T10:00:30Z",
+				"interfaces":      map[string]interface{}{},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDeviceStatistics(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "Next Heartbeat:") {
+		t.Errorf(
+			"result should contain 'Next Heartbeat:': %s",
+			result,
+		)
+	}
+}
+
+// --- API error tests ---
+
+func TestListDevices_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListDevices(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestGetDevice_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestAdoptDevice_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewAdoptDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"macAddress": "aa:bb:cc:dd:ee:ff"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestRemoveDevice_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewRemoveDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestExecuteDeviceAction_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewExecuteDeviceAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001", "action": "restart"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestExecutePortAction_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewExecutePortAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001", "portIdx": 2, "action": "cycle_poe"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestGetDeviceStatistics_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDeviceStatistics(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}

@@ -495,6 +495,28 @@ func TestRun_MultipleRequests(t *testing.T) {
 	}
 }
 
+type failWriter struct{}
+
+func (f failWriter) Write([]byte) (int, error) {
+	return 0, fmt.Errorf("broken pipe")
+}
+
+func TestRun_EncodeFail(t *testing.T) {
+	s := newTestServer(t)
+
+	reqJSON := `{"jsonrpc":"2.0","id":1,"method":"initialize"}` + "\n"
+	stdin := strings.NewReader(reqJSON)
+
+	err := s.Run(context.Background(), stdin, failWriter{})
+	if err == nil {
+		t.Fatal("expected error when stdout write fails")
+	}
+
+	if !strings.Contains(err.Error(), "broken pipe") {
+		t.Errorf("error should contain cause: %v", err)
+	}
+}
+
 func TestRun_EOF(t *testing.T) {
 	s := newTestServer(t)
 

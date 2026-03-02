@@ -487,3 +487,253 @@ func TestGetNetworkReferences_InputSchema(t *testing.T) {
 		t.Error("networkId should be required")
 	}
 }
+
+// --- optional field branches ---
+
+func TestGetNetwork_Execute_WithDhcpGuarding(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":         "aaa00000-0000-0000-0000-000000000001",
+				"name":       "IoT",
+				"vlanId":     100,
+				"management": "GATEWAY",
+				"enabled":    true,
+				"default":    false,
+				"metadata":   map[string]string{"origin": "USER_DEFINED"},
+				"dhcpGuarding": map[string]interface{}{
+					"trustedDhcpServerIpAddresses": []string{
+						"192.168.1.1",
+					},
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetNetwork(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "DHCP Guarding:") {
+		t.Errorf(
+			"result should contain 'DHCP Guarding:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Trusted Servers: 192.168.1.1") {
+		t.Errorf(
+			"result should contain trusted server IP: %s",
+			result,
+		)
+	}
+}
+
+func TestGetNetwork_Execute_WithEmptyDhcpGuarding(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":         "aaa00000-0000-0000-0000-000000000001",
+				"name":       "IoT",
+				"vlanId":     100,
+				"management": "GATEWAY",
+				"enabled":    true,
+				"default":    false,
+				"metadata":   map[string]string{"origin": "USER_DEFINED"},
+				"dhcpGuarding": map[string]interface{}{
+					"trustedDhcpServerIpAddresses": []string{},
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetNetwork(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "DHCP Guarding:") {
+		t.Errorf(
+			"result should contain 'DHCP Guarding:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "(none)") {
+		t.Errorf(
+			"result should contain '(none)' for empty trusted servers: %s",
+			result,
+		)
+	}
+}
+
+// --- API error tests ---
+
+func TestListNetworks_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListNetworks(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestGetNetwork_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetNetwork(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestCreateNetwork_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateNetwork(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Guest", "enabled": true, "management": "GATEWAY", "vlanId": 200}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateNetwork_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateNetwork(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001", "name": "x", "enabled": true, "management": "GATEWAY", "vlanId": 2}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteNetwork_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteNetwork(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestGetNetworkReferences_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetNetworkReferences(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"networkId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on API failure")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf(
+			"error should contain '500': %v",
+			err,
+		)
+	}
+}

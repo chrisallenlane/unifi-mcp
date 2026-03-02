@@ -443,3 +443,370 @@ func TestPatchFirewallPolicy_InputSchema(t *testing.T) {
 		t.Error("firewallPolicyId should be required")
 	}
 }
+
+func TestCreateFirewallPolicy_Execute_InvalidSourceZoneID(
+	t *testing.T,
+) {
+	tool := &CreateFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{
+			"name": "Test",
+			"enabled": true,
+			"action": {"type": "ALLOW"},
+			"source": {"zoneId": "not-a-uuid"},
+			"destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"},
+			"ipProtocolScope": {"ipVersion": "IPV4"},
+			"loggingEnabled": false
+		}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid source zone UUID")
+	}
+	if !strings.Contains(err.Error(), "source.zoneId") {
+		t.Errorf(
+			"error should mention source.zoneId: %v",
+			err,
+		)
+	}
+}
+
+func TestCreateFirewallPolicy_Execute_InvalidDestinationZoneID(
+	t *testing.T,
+) {
+	tool := &CreateFirewallPolicy{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{
+			"name": "Test",
+			"enabled": true,
+			"action": {"type": "ALLOW"},
+			"source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"},
+			"destination": {"zoneId": "not-a-uuid"},
+			"ipProtocolScope": {"ipVersion": "IPV4"},
+			"loggingEnabled": false
+		}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid destination zone UUID")
+	}
+	if !strings.Contains(err.Error(), "destination.zoneId") {
+		t.Errorf(
+			"error should mention destination.zoneId: %v",
+			err,
+		)
+	}
+}
+
+func mockPolicyWithOptionalFieldsJSON() map[string]interface{} {
+	desc := "Test policy description"
+	return map[string]interface{}{
+		"id":      "ccc00000-0000-0000-0000-000000000001",
+		"name":    "Allow LAN to WAN",
+		"enabled": true,
+		"action":  map[string]string{"type": "ALLOW"},
+		"source": map[string]interface{}{
+			"zoneId": "aaa00000-0000-0000-0000-000000000001",
+			"trafficFilter": map[string]interface{}{
+				"type": "NETWORK",
+			},
+		},
+		"destination": map[string]interface{}{
+			"zoneId": "aaa00000-0000-0000-0000-000000000002",
+			"trafficFilter": map[string]interface{}{
+				"type": "IP_ADDRESS",
+			},
+		},
+		"ipProtocolScope": map[string]string{
+			"ipVersion": "IPV4_AND_IPV6",
+		},
+		"loggingEnabled": false,
+		"index":          0,
+		"metadata": map[string]string{
+			"origin": "USER_DEFINED",
+		},
+		"description":           desc,
+		"connectionStateFilter": []string{"NEW", "ESTABLISHED"},
+		"ipsecFilter":           "MATCH_ENCRYPTED",
+		"schedule":              map[string]string{"mode": "ALWAYS"},
+	}
+}
+
+func TestGetFirewallPolicy_Execute_WithOptionalFields(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(
+				mockPolicyWithOptionalFieldsJSON(),
+			)
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallPolicy(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "Description:") {
+		t.Errorf(
+			"result should contain 'Description:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Connection State Filter:") {
+		t.Errorf(
+			"result should contain 'Connection State Filter:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "IPsec Filter:") {
+		t.Errorf(
+			"result should contain 'IPsec Filter:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Schedule Mode:") {
+		t.Errorf(
+			"result should contain 'Schedule Mode:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Source Traffic Filter:") {
+		t.Errorf(
+			"result should contain 'Source Traffic Filter:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "Destination Traffic Filter:") {
+		t.Errorf(
+			"result should contain 'Destination Traffic Filter:': %s",
+			result,
+		)
+	}
+}
+
+func TestCreateFirewallPolicy_Execute_WithAllOptionalFields(
+	t *testing.T,
+) {
+	var gotBody map[string]interface{}
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test Policy",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000001",
+			"trafficFilter": {"type": "NETWORK"}
+		},
+		"destination": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000002",
+			"trafficFilter": {"type": "IP_ADDRESS"}
+		},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false,
+		"schedule": {"mode": "ALWAYS"}
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	src, ok := gotBody["source"].(map[string]interface{})
+	if !ok {
+		t.Fatal("request body should have source object")
+	}
+	if src["trafficFilter"] == nil {
+		t.Error("request body source.trafficFilter should be set")
+	}
+
+	dst, ok := gotBody["destination"].(map[string]interface{})
+	if !ok {
+		t.Fatal("request body should have destination object")
+	}
+	if dst["trafficFilter"] == nil {
+		t.Error(
+			"request body destination.trafficFilter should be set",
+		)
+	}
+
+	if gotBody["schedule"] == nil {
+		t.Error("request body schedule should be set")
+	}
+}
+
+func TestListFirewallPolicies_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallPolicies(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetFirewallPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateFirewallPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"},
+		"destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateFirewallPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateFirewallPolicy(client, testSiteID)
+	args := `{
+		"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001",
+		"name": "Test",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"},
+		"destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteFirewallPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteFirewallPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestPatchFirewallPolicy_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewPatchFirewallPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001", "loggingEnabled": true}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}

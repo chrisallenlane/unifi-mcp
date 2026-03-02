@@ -391,3 +391,185 @@ func TestDeleteWiFiBroadcast_InputSchema(t *testing.T) {
 		t.Error("wifiBroadcastId should be required")
 	}
 }
+
+func TestGetWiFiBroadcast_Execute_WithOptionalFields(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":       "aaa00000-0000-0000-0000-000000000001",
+				"name":     "Enterprise WiFi",
+				"type":     "STANDARD",
+				"enabled":  true,
+				"hideName": false,
+				"metadata": map[string]string{
+					"origin": "USER_DEFINED",
+				},
+				"securityConfiguration": map[string]interface{}{
+					"type": "WPA2",
+					"radiusConfiguration": map[string]interface{}{
+						"authServer": "radius.local",
+						"authPort":   1812,
+					},
+				},
+				"clientIsolationEnabled":              false,
+				"multicastToUnicastConversionEnabled": false,
+				"uapsdEnabled":                        false,
+				"broadcastingDeviceFilter": map[string]interface{}{
+					"type": "ALL",
+				},
+				"clientFilteringPolicy": map[string]interface{}{
+					"action": "ALLOW",
+					"macAddressFilter": []string{
+						"AA:BB:CC:DD:EE:FF",
+					},
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetWiFiBroadcast(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	checks := []string{
+		"RADIUS Configuration",
+		"Broadcasting Device Filter Type:",
+		"Client Filtering:",
+	}
+	for _, s := range checks {
+		if !strings.Contains(result, s) {
+			t.Errorf(
+				"result should contain %q: %s",
+				s,
+				result,
+			)
+		}
+	}
+}
+
+func TestListWiFiBroadcasts_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListWiFiBroadcasts(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestGetWiFiBroadcast_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestCreateWiFiBroadcast_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Test", "enabled": true, "type": "STANDARD", "securityConfiguration": {"type": "OPEN"}}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestUpdateWiFiBroadcast_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewUpdateWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001", "name": "Test", "enabled": true, "type": "STANDARD", "securityConfiguration": {"type": "OPEN"}}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
+
+func TestDeleteWiFiBroadcast_Execute_APIError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("internal server error"))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewDeleteWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "500") {
+		t.Errorf("error should contain status code: %v", err)
+	}
+}
