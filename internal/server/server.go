@@ -288,6 +288,26 @@ func (s *Server) registerTools() {
 	s.tools["list_pending_devices"] = tools.NewListPendingDevices(
 		s.client,
 	)
+	s.tools["list_wifi_broadcasts"] = tools.NewListWiFiBroadcasts(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_wifi_broadcast"] = tools.NewGetWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_wifi_broadcast"] = tools.NewCreateWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_wifi_broadcast"] = tools.NewUpdateWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_wifi_broadcast"] = tools.NewDeleteWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
