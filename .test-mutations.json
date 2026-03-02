@@ -4,36 +4,132 @@
   "last_updated": "2026-03-02T00:00:00Z",
   "modules": {
     "internal/tools/helpers.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/helpers_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 9,
+          "killed": 9,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 6,
+          "killed": 6,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 9,
+          "killed": 9,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All error conditions, control flow branches, return values, and schema construction thoroughly tested"]
     },
     "internal/tools/info.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/info_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 2,
+          "killed": 2,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 2,
+          "killed": 2,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 3,
+          "killed": 3,
+          "survived": 0,
+          "examples": [
+            {
+              "line": 41,
+              "original": "\"failed to get info: %w\"",
+              "mutated": "\"MUTATED: %w\"",
+              "result": "survived_declined",
+              "test_that_caught_it": null
+            }
+          ]
+        }
+      },
+      "mutation_score": 85.7,
+      "insights": ["Error message wording not checked (declined to address)", "Description/InputSchema/error propagation tests added this session"]
     },
     "internal/tools/sites.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/sites_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 3,
+          "killed": 3,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 3,
+          "killed": 3,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 4,
+          "killed": 4,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 5,
+          "killed": 5,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All 7 original survivors now killed: Description, formatting, counts, parseArgs, network error"]
     },
     "internal/tools/firewall_zones.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/firewall_zones_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 11,
+          "killed": 11,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 1,
+          "killed": 1,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 5,
+          "killed": 5,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 5,
+          "killed": 5,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All 7 original survivors now killed: NetworkIds condition, numbering, separator, parseArgs, network error"]
     },
     "internal/tools/firewall_policies.go": {
       "status": "pending",
@@ -158,10 +254,10 @@
   },
   "global_statistics": {
     "total_modules": 19,
-    "completed_modules": 0,
-    "total_mutations": 0,
-    "total_killed": 0,
-    "total_survived": 0,
-    "overall_score": 0.0
+    "completed_modules": 4,
+    "total_mutations": 68,
+    "total_killed": 67,
+    "total_survived": 1,
+    "overall_score": 98.5
   }
 }

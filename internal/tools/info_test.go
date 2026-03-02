@@ -58,6 +58,60 @@ func TestGetInfo_Execute_Error(t *testing.T) {
 	}
 }
 
+func TestGetInfo_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close() // close immediately to force a network error
+
+	tool := NewGetInfo(client)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to get info") {
+		t.Errorf(
+			"error should contain 'failed to get info': %v",
+			err,
+		)
+	}
+}
+
+func TestGetInfo_Description(t *testing.T) {
+	tool := NewGetInfo(nil)
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "UniFi") {
+		t.Error("Description() should mention UniFi")
+	}
+}
+
+func TestGetInfo_InputSchema(t *testing.T) {
+	tool := NewGetInfo(nil)
+	schema := tool.InputSchema()
+	if schema["type"] != "object" {
+		t.Errorf(
+			"schema type should be 'object', got %v",
+			schema["type"],
+		)
+	}
+	props, ok := schema["properties"].(map[string]interface{})
+	if !ok {
+		t.Fatal("schema should have properties map")
+	}
+	if len(props) != 0 {
+		t.Errorf(
+			"get_info should have no properties, got %d",
+			len(props),
+		)
+	}
+}
+
 func TestGetInfo_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

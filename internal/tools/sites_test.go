@@ -130,6 +130,117 @@ func TestListSites_InputSchema(t *testing.T) {
 	}
 }
 
+func TestListSites_Description(t *testing.T) {
+	tool := &ListSites{}
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "site") {
+		t.Error("Description() should mention sites")
+	}
+}
+
+func TestListSites_Execute_InvalidJSON(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+			t.Fatal("API should not be called for invalid JSON")
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListSites(client, "")
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListSites_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListSites(client, "")
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list sites") {
+		t.Errorf(
+			"error should contain 'failed to list sites': %v",
+			err,
+		)
+	}
+}
+
+func TestListSites_Execute_Formatting(t *testing.T) {
+	// Use totalCount=5 but only 2 items to distinguish
+	// len(page.Data) from page.TotalCount in the header.
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":                "550e8400-e29b-41d4-a716-446655440000",
+						"name":              "Default",
+						"internalReference": "default",
+					},
+					{
+						"id":                "660e8400-e29b-41d4-a716-446655440001",
+						"name":              "Branch",
+						"internalReference": "branch",
+					},
+				},
+				"count":      2,
+				"limit":      2,
+				"offset":     0,
+				"totalCount": 5,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListSites(client, "")
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify header shows page size vs total count
+	if !strings.Contains(result, "Sites (2 of 5):") {
+		t.Errorf(
+			"result should contain 'Sites (2 of 5):': %s",
+			result,
+		)
+	}
+
+	// Verify 1-based numbering
+	if !strings.Contains(result, "1. Default") {
+		t.Errorf(
+			"result should contain '1. Default': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Branch") {
+		t.Errorf(
+			"result should contain '2. Branch': %s",
+			result,
+		)
+	}
+}
+
 func TestListSites_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

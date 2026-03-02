@@ -357,6 +357,128 @@ func TestDeleteFirewallZone_InputSchema(t *testing.T) {
 	requireContains(t, required, "firewallZoneId")
 }
 
+func TestListFirewallZones_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000001",
+					"name": "LAN",
+					"networkIds": []string{
+						"bbb00000-0000-0000-0000-000000000001",
+					},
+					"metadata": map[string]string{
+						"origin": "SYSTEM_DEFINED",
+					},
+				},
+				map[string]interface{}{
+					"id":         "aaa00000-0000-0000-0000-000000000002",
+					"name":       "DMZ",
+					"networkIds": []string{},
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
+					},
+				},
+			))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify 1-based numbering
+	if !strings.Contains(result, "1. Name: LAN") {
+		t.Errorf(
+			"result should contain '1. Name: LAN': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Name: DMZ") {
+		t.Errorf(
+			"result should contain '2. Name: DMZ': %s",
+			result,
+		)
+	}
+
+	// Verify blank line separator between zones
+	if !strings.Contains(result, "\n\n2. ") {
+		t.Errorf(
+			"result should have blank line between zones: %s",
+			result,
+		)
+	}
+
+	// Verify network IDs shown for LAN (has IDs)
+	if !strings.Contains(
+		result,
+		"Network IDs: bbb00000-0000-0000-0000-000000000001",
+	) {
+		t.Errorf(
+			"result should show network ID for LAN: %s",
+			result,
+		)
+	}
+
+	// Verify "(none)" shown for DMZ (no IDs)
+	if !strings.Contains(result, "Network IDs: (none)") {
+		t.Errorf(
+			"result should show '(none)' for DMZ: %s",
+			result,
+		)
+	}
+}
+
+func TestListFirewallZones_Execute_InvalidJSON(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+			t.Fatal("API should not be called for invalid JSON")
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListFirewallZones_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListFirewallZones(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to list firewall zones",
+	) {
+		t.Errorf(
+			"error should contain 'failed to list firewall zones': %v",
+			err,
+		)
+	}
+}
+
 func TestListFirewallZones_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
