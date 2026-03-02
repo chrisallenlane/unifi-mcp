@@ -35,19 +35,15 @@ func (t *ListVouchers) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVouchers) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of vouchers to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of vouchers to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -61,13 +57,8 @@ func (t *ListVouchers) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -176,13 +167,8 @@ func (t *GetVoucher) Execute(
 		SiteID    string `json:"siteId"`
 		VoucherID string `json:"voucherId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -370,11 +356,8 @@ func (t *CreateVouchers) Execute(
 		RxRateLimitKbps      *int64 `json:"rxRateLimitKbps"`
 		TxRateLimitKbps      *int64 `json:"txRateLimitKbps"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -487,11 +470,8 @@ func (t *DeleteVouchers) Execute(
 		SiteID string `json:"siteId"`
 		Filter string `json:"filter"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	if params.Filter == "" {
@@ -586,13 +566,8 @@ func (t *DeleteVoucher) Execute(
 		SiteID    string `json:"siteId"`
 		VoucherID string `json:"voucherId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

@@ -48,19 +48,15 @@ func (t *ListTrafficMatchingLists) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListTrafficMatchingLists) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -74,13 +70,8 @@ func (t *ListTrafficMatchingLists) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -184,13 +175,8 @@ func (t *GetTrafficMatchingList) Execute(
 		SiteID                string `json:"siteId"`
 		TrafficMatchingListID string `json:"trafficMatchingListId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -289,13 +275,8 @@ func (t *CreateTrafficMatchingList) Execute(
 	var params struct {
 		SiteID string `json:"siteId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -399,13 +380,8 @@ func (t *UpdateTrafficMatchingList) Execute(
 		SiteID                string `json:"siteId"`
 		TrafficMatchingListID string `json:"trafficMatchingListId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -501,13 +477,8 @@ func (t *DeleteTrafficMatchingList) Execute(
 		SiteID                string `json:"siteId"`
 		TrafficMatchingListID string `json:"trafficMatchingListId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

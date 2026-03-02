@@ -35,19 +35,15 @@ func (t *ListWans) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWans) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -61,13 +57,8 @@ func (t *ListWans) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -148,19 +139,15 @@ func (t *ListVpnTunnels) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnTunnels) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -174,13 +161,8 @@ func (t *ListVpnTunnels) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -265,19 +247,15 @@ func (t *ListVpnServers) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListVpnServers) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -291,13 +269,8 @@ func (t *ListVpnServers) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -383,19 +356,15 @@ func (t *ListRadiusProfiles) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListRadiusProfiles) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -409,13 +378,8 @@ func (t *ListRadiusProfiles) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -499,19 +463,15 @@ func (t *ListDeviceTags) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDeviceTags) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -525,13 +485,8 @@ func (t *ListDeviceTags) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -612,17 +567,8 @@ func (t *ListDpiCategories) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDpiCategories) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": paginationSchema(),
 	}
 }
 
@@ -635,13 +581,8 @@ func (t *ListDpiCategories) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.GetDpiApplicationCategoriesWithResponse(
@@ -712,17 +653,8 @@ func (t *ListDpiApplications) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDpiApplications) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": paginationSchema(),
 	}
 }
 
@@ -735,13 +667,8 @@ func (t *ListDpiApplications) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.GetDpiApplicationsWithResponse(
@@ -812,17 +739,8 @@ func (t *ListCountries) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListCountries) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of items to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of items to skip",
-			},
-		},
+		"type":       "object",
+		"properties": paginationSchema(),
 	}
 }
 
@@ -835,13 +753,8 @@ func (t *ListCountries) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.GetCountriesWithResponse(

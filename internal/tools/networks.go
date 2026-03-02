@@ -36,19 +36,15 @@ func (t *ListNetworks) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListNetworks) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of networks to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of networks to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -62,13 +58,8 @@ func (t *ListNetworks) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -178,13 +169,8 @@ func (t *GetNetwork) Execute(
 		SiteID    string `json:"siteId"`
 		NetworkID string `json:"networkId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -336,13 +322,8 @@ func (t *CreateNetwork) Execute(
 	var params struct {
 		SiteID string `json:"siteId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -467,13 +448,8 @@ func (t *UpdateNetwork) Execute(
 		SiteID    string `json:"siteId"`
 		NetworkID string `json:"networkId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -572,13 +548,8 @@ func (t *DeleteNetwork) Execute(
 		NetworkID string `json:"networkId"`
 		Force     *bool  `json:"force"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -672,13 +643,8 @@ func (t *GetNetworkReferences) Execute(
 		SiteID    string `json:"siteId"`
 		NetworkID string `json:"networkId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

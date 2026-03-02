@@ -34,17 +34,8 @@ func (t *ListSites) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListSites) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of sites to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of sites to skip",
-			},
-		},
+		"type":       "object",
+		"properties": paginationSchema(),
 	}
 }
 
@@ -57,13 +48,8 @@ func (t *ListSites) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	apiParams := &unifi.GetSiteOverviewPageParams{

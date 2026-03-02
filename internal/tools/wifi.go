@@ -38,19 +38,15 @@ func (t *ListWiFiBroadcasts) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListWiFiBroadcasts) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of broadcasts to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of broadcasts to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -64,13 +60,8 @@ func (t *ListWiFiBroadcasts) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -180,13 +171,8 @@ func (t *GetWiFiBroadcast) Execute(
 		SiteID          string `json:"siteId"`
 		WiFiBroadcastID string `json:"wifiBroadcastId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -379,13 +365,8 @@ func (t *CreateWiFiBroadcast) Execute(
 	var params struct {
 		SiteID string `json:"siteId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -506,13 +487,8 @@ func (t *UpdateWiFiBroadcast) Execute(
 		SiteID          string `json:"siteId"`
 		WiFiBroadcastID string `json:"wifiBroadcastId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

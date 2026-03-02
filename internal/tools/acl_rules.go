@@ -36,19 +36,15 @@ func (t *ListACLRules) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListACLRules) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of rules to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of rules to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -62,13 +58,8 @@ func (t *ListACLRules) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -178,13 +169,8 @@ func (t *GetACLRule) Execute(
 		SiteID    string `json:"siteId"`
 		ACLRuleID string `json:"aclRuleId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -344,13 +330,8 @@ func (t *CreateACLRule) Execute(
 	var params struct {
 		SiteID string `json:"siteId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -475,13 +456,8 @@ func (t *UpdateACLRule) Execute(
 		SiteID    string `json:"siteId"`
 		ACLRuleID string `json:"aclRuleId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -575,13 +551,8 @@ func (t *DeleteACLRule) Execute(
 		SiteID    string `json:"siteId"`
 		ACLRuleID string `json:"aclRuleId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -665,13 +636,8 @@ func (t *GetACLRuleOrdering) Execute(
 	var params struct {
 		SiteID string `json:"siteId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -771,11 +737,8 @@ func (t *UpdateACLRuleOrdering) Execute(
 		SiteID            string   `json:"siteId"`
 		OrderedACLRuleIDs []string `json:"orderedAclRuleIds"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

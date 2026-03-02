@@ -35,19 +35,15 @@ func (t *ListDevices) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListDevices) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of devices to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of devices to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -61,13 +57,8 @@ func (t *ListDevices) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -177,13 +168,8 @@ func (t *GetDevice) Execute(
 		SiteID   string `json:"siteId"`
 		DeviceID string `json:"deviceId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -293,13 +279,8 @@ func (t *AdoptDevice) Execute(
 		SiteID     string `json:"siteId"`
 		MacAddress string `json:"macAddress"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -381,13 +362,8 @@ func (t *RemoveDevice) Execute(
 		SiteID   string `json:"siteId"`
 		DeviceID string `json:"deviceId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -475,13 +451,8 @@ func (t *ExecuteDeviceAction) Execute(
 		DeviceID string `json:"deviceId"`
 		Action   string `json:"action"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -585,13 +556,8 @@ func (t *ExecutePortAction) Execute(
 		PortIdx  *int32 `json:"portIdx"`
 		Action   string `json:"action"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -691,13 +657,8 @@ func (t *GetDeviceStatistics) Execute(
 		SiteID   string `json:"siteId"`
 		DeviceID string `json:"deviceId"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(params.SiteID, t.defaultSiteID)
@@ -826,17 +787,8 @@ func (t *ListPendingDevices) Description() string {
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListPendingDevices) InputSchema() map[string]interface{} {
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of devices to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of devices to skip",
-			},
-		},
+		"type":       "object",
+		"properties": paginationSchema(),
 	}
 }
 
@@ -849,13 +801,8 @@ func (t *ListPendingDevices) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	resp, err := t.client.GetPendingDevicePageWithResponse(
