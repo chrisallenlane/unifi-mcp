@@ -589,13 +589,8 @@ func (t *DeleteWiFiBroadcast) Execute(
 		WiFiBroadcastID string `json:"wifiBroadcastId"`
 		Force           *bool  `json:"force"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

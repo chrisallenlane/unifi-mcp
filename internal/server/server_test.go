@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
@@ -161,7 +162,7 @@ func TestHandleCallTool_InvalidTool(t *testing.T) {
 		t.Fatal("Expected error for nonexistent tool")
 	}
 
-	if !containsString(resp.Error.Message, "tool not found") {
+	if !strings.Contains(resp.Error.Message, "tool not found") {
 		t.Errorf(
 			"Error message should mention 'tool not found', got: %s",
 			resp.Error.Message,
@@ -185,7 +186,7 @@ func TestHandleCallTool_MalformedParams(t *testing.T) {
 		t.Fatal("Expected error for malformed params")
 	}
 
-	if !containsString(
+	if !strings.Contains(
 		resp.Error.Message,
 		"failed to parse tool call params",
 	) {
@@ -274,13 +275,4 @@ func TestJSONRPCError_Marshal(t *testing.T) {
 			errorObj["message"],
 		)
 	}
-}
-
-func containsString(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
