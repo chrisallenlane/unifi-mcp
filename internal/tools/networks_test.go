@@ -12,36 +12,30 @@ func TestListNetworks_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":         "aaa00000-0000-0000-0000-000000000001",
-						"name":       "Default",
-						"vlanId":     1,
-						"management": "GATEWAY",
-						"enabled":    true,
-						"default":    true,
-						"metadata": map[string]string{
-							"origin": "SYSTEM_DEFINED",
-						},
-					},
-					{
-						"id":         "aaa00000-0000-0000-0000-000000000002",
-						"name":       "IoT",
-						"vlanId":     100,
-						"management": "GATEWAY",
-						"enabled":    true,
-						"default":    false,
-						"metadata": map[string]string{
-							"origin": "USER_DEFINED",
-						},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":         "aaa00000-0000-0000-0000-000000000001",
+					"name":       "Default",
+					"vlanId":     1,
+					"management": "GATEWAY",
+					"enabled":    true,
+					"default":    true,
+					"metadata": map[string]string{
+						"origin": "SYSTEM_DEFINED",
 					},
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":         "aaa00000-0000-0000-0000-000000000002",
+					"name":       "IoT",
+					"vlanId":     100,
+					"management": "GATEWAY",
+					"enabled":    true,
+					"default":    false,
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
+					},
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -79,13 +73,7 @@ func TestListNetworks_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -112,21 +100,6 @@ func TestListNetworks_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListNetworks_Description(t *testing.T) {
-	tool := &ListNetworks{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListNetworks_InputSchema(t *testing.T) {
-	tool := &ListNetworks{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -194,13 +167,6 @@ func TestGetNetwork_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestGetNetwork_Description(t *testing.T) {
-	tool := &GetNetwork{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestGetNetwork_InputSchema(t *testing.T) {
 	tool := &GetNetwork{}
 	schema := tool.InputSchema()
@@ -259,13 +225,6 @@ func TestCreateNetwork_Execute(t *testing.T) {
 			"result should contain 'Guest': %s",
 			result,
 		)
-	}
-}
-
-func TestCreateNetwork_Description(t *testing.T) {
-	tool := &CreateNetwork{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -343,13 +302,6 @@ func TestUpdateNetwork_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestUpdateNetwork_Description(t *testing.T) {
-	tool := &UpdateNetwork{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestUpdateNetwork_InputSchema(t *testing.T) {
 	tool := &UpdateNetwork{}
 	schema := tool.InputSchema()
@@ -400,13 +352,6 @@ func TestDeleteNetwork_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestDeleteNetwork_Description(t *testing.T) {
-	tool := &DeleteNetwork{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -522,13 +467,6 @@ func TestGetNetworkReferences_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetNetworkReferences_Description(t *testing.T) {
-	tool := &GetNetworkReferences{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

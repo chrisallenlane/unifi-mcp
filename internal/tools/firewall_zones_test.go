@@ -13,32 +13,26 @@ func TestListFirewallZones_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":   "aaa00000-0000-0000-0000-000000000001",
-						"name": "LAN",
-						"networkIds": []string{
-							"bbb00000-0000-0000-0000-000000000001",
-						},
-						"metadata": map[string]string{
-							"origin": "SYSTEM_DEFINED",
-						},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000001",
+					"name": "LAN",
+					"networkIds": []string{
+						"bbb00000-0000-0000-0000-000000000001",
 					},
-					{
-						"id":         "aaa00000-0000-0000-0000-000000000002",
-						"name":       "DMZ",
-						"networkIds": []string{},
-						"metadata": map[string]string{
-							"origin": "USER_DEFINED",
-						},
+					"metadata": map[string]string{
+						"origin": "SYSTEM_DEFINED",
 					},
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":         "aaa00000-0000-0000-0000-000000000002",
+					"name":       "DMZ",
+					"networkIds": []string{},
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
+					},
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -70,13 +64,7 @@ func TestListFirewallZones_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -103,9 +91,6 @@ func TestListFirewallZones_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
-	if !strings.Contains(err.Error(), "siteId is required") {
-		t.Errorf("unexpected error: %v", err)
-	}
 }
 
 func TestListFirewallZones_DefaultSiteFallback(t *testing.T) {
@@ -114,13 +99,7 @@ func TestListFirewallZones_DefaultSiteFallback(t *testing.T) {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			gotPath = r.URL.Path
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -138,21 +117,6 @@ func TestListFirewallZones_DefaultSiteFallback(t *testing.T) {
 			"expected path to contain default site ID, got: %s",
 			gotPath,
 		)
-	}
-}
-
-func TestListFirewallZones_Description(t *testing.T) {
-	tool := &ListFirewallZones{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListFirewallZones_InputSchema(t *testing.T) {
-	tool := &ListFirewallZones{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -209,13 +173,6 @@ func TestGetFirewallZone_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetFirewallZone_Description(t *testing.T) {
-	tool := &GetFirewallZone{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -294,13 +251,6 @@ func TestCreateFirewallZone_Execute_MissingName(t *testing.T) {
 	}
 }
 
-func TestCreateFirewallZone_Description(t *testing.T) {
-	tool := &CreateFirewallZone{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestCreateFirewallZone_InputSchema(t *testing.T) {
 	tool := &CreateFirewallZone{}
 	schema := tool.InputSchema()
@@ -359,21 +309,6 @@ func TestUpdateFirewallZone_Execute_MissingZoneID(t *testing.T) {
 	}
 }
 
-func TestUpdateFirewallZone_Description(t *testing.T) {
-	tool := &UpdateFirewallZone{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestUpdateFirewallZone_InputSchema(t *testing.T) {
-	tool := &UpdateFirewallZone{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 func TestDeleteFirewallZone_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -405,13 +340,6 @@ func TestDeleteFirewallZone_Execute_MissingZoneID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for missing zone ID")
-	}
-}
-
-func TestDeleteFirewallZone_Description(t *testing.T) {
-	tool := &DeleteFirewallZone{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

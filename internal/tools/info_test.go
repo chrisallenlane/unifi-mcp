@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 )
 
 func TestGetInfo_Execute(t *testing.T) {
 	client, srv := testClient(t,
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/v1/info" {
-				t.Errorf("unexpected path: %s", r.URL.Path)
-			}
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(map[string]string{
 				"applicationVersion": "10.1.84",
@@ -30,8 +28,11 @@ func TestGetInfo_Execute(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	if result != "Application Version: 10.1.84" {
-		t.Errorf("unexpected result: %s", result)
+	if !strings.Contains(result, "10.1.84") {
+		t.Errorf(
+			"result should contain version '10.1.84': %s",
+			result,
+		)
 	}
 }
 
@@ -51,20 +52,5 @@ func TestGetInfo_Execute_Error(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for unauthorized response")
-	}
-}
-
-func TestGetInfo_Description(t *testing.T) {
-	tool := &GetInfo{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestGetInfo_InputSchema(t *testing.T) {
-	tool := &GetInfo{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }

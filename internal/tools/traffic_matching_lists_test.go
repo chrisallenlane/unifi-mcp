@@ -21,13 +21,9 @@ func TestListTrafficMatchingLists_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{mockTrafficMatchingListJSON()},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			json.NewEncoder(w).Encode(paginatedResponse(
+				mockTrafficMatchingListJSON(),
+			))
 		}),
 	)
 	defer srv.Close()
@@ -52,13 +48,7 @@ func TestListTrafficMatchingLists_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -84,21 +74,6 @@ func TestListTrafficMatchingLists_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID")
-	}
-}
-
-func TestListTrafficMatchingLists_Description(t *testing.T) {
-	tool := &ListTrafficMatchingLists{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListTrafficMatchingLists_InputSchema(t *testing.T) {
-	tool := &ListTrafficMatchingLists{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -137,13 +112,6 @@ func TestGetTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for missing traffic matching list ID")
-	}
-}
-
-func TestGetTrafficMatchingList_Description(t *testing.T) {
-	tool := &GetTrafficMatchingList{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -219,13 +187,6 @@ func TestCreateTrafficMatchingList_Execute_NoSiteID(t *testing.T) {
 	}
 }
 
-func TestCreateTrafficMatchingList_Description(t *testing.T) {
-	tool := &CreateTrafficMatchingList{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestCreateTrafficMatchingList_InputSchema(t *testing.T) {
 	tool := &CreateTrafficMatchingList{}
 	schema := tool.InputSchema()
@@ -287,13 +248,6 @@ func TestUpdateTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	}
 }
 
-func TestUpdateTrafficMatchingList_Description(t *testing.T) {
-	tool := &UpdateTrafficMatchingList{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestUpdateTrafficMatchingList_InputSchema(t *testing.T) {
 	tool := &UpdateTrafficMatchingList{}
 	schema := tool.InputSchema()
@@ -343,13 +297,6 @@ func TestDeleteTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for missing traffic matching list ID")
-	}
-}
-
-func TestDeleteTrafficMatchingList_Description(t *testing.T) {
-	tool := &DeleteTrafficMatchingList{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

@@ -73,13 +73,6 @@ func TestGetFirewallPolicyOrdering_Execute_MissingParams(
 	}
 }
 
-func TestGetFirewallPolicyOrdering_Description(t *testing.T) {
-	tool := &GetFirewallPolicyOrdering{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestGetFirewallPolicyOrdering_InputSchema(t *testing.T) {
 	tool := &GetFirewallPolicyOrdering{}
 	schema := tool.InputSchema()
@@ -154,13 +147,6 @@ func TestUpdateFirewallPolicyOrdering_Execute_MissingParams(
 	)
 	if err == nil {
 		t.Fatal("expected error for missing params")
-	}
-}
-
-func TestUpdateFirewallPolicyOrdering_Description(t *testing.T) {
-	tool := &UpdateFirewallPolicyOrdering{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

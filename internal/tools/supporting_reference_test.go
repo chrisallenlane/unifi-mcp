@@ -14,19 +14,13 @@ func TestListRadiusProfiles_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":       "ddd00000-0000-0000-0000-000000000001",
-						"name":     "Corp RADIUS",
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":       "ddd00000-0000-0000-0000-000000000001",
+					"name":     "Corp RADIUS",
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -52,13 +46,7 @@ func TestListRadiusProfiles_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -77,44 +65,23 @@ func TestListRadiusProfiles_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestListRadiusProfiles_Description(t *testing.T) {
-	tool := &ListRadiusProfiles{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListRadiusProfiles_InputSchema(t *testing.T) {
-	tool := &ListRadiusProfiles{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_device_tags tests ---
 
 func TestListDeviceTags_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":   "eee00000-0000-0000-0000-000000000001",
-						"name": "Floor 1 APs",
-						"deviceIds": []string{
-							"fff00000-0000-0000-0000-000000000001",
-							"fff00000-0000-0000-0000-000000000002",
-						},
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":   "eee00000-0000-0000-0000-000000000001",
+					"name": "Floor 1 APs",
+					"deviceIds": []string{
+						"fff00000-0000-0000-0000-000000000001",
+						"fff00000-0000-0000-0000-000000000002",
 					},
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -146,13 +113,7 @@ func TestListDeviceTags_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -171,37 +132,16 @@ func TestListDeviceTags_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestListDeviceTags_Description(t *testing.T) {
-	tool := &ListDeviceTags{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListDeviceTags_InputSchema(t *testing.T) {
-	tool := &ListDeviceTags{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_dpi_categories tests ---
 
 func TestListDpiCategories_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{"id": 1, "name": "Streaming Media"},
-					{"id": 2, "name": "Social Networking"},
-				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{"id": 1, "name": "Streaming Media"},
+				map[string]interface{}{"id": 2, "name": "Social Networking"},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -233,13 +173,7 @@ func TestListDpiCategories_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -258,37 +192,16 @@ func TestListDpiCategories_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestListDpiCategories_Description(t *testing.T) {
-	tool := &ListDpiCategories{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListDpiCategories_InputSchema(t *testing.T) {
-	tool := &ListDpiCategories{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_dpi_applications tests ---
 
 func TestListDpiApplications_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{"id": 100, "name": "Netflix"},
-					{"id": 101, "name": "YouTube"},
-				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{"id": 100, "name": "Netflix"},
+				map[string]interface{}{"id": 101, "name": "YouTube"},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -320,13 +233,7 @@ func TestListDpiApplications_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -345,38 +252,17 @@ func TestListDpiApplications_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestListDpiApplications_Description(t *testing.T) {
-	tool := &ListDpiApplications{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListDpiApplications_InputSchema(t *testing.T) {
-	tool := &ListDpiApplications{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_countries tests ---
 
 func TestListCountries_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{"code": "US", "name": "United States"},
-					{"code": "DE", "name": "Germany"},
-					{"code": "JP", "name": "Japan"},
-				},
-				"count":      3,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 3,
-			})
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{"code": "US", "name": "United States"},
+				map[string]interface{}{"code": "DE", "name": "Germany"},
+				map[string]interface{}{"code": "JP", "name": "Japan"},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -411,13 +297,7 @@ func TestListCountries_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -433,20 +313,5 @@ func TestListCountries_Execute_Empty(t *testing.T) {
 
 	if result != "No countries found." {
 		t.Errorf("unexpected result: %s", result)
-	}
-}
-
-func TestListCountries_Description(t *testing.T) {
-	tool := &ListCountries{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListCountries_InputSchema(t *testing.T) {
-	tool := &ListCountries{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }

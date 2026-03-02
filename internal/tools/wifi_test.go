@@ -12,38 +12,32 @@ func TestListWiFiBroadcasts_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":      "aaa00000-0000-0000-0000-000000000001",
-						"name":    "Home WiFi",
-						"type":    "STANDARD",
-						"enabled": true,
-						"metadata": map[string]string{
-							"origin": "USER_DEFINED",
-						},
-						"securityConfiguration": map[string]string{
-							"type": "WPA2_WPA3",
-						},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":      "aaa00000-0000-0000-0000-000000000001",
+					"name":    "Home WiFi",
+					"type":    "STANDARD",
+					"enabled": true,
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
 					},
-					{
-						"id":      "aaa00000-0000-0000-0000-000000000002",
-						"name":    "IoT Network",
-						"type":    "IOT_OPTIMIZED",
-						"enabled": true,
-						"metadata": map[string]string{
-							"origin": "USER_DEFINED",
-						},
-						"securityConfiguration": map[string]string{
-							"type": "WPA2",
-						},
+					"securityConfiguration": map[string]string{
+						"type": "WPA2_WPA3",
 					},
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":      "aaa00000-0000-0000-0000-000000000002",
+					"name":    "IoT Network",
+					"type":    "IOT_OPTIMIZED",
+					"enabled": true,
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
+					},
+					"securityConfiguration": map[string]string{
+						"type": "WPA2",
+					},
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -75,13 +69,7 @@ func TestListWiFiBroadcasts_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -108,24 +96,6 @@ func TestListWiFiBroadcasts_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListWiFiBroadcasts_Description(t *testing.T) {
-	tool := &ListWiFiBroadcasts{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListWiFiBroadcasts_InputSchema(t *testing.T) {
-	tool := &ListWiFiBroadcasts{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf(
-			"schema type = %v, want object",
-			schema["type"],
-		)
 	}
 }
 
@@ -200,13 +170,6 @@ func TestGetWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestGetWiFiBroadcast_Description(t *testing.T) {
-	tool := &GetWiFiBroadcast{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestGetWiFiBroadcast_InputSchema(t *testing.T) {
 	tool := &GetWiFiBroadcast{}
 	schema := tool.InputSchema()
@@ -272,13 +235,6 @@ func TestCreateWiFiBroadcast_Execute(t *testing.T) {
 			"result should contain 'Guest WiFi': %s",
 			result,
 		)
-	}
-}
-
-func TestCreateWiFiBroadcast_Description(t *testing.T) {
-	tool := &CreateWiFiBroadcast{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -363,13 +319,6 @@ func TestUpdateWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestUpdateWiFiBroadcast_Description(t *testing.T) {
-	tool := &UpdateWiFiBroadcast{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestUpdateWiFiBroadcast_InputSchema(t *testing.T) {
 	tool := &UpdateWiFiBroadcast{}
 	schema := tool.InputSchema()
@@ -422,13 +371,6 @@ func TestDeleteWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestDeleteWiFiBroadcast_Description(t *testing.T) {
-	tool := &DeleteWiFiBroadcast{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

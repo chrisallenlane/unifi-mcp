@@ -12,25 +12,19 @@ func TestListACLRules_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":      "aaa00000-0000-0000-0000-000000000001",
-						"name":    "Block IoT to LAN",
-						"type":    "IPV4",
-						"action":  "BLOCK",
-						"enabled": true,
-						"index":   0,
-						"metadata": map[string]string{
-							"origin": "USER_DEFINED",
-						},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":      "aaa00000-0000-0000-0000-000000000001",
+					"name":    "Block IoT to LAN",
+					"type":    "IPV4",
+					"action":  "BLOCK",
+					"enabled": true,
+					"index":   0,
+					"metadata": map[string]string{
+						"origin": "USER_DEFINED",
 					},
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -62,13 +56,7 @@ func TestListACLRules_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -95,24 +83,6 @@ func TestListACLRules_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListACLRules_Description(t *testing.T) {
-	tool := &ListACLRules{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListACLRules_InputSchema(t *testing.T) {
-	tool := &ListACLRules{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf(
-			"schema type = %v, want object",
-			schema["type"],
-		)
 	}
 }
 
@@ -185,13 +155,6 @@ func TestGetACLRule_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestGetACLRule_Description(t *testing.T) {
-	tool := &GetACLRule{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestGetACLRule_InputSchema(t *testing.T) {
 	tool := &GetACLRule{}
 	schema := tool.InputSchema()
@@ -252,13 +215,6 @@ func TestCreateACLRule_Execute(t *testing.T) {
 			"result should contain rule name: %s",
 			result,
 		)
-	}
-}
-
-func TestCreateACLRule_Description(t *testing.T) {
-	tool := &CreateACLRule{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -338,13 +294,6 @@ func TestUpdateACLRule_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestUpdateACLRule_Description(t *testing.T) {
-	tool := &UpdateACLRule{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestUpdateACLRule_InputSchema(t *testing.T) {
 	tool := &UpdateACLRule{}
 	schema := tool.InputSchema()
@@ -395,13 +344,6 @@ func TestDeleteACLRule_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestDeleteACLRule_Description(t *testing.T) {
-	tool := &DeleteACLRule{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -488,24 +430,6 @@ func TestGetACLRuleOrdering_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestGetACLRuleOrdering_Description(t *testing.T) {
-	tool := &GetACLRuleOrdering{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestGetACLRuleOrdering_InputSchema(t *testing.T) {
-	tool := &GetACLRuleOrdering{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf(
-			"schema type = %v, want object",
-			schema["type"],
-		)
-	}
-}
-
 func TestUpdateACLRuleOrdering_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -536,13 +460,6 @@ func TestUpdateACLRuleOrdering_Execute(t *testing.T) {
 			"result should contain rule count: %s",
 			result,
 		)
-	}
-}
-
-func TestUpdateACLRuleOrdering_Description(t *testing.T) {
-	tool := &UpdateACLRuleOrdering{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

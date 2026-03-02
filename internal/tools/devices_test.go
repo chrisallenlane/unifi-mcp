@@ -14,39 +14,33 @@ func TestListDevices_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":                "bbb00000-0000-0000-0000-000000000001",
-						"name":              "US-8-60W",
-						"model":             "US860W",
-						"macAddress":        "aa:bb:cc:dd:ee:ff",
-						"ipAddress":         "192.168.1.2",
-						"state":             "ONLINE",
-						"firmwareVersion":   "6.6.57",
-						"firmwareUpdatable": false,
-						"supported":         true,
-						"features":          []string{"switching"},
-						"interfaces":        []string{"ports"},
-					},
-					{
-						"id":                "bbb00000-0000-0000-0000-000000000002",
-						"name":              "UAP-AC-PRO",
-						"model":             "UAP-AC-PRO",
-						"macAddress":        "11:22:33:44:55:66",
-						"ipAddress":         "192.168.1.3",
-						"state":             "ONLINE",
-						"firmwareUpdatable": true,
-						"supported":         true,
-						"features":          []string{"accessPoint"},
-						"interfaces":        []string{"radios"},
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":                "bbb00000-0000-0000-0000-000000000001",
+					"name":              "US-8-60W",
+					"model":             "US860W",
+					"macAddress":        "aa:bb:cc:dd:ee:ff",
+					"ipAddress":         "192.168.1.2",
+					"state":             "ONLINE",
+					"firmwareVersion":   "6.6.57",
+					"firmwareUpdatable": false,
+					"supported":         true,
+					"features":          []string{"switching"},
+					"interfaces":        []string{"ports"},
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":                "bbb00000-0000-0000-0000-000000000002",
+					"name":              "UAP-AC-PRO",
+					"model":             "UAP-AC-PRO",
+					"macAddress":        "11:22:33:44:55:66",
+					"ipAddress":         "192.168.1.3",
+					"state":             "ONLINE",
+					"firmwareUpdatable": true,
+					"supported":         true,
+					"features":          []string{"accessPoint"},
+					"interfaces":        []string{"radios"},
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -78,13 +72,7 @@ func TestListDevices_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -111,21 +99,6 @@ func TestListDevices_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListDevices_Description(t *testing.T) {
-	tool := &ListDevices{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListDevices_InputSchema(t *testing.T) {
-	tool := &ListDevices{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -183,13 +156,6 @@ func TestGetDevice_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetDevice_Description(t *testing.T) {
-	tool := &GetDevice{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -264,13 +230,6 @@ func TestAdoptDevice_Execute_MissingMac(t *testing.T) {
 	}
 }
 
-func TestAdoptDevice_Description(t *testing.T) {
-	tool := &AdoptDevice{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestAdoptDevice_InputSchema(t *testing.T) {
 	tool := &AdoptDevice{}
 	schema := tool.InputSchema()
@@ -323,13 +282,6 @@ func TestRemoveDevice_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestRemoveDevice_Description(t *testing.T) {
-	tool := &RemoveDevice{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -400,13 +352,6 @@ func TestExecuteDeviceAction_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestExecuteDeviceAction_Description(t *testing.T) {
-	tool := &ExecuteDeviceAction{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -503,13 +448,6 @@ func TestExecutePortAction_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestExecutePortAction_Description(t *testing.T) {
-	tool := &ExecutePortAction{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestExecutePortAction_InputSchema(t *testing.T) {
 	tool := &ExecutePortAction{}
 	schema := tool.InputSchema()
@@ -592,13 +530,6 @@ func TestGetDeviceStatistics_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetDeviceStatistics_Description(t *testing.T) {
-	tool := &GetDeviceStatistics{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

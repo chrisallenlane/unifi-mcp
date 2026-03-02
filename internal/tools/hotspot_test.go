@@ -12,23 +12,17 @@ func TestListVouchers_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":                   "aaa00000-0000-0000-0000-000000000001",
-						"code":                 "ABCD-1234",
-						"name":                 "Guest WiFi",
-						"timeLimitMinutes":     60,
-						"expired":              false,
-						"authorizedGuestCount": 0,
-						"createdAt":            "2026-03-01T10:00:00Z",
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":                   "aaa00000-0000-0000-0000-000000000001",
+					"code":                 "ABCD-1234",
+					"name":                 "Guest WiFi",
+					"timeLimitMinutes":     60,
+					"expired":              false,
+					"authorizedGuestCount": 0,
+					"createdAt":            "2026-03-01T10:00:00Z",
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -60,13 +54,7 @@ func TestListVouchers_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -93,21 +81,6 @@ func TestListVouchers_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListVouchers_Description(t *testing.T) {
-	tool := &ListVouchers{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListVouchers_InputSchema(t *testing.T) {
-	tool := &ListVouchers{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -168,13 +141,6 @@ func TestGetVoucher_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetVoucher_Description(t *testing.T) {
-	tool := &GetVoucher{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -243,13 +209,6 @@ func TestCreateVouchers_Execute(t *testing.T) {
 	}
 }
 
-func TestCreateVouchers_Description(t *testing.T) {
-	tool := &CreateVouchers{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestCreateVouchers_InputSchema(t *testing.T) {
 	tool := &CreateVouchers{}
 	schema := tool.InputSchema()
@@ -314,13 +273,6 @@ func TestDeleteVouchers_Execute_MissingFilter(t *testing.T) {
 	}
 }
 
-func TestDeleteVouchers_Description(t *testing.T) {
-	tool := &DeleteVouchers{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestDeleteVouchers_InputSchema(t *testing.T) {
 	tool := &DeleteVouchers{}
 	schema := tool.InputSchema()
@@ -374,13 +326,6 @@ func TestDeleteVoucher_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestDeleteVoucher_Description(t *testing.T) {
-	tool := &DeleteVoucher{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

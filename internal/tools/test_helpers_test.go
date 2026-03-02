@@ -22,3 +22,33 @@ func testClient(
 	}
 	return client, srv
 }
+
+// paginatedResponse wraps data items in the standard UniFi
+// paginated response envelope used by list endpoints.
+func paginatedResponse(
+	data ...map[string]interface{},
+) map[string]interface{} {
+	if data == nil {
+		data = []map[string]interface{}{}
+	}
+	return map[string]interface{}{
+		"data":       data,
+		"count":      len(data),
+		"limit":      25,
+		"offset":     0,
+		"totalCount": len(data),
+	}
+}
+
+// emptyPaginatedResponse returns an empty paginated response
+// with an untyped empty slice matching the pattern used by the
+// UniFi API for empty results.
+func emptyPaginatedResponse() map[string]interface{} {
+	return map[string]interface{}{
+		"data":       []interface{}{},
+		"count":      0,
+		"limit":      25,
+		"offset":     0,
+		"totalCount": 0,
+	}
+}

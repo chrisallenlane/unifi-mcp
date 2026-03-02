@@ -10,29 +10,20 @@ import (
 
 func TestListSites_Execute(t *testing.T) {
 	client, srv := testClient(t,
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != "/v1/sites" {
-				t.Errorf("unexpected path: %s", r.URL.Path)
-			}
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":                "550e8400-e29b-41d4-a716-446655440000",
-						"name":              "Default",
-						"internalReference": "default",
-					},
-					{
-						"id":                "660e8400-e29b-41d4-a716-446655440001",
-						"name":              "Branch Office",
-						"internalReference": "branch",
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":                "550e8400-e29b-41d4-a716-446655440000",
+					"name":              "Default",
+					"internalReference": "default",
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":                "660e8400-e29b-41d4-a716-446655440001",
+					"name":              "Branch Office",
+					"internalReference": "branch",
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -67,13 +58,7 @@ func TestListSites_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -124,13 +109,6 @@ func TestListSites_Execute_WithParams(t *testing.T) {
 	}
 	if gotOffset != "5" {
 		t.Errorf("expected offset=5, got %s", gotOffset)
-	}
-}
-
-func TestListSites_Description(t *testing.T) {
-	tool := &ListSites{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

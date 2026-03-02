@@ -36,13 +36,9 @@ func TestListFirewallPolicies_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{mockPolicyJSON()},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			json.NewEncoder(w).Encode(paginatedResponse(
+				mockPolicyJSON(),
+			))
 		}),
 	)
 	defer srv.Close()
@@ -70,13 +66,7 @@ func TestListFirewallPolicies_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -102,21 +92,6 @@ func TestListFirewallPolicies_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID")
-	}
-}
-
-func TestListFirewallPolicies_Description(t *testing.T) {
-	tool := &ListFirewallPolicies{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListFirewallPolicies_InputSchema(t *testing.T) {
-	tool := &ListFirewallPolicies{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -152,13 +127,6 @@ func TestGetFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
-	}
-}
-
-func TestGetFirewallPolicy_Description(t *testing.T) {
-	tool := &GetFirewallPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -305,13 +273,6 @@ func TestCreateFirewallPolicy_Execute_MissingName(t *testing.T) {
 	}
 }
 
-func TestCreateFirewallPolicy_Description(t *testing.T) {
-	tool := &CreateFirewallPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestCreateFirewallPolicy_InputSchema(t *testing.T) {
 	tool := &CreateFirewallPolicy{}
 	schema := tool.InputSchema()
@@ -369,13 +330,6 @@ func TestUpdateFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
 	}
 }
 
-func TestUpdateFirewallPolicy_Description(t *testing.T) {
-	tool := &UpdateFirewallPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestDeleteFirewallPolicy_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -409,13 +363,6 @@ func TestDeleteFirewallPolicy_Execute_MissingPolicyID(
 	)
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
-	}
-}
-
-func TestDeleteFirewallPolicy_Description(t *testing.T) {
-	tool := &DeleteFirewallPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -476,13 +423,6 @@ func TestPatchFirewallPolicy_Execute_MissingPolicyID(
 	)
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
-	}
-}
-
-func TestPatchFirewallPolicy_Description(t *testing.T) {
-	tool := &PatchFirewallPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 

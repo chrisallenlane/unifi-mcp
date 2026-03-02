@@ -14,22 +14,16 @@ func TestListWans_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":   "aaa00000-0000-0000-0000-000000000001",
-						"name": "WAN1",
-					},
-					{
-						"id":   "aaa00000-0000-0000-0000-000000000002",
-						"name": "WAN2",
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000001",
+					"name": "WAN1",
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000002",
+					"name": "WAN2",
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -55,13 +49,7 @@ func TestListWans_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -91,41 +79,20 @@ func TestListWans_Execute_NoSiteID(t *testing.T) {
 	}
 }
 
-func TestListWans_Description(t *testing.T) {
-	tool := &ListWans{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListWans_InputSchema(t *testing.T) {
-	tool := &ListWans{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_vpn_tunnels tests ---
 
 func TestListVpnTunnels_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":       "bbb00000-0000-0000-0000-000000000001",
-						"name":     "Office-to-DC",
-						"type":     "IPSEC",
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":       "bbb00000-0000-0000-0000-000000000001",
+					"name":     "Office-to-DC",
+					"type":     "IPSEC",
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -154,13 +121,7 @@ func TestListVpnTunnels_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -179,42 +140,21 @@ func TestListVpnTunnels_Execute_Empty(t *testing.T) {
 	}
 }
 
-func TestListVpnTunnels_Description(t *testing.T) {
-	tool := &ListVpnTunnels{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListVpnTunnels_InputSchema(t *testing.T) {
-	tool := &ListVpnTunnels{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
-	}
-}
-
 // --- list_vpn_servers tests ---
 
 func TestListVpnServers_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":       "ccc00000-0000-0000-0000-000000000001",
-						"name":     "WireGuard Server",
-						"type":     "WIREGUARD",
-						"enabled":  true,
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":       "ccc00000-0000-0000-0000-000000000001",
+					"name":     "WireGuard Server",
+					"type":     "WIREGUARD",
+					"enabled":  true,
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
 				},
-				"count":      1,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 1,
-			})
+			))
 		}),
 	)
 	defer srv.Close()
@@ -252,13 +192,7 @@ func TestListVpnServers_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -274,20 +208,5 @@ func TestListVpnServers_Execute_Empty(t *testing.T) {
 
 	if result != "No VPN servers found." {
 		t.Errorf("unexpected result: %s", result)
-	}
-}
-
-func TestListVpnServers_Description(t *testing.T) {
-	tool := &ListVpnServers{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListVpnServers_InputSchema(t *testing.T) {
-	tool := &ListVpnServers{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }

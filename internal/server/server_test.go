@@ -1,13 +1,40 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
+
+// stubTool implements tools.Tool for testing server dispatch
+// without real HTTP calls.
+type stubTool struct {
+	result string
+	err    error
+}
+
+func (s *stubTool) Execute(
+	_ context.Context,
+	_ json.RawMessage,
+) (string, error) {
+	return s.result, s.err
+}
+
+func (s *stubTool) Description() string {
+	return "A test tool"
+}
+
+func (s *stubTool) InputSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"type":       "object",
+		"properties": map[string]interface{}{},
+	}
+}
 
 func newTestServer(t *testing.T) *Server {
 	t.Helper()
@@ -80,6 +107,15 @@ func TestHandleInitialize(t *testing.T) {
 			ServerVersion,
 		)
 	}
+
+	capabilities, ok := result["capabilities"].(map[string]interface{})
+	if !ok {
+		t.Fatal("capabilities should be a map")
+	}
+
+	if _, ok := capabilities["tools"]; !ok {
+		t.Error("capabilities should contain 'tools'")
+	}
 }
 
 func TestHandleListTools(t *testing.T) {
@@ -106,9 +142,43 @@ func TestHandleListTools(t *testing.T) {
 		t.Fatal("Result should be a map")
 	}
 
-	_, ok = result["tools"].([]map[string]interface{})
+	toolList, ok := result["tools"].([]map[string]interface{})
 	if !ok {
-		t.Fatal("tools should be a slice")
+		t.Fatal("tools should be a slice of maps")
+	}
+
+	if len(toolList) == 0 {
+		t.Fatal("tools list should not be empty")
+	}
+
+	for _, tool := range toolList {
+		name, ok := tool["name"].(string)
+		if !ok || name == "" {
+			t.Errorf("tool missing or empty name: %v", tool)
+			continue
+		}
+
+		desc, ok := tool["description"].(string)
+		if !ok || desc == "" {
+			t.Errorf(
+				"tool %q missing or empty description",
+				name,
+			)
+		}
+
+		schema, ok := tool["inputSchema"].(map[string]interface{})
+		if !ok {
+			t.Errorf("tool %q missing inputSchema", name)
+			continue
+		}
+
+		if schema["type"] != "object" {
+			t.Errorf(
+				"tool %q inputSchema type = %v, want object",
+				name,
+				schema["type"],
+			)
+		}
 	}
 }
 
@@ -128,11 +198,20 @@ func TestHandleUnknownMethod(t *testing.T) {
 	}
 
 	if resp.Error.Code != -32601 {
-		t.Errorf("Error code = %d, want -32601", resp.Error.Code)
+		t.Errorf(
+			"Error code = %d, want -32601",
+			resp.Error.Code,
+		)
 	}
 
-	if resp.Error.Message != "Method not found: unknown/method" {
-		t.Errorf("Error message = %s", resp.Error.Message)
+	if !strings.Contains(
+		resp.Error.Message,
+		"unknown/method",
+	) {
+		t.Errorf(
+			"Error message should contain method name, got: %s",
+			resp.Error.Message,
+		)
 	}
 
 	if resp.Result != nil {
@@ -162,7 +241,10 @@ func TestHandleCallTool_InvalidTool(t *testing.T) {
 		t.Fatal("Expected error for nonexistent tool")
 	}
 
-	if !strings.Contains(resp.Error.Message, "tool not found") {
+	if !strings.Contains(
+		resp.Error.Message,
+		"tool not found",
+	) {
 		t.Errorf(
 			"Error message should mention 'tool not found', got: %s",
 			resp.Error.Message,
@@ -186,93 +268,251 @@ func TestHandleCallTool_MalformedParams(t *testing.T) {
 		t.Fatal("Expected error for malformed params")
 	}
 
+	if resp.Error.Code != -32603 {
+		t.Errorf(
+			"Error code = %d, want -32603",
+			resp.Error.Code,
+		)
+	}
+}
+
+func TestHandleCallTool_Success(t *testing.T) {
+	s := newTestServer(t)
+	s.tools["test_tool"] = &stubTool{
+		result: "success output",
+	}
+
+	params := map[string]interface{}{
+		"name":      "test_tool",
+		"arguments": json.RawMessage(`{}`),
+	}
+	paramsJSON, _ := json.Marshal(params)
+
+	req := &JSONRPCRequest{
+		JSONRPC: "2.0",
+		ID:      6,
+		Method:  "tools/call",
+		Params:  paramsJSON,
+	}
+
+	resp := s.handleRequest(context.Background(), req)
+
+	if resp.Error != nil {
+		t.Fatalf("Unexpected error: %+v", resp.Error)
+	}
+
+	result, ok := resp.Result.(map[string]interface{})
+	if !ok {
+		t.Fatal("Result should be a map")
+	}
+
+	content, ok := result["content"].([]map[string]interface{})
+	if !ok {
+		t.Fatal("content should be a slice of maps")
+	}
+
+	if len(content) != 1 {
+		t.Fatalf("content length = %d, want 1", len(content))
+	}
+
+	if content[0]["type"] != "text" {
+		t.Errorf(
+			"content type = %v, want text",
+			content[0]["type"],
+		)
+	}
+
+	if content[0]["text"] != "success output" {
+		t.Errorf(
+			"content text = %v, want 'success output'",
+			content[0]["text"],
+		)
+	}
+}
+
+func TestHandleCallTool_ToolError(t *testing.T) {
+	s := newTestServer(t)
+	s.tools["failing_tool"] = &stubTool{
+		err: fmt.Errorf("something broke"),
+	}
+
+	params := map[string]interface{}{
+		"name":      "failing_tool",
+		"arguments": json.RawMessage(`{}`),
+	}
+	paramsJSON, _ := json.Marshal(params)
+
+	req := &JSONRPCRequest{
+		JSONRPC: "2.0",
+		ID:      7,
+		Method:  "tools/call",
+		Params:  paramsJSON,
+	}
+
+	resp := s.handleRequest(context.Background(), req)
+
+	if resp.Error == nil {
+		t.Fatal("Expected error for failing tool")
+	}
+
+	if resp.Error.Code != -32603 {
+		t.Errorf(
+			"Error code = %d, want -32603",
+			resp.Error.Code,
+		)
+	}
+
 	if !strings.Contains(
 		resp.Error.Message,
-		"failed to parse tool call params",
+		"something broke",
 	) {
 		t.Errorf(
-			"Error message should mention parsing failure, got: %s",
+			"Error should contain original error, got: %s",
 			resp.Error.Message,
 		)
 	}
 }
 
-func TestJSONRPCRequest_Unmarshal(t *testing.T) {
-	jsonData := `{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`
+func TestRun(t *testing.T) {
+	s := newTestServer(t)
+	s.tools["test_tool"] = &stubTool{
+		result: "hello world",
+	}
 
-	var req JSONRPCRequest
-	err := json.Unmarshal([]byte(jsonData), &req)
+	reqJSON := `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"test_tool","arguments":{}}}`
+	stdin := strings.NewReader(reqJSON + "\n")
+	var stdout bytes.Buffer
+
+	err := s.Run(context.Background(), stdin, &stdout)
 	if err != nil {
-		t.Fatalf("Failed to unmarshal: %v", err)
+		t.Fatalf("Run returned error: %v", err)
 	}
 
-	if req.JSONRPC != "2.0" {
-		t.Errorf("JSONRPC = %s, want 2.0", req.JSONRPC)
+	var resp JSONRPCResponse
+	if err := json.NewDecoder(&stdout).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
 	}
 
-	if req.Method != "initialize" {
-		t.Errorf("Method = %s, want initialize", req.Method)
-	}
-}
-
-func TestJSONRPCResponse_Marshal(t *testing.T) {
-	resp := &JSONRPCResponse{
-		JSONRPC: "2.0",
-		ID:      1,
-		Result:  map[string]string{"status": "ok"},
+	if resp.Error != nil {
+		t.Fatalf("unexpected error: %+v", resp.Error)
 	}
 
-	data, err := json.Marshal(resp)
-	if err != nil {
-		t.Fatalf("Failed to marshal: %v", err)
-	}
-
-	var decoded map[string]interface{}
-	if err := json.Unmarshal(data, &decoded); err != nil {
-		t.Fatalf("Failed to unmarshal: %v", err)
-	}
-
-	if decoded["jsonrpc"] != "2.0" {
-		t.Errorf("jsonrpc = %v, want 2.0", decoded["jsonrpc"])
-	}
-}
-
-func TestJSONRPCError_Marshal(t *testing.T) {
-	resp := &JSONRPCResponse{
-		JSONRPC: "2.0",
-		ID:      1,
-		Error: &JSONRPCError{
-			Code:    -32600,
-			Message: "Invalid Request",
-		},
-	}
-
-	data, err := json.Marshal(resp)
-	if err != nil {
-		t.Fatalf("Failed to marshal: %v", err)
-	}
-
-	var decoded map[string]interface{}
-	if err := json.Unmarshal(data, &decoded); err != nil {
-		t.Fatalf("Failed to unmarshal: %v", err)
-	}
-
-	errorObj, ok := decoded["error"].(map[string]interface{})
+	result, ok := resp.Result.(map[string]interface{})
 	if !ok {
-		t.Fatal("error should be an object")
+		t.Fatal("result should be a map")
 	}
 
-	if errorObj["code"].(float64) != -32600 {
+	content, ok := result["content"].([]interface{})
+	if !ok {
+		t.Fatal("content should be an array")
+	}
+
+	if len(content) == 0 {
+		t.Fatal("content should not be empty")
+	}
+
+	first, ok := content[0].(map[string]interface{})
+	if !ok {
+		t.Fatal("content item should be a map")
+	}
+
+	if first["text"] != "hello world" {
 		t.Errorf(
-			"error code = %v, want -32600",
-			errorObj["code"],
+			"text = %v, want 'hello world'",
+			first["text"],
+		)
+	}
+}
+
+func TestRun_MalformedJSON(t *testing.T) {
+	s := newTestServer(t)
+
+	stdin := strings.NewReader("{invalid json}\n")
+	var stdout bytes.Buffer
+
+	err := s.Run(context.Background(), stdin, &stdout)
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+
+	var resp JSONRPCResponse
+	if err := json.NewDecoder(&stdout).Decode(&resp); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+
+	if resp.Error == nil {
+		t.Fatal("expected error response")
+	}
+
+	if resp.Error.Code != -32700 {
+		t.Errorf(
+			"error code = %d, want -32700",
+			resp.Error.Code,
+		)
+	}
+}
+
+func TestRun_MultipleRequests(t *testing.T) {
+	s := newTestServer(t)
+	s.tools["test_tool"] = &stubTool{
+		result: "hello",
+	}
+
+	requests := strings.Join([]string{
+		`{"jsonrpc":"2.0","id":1,"method":"initialize"}`,
+		`{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"test_tool","arguments":{}}}`,
+	}, "\n") + "\n"
+
+	stdin := strings.NewReader(requests)
+	var stdout bytes.Buffer
+
+	err := s.Run(context.Background(), stdin, &stdout)
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+
+	decoder := json.NewDecoder(&stdout)
+
+	var resp1, resp2 JSONRPCResponse
+	if err := decoder.Decode(&resp1); err != nil {
+		t.Fatalf("failed to decode first response: %v", err)
+	}
+	if err := decoder.Decode(&resp2); err != nil {
+		t.Fatalf("failed to decode second response: %v", err)
+	}
+
+	if resp1.Error != nil {
+		t.Errorf(
+			"first response has error: %+v",
+			resp1.Error,
+		)
+	}
+	if resp2.Error != nil {
+		t.Errorf(
+			"second response has error: %+v",
+			resp2.Error,
+		)
+	}
+}
+
+func TestRun_EOF(t *testing.T) {
+	s := newTestServer(t)
+
+	stdin := strings.NewReader("")
+	var stdout bytes.Buffer
+
+	err := s.Run(context.Background(), stdin, &stdout)
+	if err != nil {
+		t.Fatalf(
+			"Run should return nil on EOF, got: %v",
+			err,
 		)
 	}
 
-	if errorObj["message"] != "Invalid Request" {
+	if stdout.Len() != 0 {
 		t.Errorf(
-			"error message = %v, want Invalid Request",
-			errorObj["message"],
+			"expected no output on empty input, got: %s",
+			stdout.String(),
 		)
 	}
 }

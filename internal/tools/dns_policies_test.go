@@ -12,28 +12,22 @@ func TestListDNSPolicies_Execute(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data": []map[string]interface{}{
-					{
-						"id":       "aaa00000-0000-0000-0000-000000000001",
-						"type":     "A_RECORD",
-						"domain":   "nas.local",
-						"enabled":  true,
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
-					},
-					{
-						"id":       "aaa00000-0000-0000-0000-000000000002",
-						"type":     "CNAME_RECORD",
-						"domain":   "wiki.local",
-						"enabled":  false,
-						"metadata": map[string]string{"origin": "USER_DEFINED"},
-					},
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":       "aaa00000-0000-0000-0000-000000000001",
+					"type":     "A_RECORD",
+					"domain":   "nas.local",
+					"enabled":  true,
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
 				},
-				"count":      2,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 2,
-			})
+				map[string]interface{}{
+					"id":       "aaa00000-0000-0000-0000-000000000002",
+					"type":     "CNAME_RECORD",
+					"domain":   "wiki.local",
+					"enabled":  false,
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
+				},
+			))
 		}),
 	)
 	defer srv.Close()
@@ -65,13 +59,7 @@ func TestListDNSPolicies_Execute_Empty(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"data":       []interface{}{},
-				"count":      0,
-				"limit":      25,
-				"offset":     0,
-				"totalCount": 0,
-			})
+			json.NewEncoder(w).Encode(emptyPaginatedResponse())
 		}),
 	)
 	defer srv.Close()
@@ -98,21 +86,6 @@ func TestListDNSPolicies_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
-	}
-}
-
-func TestListDNSPolicies_Description(t *testing.T) {
-	tool := &ListDNSPolicies{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
-func TestListDNSPolicies_InputSchema(t *testing.T) {
-	tool := &ListDNSPolicies{}
-	schema := tool.InputSchema()
-	if schema["type"] != "object" {
-		t.Errorf("schema type = %v, want object", schema["type"])
 	}
 }
 
@@ -164,13 +137,6 @@ func TestGetDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestGetDNSPolicy_Description(t *testing.T) {
-	tool := &GetDNSPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -230,13 +196,6 @@ func TestCreateDNSPolicy_Execute(t *testing.T) {
 			"result should contain 'A_RECORD': %s",
 			result,
 		)
-	}
-}
-
-func TestCreateDNSPolicy_Description(t *testing.T) {
-	tool := &CreateDNSPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
@@ -312,13 +271,6 @@ func TestUpdateDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	}
 }
 
-func TestUpdateDNSPolicy_Description(t *testing.T) {
-	tool := &UpdateDNSPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
-	}
-}
-
 func TestUpdateDNSPolicy_InputSchema(t *testing.T) {
 	tool := &UpdateDNSPolicy{}
 	schema := tool.InputSchema()
@@ -369,13 +321,6 @@ func TestDeleteDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
-	}
-}
-
-func TestDeleteDNSPolicy_Description(t *testing.T) {
-	tool := &DeleteDNSPolicy{}
-	if tool.Description() == "" {
-		t.Error("description should not be empty")
 	}
 }
 
