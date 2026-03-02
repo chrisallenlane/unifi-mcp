@@ -1,0 +1,167 @@
+{
+  "version": "1.0",
+  "test_command": "make test",
+  "last_updated": "2026-03-02T00:00:00Z",
+  "modules": {
+    "internal/tools/helpers.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/helpers_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/info.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/info_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/sites.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/sites_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/firewall_zones.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/firewall_zones_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/firewall_policies.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/firewall_policies_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/firewall_policy_ordering.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/firewall_policy_ordering_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/networks.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/networks_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/clients.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/clients_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/devices.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/devices_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/devices_pending.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/devices_pending_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/acl_rules.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/acl_rules_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/dns_policies.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/dns_policies_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/traffic_matching_lists.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/traffic_matching_lists_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/wifi.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/wifi_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/hotspot.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/hotspot_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/supporting_network.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/supporting_network_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/tools/supporting_reference.go": {
+      "status": "pending",
+      "covering_tests": ["internal/tools/supporting_reference_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/server/server.go": {
+      "status": "pending",
+      "covering_tests": ["internal/server/server_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    },
+    "internal/server/types.go": {
+      "status": "pending",
+      "covering_tests": ["internal/server/server_test.go"],
+      "last_tested": null,
+      "mutations_by_type": {},
+      "mutation_score": null,
+      "insights": []
+    }
+  },
+  "global_statistics": {
+    "total_modules": 19,
+    "completed_modules": 0,
+    "total_mutations": 0,
+    "total_killed": 0,
+    "total_survived": 0,
+    "overall_score": 0.0
+  }
+}
