@@ -133,6 +133,18 @@ func (s *Server) registerTools() {
 	s.tools["list_countries"] = tools.NewListCountries(
 		s.client,
 	)
+	s.tools["list_clients"] = tools.NewListClients(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_client"] = tools.NewGetClient(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_client_action"] = tools.NewExecuteClientAction(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
