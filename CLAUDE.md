@@ -44,14 +44,18 @@ unifi-mcp/
 │   │   ├── sites_test.go
 │   │   ├── firewall_zones.go        # 5 firewall zone tools
 │   │   ├── firewall_zones_test.go
-│   │   ├── firewall_policies.go     # 8 firewall policy tools
+│   │   ├── firewall_policies.go     # 6 firewall policy CRUD tools
 │   │   ├── firewall_policies_test.go
+│   │   ├── firewall_policy_ordering.go     # 2 firewall policy ordering tools
+│   │   ├── firewall_policy_ordering_test.go
 │   │   ├── networks.go              # 6 network tools
 │   │   ├── networks_test.go
 │   │   ├── clients.go               # 3 client tools
 │   │   ├── clients_test.go
-│   │   ├── devices.go               # 8 device tools
+│   │   ├── devices.go               # 7 device tools
 │   │   ├── devices_test.go
+│   │   ├── devices_pending.go       # list_pending_devices tool
+│   │   ├── devices_pending_test.go
 │   │   ├── acl_rules.go             # 7 ACL rule tools
 │   │   ├── acl_rules_test.go
 │   │   ├── dns_policies.go          # 5 DNS policy tools
@@ -62,8 +66,10 @@ unifi-mcp/
 │   │   ├── wifi_test.go
 │   │   ├── hotspot.go               # 5 hotspot voucher tools
 │   │   ├── hotspot_test.go
-│   │   ├── supporting.go            # 8 read-only supporting tools
-│   │   └── supporting_test.go
+│   │   ├── supporting_network.go    # 3 network supporting tools (WANs, VPN tunnels, VPN servers)
+│   │   ├── supporting_network_test.go
+│   │   ├── supporting_reference.go  # 5 reference supporting tools (RADIUS, device tags, DPI, countries)
+│   │   └── supporting_reference_test.go
 │   └── unifi/
 │       ├── types.gen.go             # Generated model structs (DO NOT EDIT)
 │       └── client.gen.go            # Generated HTTP client (DO NOT EDIT)
@@ -210,14 +216,18 @@ Helper functions:
 ## Development Workflow
 
 ```bash
-make fmt        # format with golines + gofumpt (80-col wrapping)
-make lint       # lint with revive (excludes internal/unifi/)
-make vet        # go vet
-make test       # go test ./...
-make check      # fmt + lint + vet + test
-make build      # build to dist/unifi-mcp
-make generate   # regenerate internal/unifi/ from api/unifi-network.json
-make coverage   # test coverage report
+make fmt           # format with golines + gofumpt (80-col wrapping)
+make lint          # lint with revive (excludes internal/unifi/)
+make vet           # go vet
+make test          # go test ./...
+make check         # fmt + lint + vet + test
+make build         # fmt + lint + vet, then build to dist/unifi-mcp
+make build-release # cross-compile release binaries for all platforms
+make install       # build and install to $GOPATH/bin
+make generate      # regenerate internal/unifi/ from api/unifi-network.json
+make coverage      # test coverage report (coverage.out + coverage.html)
+make sloc          # count source lines of code (requires scc)
+make clean         # remove compiled executables from dist/
 ```
 
 ## Adding a New Tool
