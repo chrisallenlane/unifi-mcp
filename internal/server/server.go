@@ -104,6 +104,35 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_wans"] = tools.NewListWans(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_vpn_tunnels"] = tools.NewListVpnTunnels(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_vpn_servers"] = tools.NewListVpnServers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_radius_profiles"] = tools.NewListRadiusProfiles(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_device_tags"] = tools.NewListDeviceTags(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_dpi_categories"] = tools.NewListDpiCategories(
+		s.client,
+	)
+	s.tools["list_dpi_applications"] = tools.NewListDpiApplications(
+		s.client,
+	)
+	s.tools["list_countries"] = tools.NewListCountries(
+		s.client,
+	)
 }
 
 // Run starts the MCP server and processes requests
