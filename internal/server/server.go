@@ -185,6 +185,26 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_vouchers"] = tools.NewListVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_voucher"] = tools.NewGetVoucher(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_vouchers"] = tools.NewCreateVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_vouchers"] = tools.NewDeleteVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_voucher"] = tools.NewDeleteVoucher(
+		s.client,
+		s.defaultSiteID,
+	)
 }
 
 // Run starts the MCP server and processes requests
