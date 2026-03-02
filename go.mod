@@ -1,4 +1,4 @@
-module github.com/chrisallenlane/unifi-mcp-server
+module github.com/chrisallenlane/unifi-mcp
 
 go 1.24.4
 

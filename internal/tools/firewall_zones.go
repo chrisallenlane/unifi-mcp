@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // formatZone formats a single firewall zone for display.
@@ -57,19 +57,15 @@ func (t *ListFirewallZones) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListFirewallZones) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of zones to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of zones to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -83,13 +79,8 @@ func (t *ListFirewallZones) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -190,11 +181,8 @@ func (t *GetFirewallZone) Execute(
 		SiteID         string `json:"siteId"`
 		FirewallZoneID string `json:"firewallZoneId"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -289,11 +277,8 @@ func (t *CreateFirewallZone) Execute(
 		Name       string   `json:"name"`
 		NetworkIDs []string `json:"networkIds"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	if params.Name == "" {
@@ -407,11 +392,8 @@ func (t *UpdateFirewallZone) Execute(
 		Name           string   `json:"name"`
 		NetworkIDs     []string `json:"networkIds"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	if params.Name == "" {
@@ -517,11 +499,8 @@ func (t *DeleteFirewallZone) Execute(
 		SiteID         string `json:"siteId"`
 		FirewallZoneID string `json:"firewallZoneId"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

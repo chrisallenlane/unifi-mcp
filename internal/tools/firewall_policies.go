@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // formatPolicy formats a single firewall policy for display.
@@ -351,19 +351,15 @@ func (t *ListFirewallPolicies) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *ListFirewallPolicies) InputSchema() map[string]interface{} {
+	props := map[string]interface{}{
+		"siteId": siteIDSchema(),
+	}
+	for k, v := range paginationSchema() {
+		props[k] = v
+	}
 	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"limit": map[string]interface{}{
-				"type":        "integer",
-				"description": "Maximum number of policies to return",
-			},
-			"offset": map[string]interface{}{
-				"type":        "integer",
-				"description": "Number of policies to skip",
-			},
-		},
+		"type":       "object",
+		"properties": props,
 	}
 }
 
@@ -377,13 +373,8 @@ func (t *ListFirewallPolicies) Execute(
 		Limit  *int32 `json:"limit"`
 		Offset *int32 `json:"offset"`
 	}
-	if len(args) > 0 {
-		if err := json.Unmarshal(args, &params); err != nil {
-			return "", fmt.Errorf(
-				"failed to parse arguments: %w",
-				err,
-			)
-		}
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -484,11 +475,8 @@ func (t *GetFirewallPolicy) Execute(
 		SiteID           string `json:"siteId"`
 		FirewallPolicyID string `json:"firewallPolicyId"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -577,11 +565,8 @@ func (t *CreateFirewallPolicy) Execute(
 	args json.RawMessage,
 ) (string, error) {
 	var params policyParams
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	if params.Name == "" {
@@ -682,11 +667,8 @@ func (t *UpdateFirewallPolicy) Execute(
 	args json.RawMessage,
 ) (string, error) {
 	var params policyParams
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	if params.Name == "" {
@@ -786,11 +768,8 @@ func (t *DeleteFirewallPolicy) Execute(
 		SiteID           string `json:"siteId"`
 		FirewallPolicyID string `json:"firewallPolicyId"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -885,11 +864,8 @@ func (t *PatchFirewallPolicy) Execute(
 		FirewallPolicyID string `json:"firewallPolicyId"`
 		LoggingEnabled   *bool  `json:"loggingEnabled"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -991,11 +967,8 @@ func (t *GetFirewallPolicyOrdering) Execute(
 		SourceZoneID      string `json:"sourceZoneId"`
 		DestinationZoneID string `json:"destinationZoneId"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(
@@ -1138,11 +1111,8 @@ func (t *UpdateFirewallPolicyOrdering) Execute(
 		BeforeSystemDefined []string `json:"beforeSystemDefined"`
 		AfterSystemDefined  []string `json:"afterSystemDefined"`
 	}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return "", fmt.Errorf(
-			"failed to parse arguments: %w",
-			err,
-		)
+	if err := parseArgs(args, &params); err != nil {
+		return "", err
 	}
 
 	siteID, err := resolveSiteID(

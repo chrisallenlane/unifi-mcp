@@ -10,14 +10,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/tools"
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/tools"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 // Constants for server configuration
 const (
 	MCPProtocolVersion   = "2024-11-05"
-	ServerName           = "unifi-mcp-server"
+	ServerName           = "unifi-mcp"
 	ServerVersion        = "0.1.0"
 	ToolExecutionTimeout = 30 * time.Second
 )
@@ -101,6 +101,210 @@ func (s *Server) registerTools() {
 		s.defaultSiteID,
 	)
 	s.tools["update_firewall_policy_ordering"] = tools.NewUpdateFirewallPolicyOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_wans"] = tools.NewListWans(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_vpn_tunnels"] = tools.NewListVpnTunnels(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_vpn_servers"] = tools.NewListVpnServers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_radius_profiles"] = tools.NewListRadiusProfiles(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_device_tags"] = tools.NewListDeviceTags(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_dpi_categories"] = tools.NewListDpiCategories(
+		s.client,
+	)
+	s.tools["list_dpi_applications"] = tools.NewListDpiApplications(
+		s.client,
+	)
+	s.tools["list_countries"] = tools.NewListCountries(
+		s.client,
+	)
+	s.tools["list_clients"] = tools.NewListClients(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_client"] = tools.NewGetClient(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_client_action"] = tools.NewExecuteClientAction(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_dns_policies"] = tools.NewListDNSPolicies(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_dns_policy"] = tools.NewGetDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_dns_policy"] = tools.NewCreateDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_dns_policy"] = tools.NewUpdateDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_dns_policy"] = tools.NewDeleteDNSPolicy(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_traffic_matching_lists"] = tools.NewListTrafficMatchingLists(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_traffic_matching_list"] = tools.NewGetTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_traffic_matching_list"] = tools.NewCreateTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_traffic_matching_list"] = tools.NewUpdateTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_traffic_matching_list"] = tools.NewDeleteTrafficMatchingList(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_vouchers"] = tools.NewListVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_voucher"] = tools.NewGetVoucher(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_vouchers"] = tools.NewCreateVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_vouchers"] = tools.NewDeleteVouchers(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_voucher"] = tools.NewDeleteVoucher(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_networks"] = tools.NewListNetworks(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_network"] = tools.NewGetNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_network"] = tools.NewCreateNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_network"] = tools.NewUpdateNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_network"] = tools.NewDeleteNetwork(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_network_references"] = tools.NewGetNetworkReferences(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_acl_rules"] = tools.NewListACLRules(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_acl_rule"] = tools.NewGetACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_acl_rule"] = tools.NewCreateACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_acl_rule"] = tools.NewUpdateACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_acl_rule"] = tools.NewDeleteACLRule(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_acl_rule_ordering"] = tools.NewGetACLRuleOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_acl_rule_ordering"] = tools.NewUpdateACLRuleOrdering(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_devices"] = tools.NewListDevices(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_device"] = tools.NewGetDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["adopt_device"] = tools.NewAdoptDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["remove_device"] = tools.NewRemoveDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_device_action"] = tools.NewExecuteDeviceAction(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_port_action"] = tools.NewExecutePortAction(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_device_statistics"] = tools.NewGetDeviceStatistics(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_pending_devices"] = tools.NewListPendingDevices(
+		s.client,
+	)
+	s.tools["list_wifi_broadcasts"] = tools.NewListWiFiBroadcasts(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_wifi_broadcast"] = tools.NewGetWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["create_wifi_broadcast"] = tools.NewCreateWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["update_wifi_broadcast"] = tools.NewUpdateWiFiBroadcast(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["delete_wifi_broadcast"] = tools.NewDeleteWiFiBroadcast(
 		s.client,
 		s.defaultSiteID,
 	)

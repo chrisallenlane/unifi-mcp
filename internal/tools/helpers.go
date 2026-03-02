@@ -2,6 +2,7 @@
 package tools
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -78,11 +79,42 @@ func unexpectedStatusError(
 	)
 }
 
+// parseArgs unmarshals JSON arguments into a destination struct.
+func parseArgs(
+	args json.RawMessage,
+	dst interface{},
+) error {
+	if len(args) > 0 {
+		if err := json.Unmarshal(args, dst); err != nil {
+			return fmt.Errorf(
+				"failed to parse arguments: %w",
+				err,
+			)
+		}
+	}
+	return nil
+}
+
 // siteIDSchema returns the standard JSON schema for the siteId
 // parameter.
 func siteIDSchema() map[string]interface{} {
 	return map[string]interface{}{
 		"type":        "string",
 		"description": "Site UUID (uses UNIFI_SITE_ID if not provided)",
+	}
+}
+
+// paginationSchema returns the standard JSON schema properties
+// for limit and offset parameters.
+func paginationSchema() map[string]interface{} {
+	return map[string]interface{}{
+		"limit": map[string]interface{}{
+			"type":        "integer",
+			"description": "Maximum number of items to return",
+		},
+		"offset": map[string]interface{}{
+			"type":        "integer",
+			"description": "Number of items to skip",
+		},
 	}
 }

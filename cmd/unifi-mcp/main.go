@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/chrisallenlane/unifi-mcp-server/internal/server"
-	"github.com/chrisallenlane/unifi-mcp-server/internal/unifi"
+	"github.com/chrisallenlane/unifi-mcp/internal/server"
+	"github.com/chrisallenlane/unifi-mcp/internal/unifi"
 )
 
 func main() {

@@ -4,48 +4,69 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Overview
 
-**unifi-mcp-server** is an MCP (Model Context Protocol) server for the UniFi
-Network Integration API. It wraps UniFi firewall management endpoints as MCP
-tools that Claude and other AI assistants can call.
+**unifi-mcp** is an MCP (Model Context Protocol) server for the UniFi
+Network Integration API. It exposes 67 UniFi controller operations as MCP
+tools that Claude and other AI assistants can call, covering firewall
+management, networks, clients, devices, ACL rules, DNS policies, traffic
+matching lists, WiFi broadcasts, hotspot vouchers, and supporting read-only
+endpoints.
 
 **Tech Stack:**
 - **Language**: Go 1.24+
 - **Protocol**: MCP via JSON-RPC 2.0 over stdio
 - **HTTP Client**: Generated from UniFi OpenAPI 3.1.0 spec via `oapi-codegen`
-- **Module**: `github.com/chrisallenlane/unifi-mcp-server`
+- **Module**: `github.com/chrisallenlane/unifi-mcp`
 
 ## Project Structure
 
 ```
-unifi-mcp-server/
+unifi-mcp/
 ├── api/
-│   └── unifi-network.json       # UniFi OpenAPI 3.1.0 spec (v10.1.84)
+│   └── unifi-network.json           # UniFi OpenAPI 3.1.0 spec (v10.1.84)
 ├── adr/
 │   └── 001-generate-models-from-openapi-spec.md
 ├── cmd/
-│   └── unifi-mcp-server/
-│       └── main.go              # Entry point; reads env vars, wires client
+│   └── unifi-mcp/
+│       └── main.go                  # Entry point; reads env vars, wires client
 ├── internal/
 │   ├── server/
-│   │   ├── server.go            # JSON-RPC server, request routing, tool registry
+│   │   ├── server.go                # JSON-RPC server, request routing, tool registry
 │   │   ├── server_test.go
-│   │   └── types.go             # JSON-RPC request/response types
+│   │   └── types.go                 # JSON-RPC request/response types
 │   ├── tools/
-│   │   ├── tool.go              # Tool interface
-│   │   ├── helpers.go           # UUID helpers, siteId resolution, error helpers
+│   │   ├── tool.go                  # Tool interface
+│   │   ├── helpers.go               # UUID helpers, siteId resolution, error helpers
 │   │   ├── helpers_test.go
-│   │   ├── info.go              # get_info tool
+│   │   ├── info.go                  # get_info tool
 │   │   ├── info_test.go
-│   │   ├── sites.go             # list_sites tool
+│   │   ├── sites.go                 # list_sites tool
 │   │   ├── sites_test.go
-│   │   ├── firewall_zones.go    # 5 firewall zone tools
+│   │   ├── firewall_zones.go        # 5 firewall zone tools
 │   │   ├── firewall_zones_test.go
-│   │   ├── firewall_policies.go # 8 firewall policy tools
-│   │   └── firewall_policies_test.go
+│   │   ├── firewall_policies.go     # 8 firewall policy tools
+│   │   ├── firewall_policies_test.go
+│   │   ├── networks.go              # 6 network tools
+│   │   ├── networks_test.go
+│   │   ├── clients.go               # 3 client tools
+│   │   ├── clients_test.go
+│   │   ├── devices.go               # 8 device tools
+│   │   ├── devices_test.go
+│   │   ├── acl_rules.go             # 7 ACL rule tools
+│   │   ├── acl_rules_test.go
+│   │   ├── dns_policies.go          # 5 DNS policy tools
+│   │   ├── dns_policies_test.go
+│   │   ├── traffic_matching_lists.go # 5 traffic matching list tools
+│   │   ├── traffic_matching_lists_test.go
+│   │   ├── wifi.go                  # 5 WiFi broadcast tools
+│   │   ├── wifi_test.go
+│   │   ├── hotspot.go               # 5 hotspot voucher tools
+│   │   ├── hotspot_test.go
+│   │   ├── supporting.go            # 8 read-only supporting tools
+│   │   └── supporting_test.go
 │   └── unifi/
-│       ├── types.gen.go         # Generated model structs (DO NOT EDIT)
-│       └── client.gen.go        # Generated HTTP client (DO NOT EDIT)
-├── dist/                        # Build output
+│       ├── types.gen.go             # Generated model structs (DO NOT EDIT)
+│       └── client.gen.go            # Generated HTTP client (DO NOT EDIT)
+├── dist/                            # Build output
 ├── Makefile
 ├── go.mod
 └── go.sum
@@ -63,7 +84,7 @@ The server implements MCP via JSON-RPC 2.0 over stdio:
 
 Key methods: `initialize`, `tools/list`, `tools/call`
 
-### Entry Point (`cmd/unifi-mcp-server/main.go`)
+### Entry Point (`cmd/unifi-mcp/main.go`)
 
 Reads environment variables, constructs a `unifi.ClientWithResponses` with the
 API key injected as an `X-API-Key` request editor, then starts the server.
@@ -106,7 +127,9 @@ The server exposes all registered tools via `tools/list`.
 - `resolveUUID(name, value)` - parses and validates a UUID string
 - `resolveUUIDs(name, values)` - parses a slice of UUID strings
 - `unexpectedStatusError(statusCode, body)` - formats an error for bad status codes
+- `parseArgs(args, dst)` - unmarshals JSON-RPC args into a typed struct
 - `siteIDSchema()` - standard JSON schema snippet for the `siteId` parameter
+- `paginationSchema()` - standard JSON schema snippet for `limit` and `offset` parameters
 
 ## Environment Variables
 
@@ -117,9 +140,9 @@ The server exposes all registered tools via `tools/list`.
 | `UNIFI_SITE_ID` | No | Default site UUID; tools accept `siteId` to override |
 | `UNIFI_INSECURE` | No | Non-empty value skips TLS verification |
 
-## Available Tools (15)
+## Available Tools (67)
 
-**Info / Sites:**
+**Info / Sites (2):**
 - `get_info` - controller application version
 - `list_sites` - list all sites
 
@@ -132,6 +155,44 @@ The server exposes all registered tools via `tools/list`.
   `update_firewall_policy`, `delete_firewall_policy`, `patch_firewall_policy`,
   `get_firewall_policy_ordering`, `update_firewall_policy_ordering`
 
+**Networks (6):**
+- `list_networks`, `get_network`, `create_network`, `update_network`,
+  `delete_network`, `get_network_references`
+
+**Clients (3):**
+- `list_clients`, `get_client`, `execute_client_action`
+
+**Devices (8):**
+- `list_devices`, `get_device`, `adopt_device`, `remove_device`,
+  `execute_device_action`, `execute_port_action`, `get_device_statistics`,
+  `list_pending_devices`
+
+**ACL Rules (7):**
+- `list_acl_rules`, `get_acl_rule`, `create_acl_rule`, `update_acl_rule`,
+  `delete_acl_rule`, `get_acl_rule_ordering`, `update_acl_rule_ordering`
+
+**DNS Policies (5):**
+- `list_dns_policies`, `get_dns_policy`, `create_dns_policy`,
+  `update_dns_policy`, `delete_dns_policy`
+
+**Traffic Matching Lists (5):**
+- `list_traffic_matching_lists`, `get_traffic_matching_list`,
+  `create_traffic_matching_list`, `update_traffic_matching_list`,
+  `delete_traffic_matching_list`
+
+**WiFi Broadcasts (5):**
+- `list_wifi_broadcasts`, `get_wifi_broadcast`, `create_wifi_broadcast`,
+  `update_wifi_broadcast`, `delete_wifi_broadcast`
+
+**Hotspot Vouchers (5):**
+- `list_vouchers`, `get_voucher`, `create_vouchers`, `delete_vouchers`,
+  `delete_voucher`
+
+**Supporting Read-Only (8):**
+- `list_wans`, `list_vpn_tunnels`, `list_vpn_servers`, `list_radius_profiles`,
+  `list_device_tags`, `list_dpi_categories`, `list_dpi_applications`,
+  `list_countries`
+
 ## Development Workflow
 
 ```bash
@@ -140,7 +201,7 @@ make lint       # lint with revive (excludes internal/unifi/)
 make vet        # go vet
 make test       # go test ./...
 make check      # fmt + lint + vet + test
-make build      # build to dist/unifi-mcp-server
+make build      # build to dist/unifi-mcp
 make generate   # regenerate internal/unifi/ from api/unifi-network.json
 make coverage   # test coverage report
 ```
@@ -169,8 +230,11 @@ make coverage   # test coverage report
 
 ## Dependencies
 
+Runtime:
 - `github.com/oapi-codegen/runtime` - runtime support for generated client
 - `github.com/google/uuid` - UUID parsing and formatting
+
+Test (indirect):
 - `github.com/stretchr/testify` - test assertions
 
 Build-time only: `oapi-codegen` (for `make generate`), `golines`, `gofumpt`,
@@ -179,7 +243,7 @@ Build-time only: `oapi-codegen` (for `make generate`), `golines`, `gofumpt`,
 ## Version Information
 
 - MCP Protocol Version: `2024-11-05`
-- Server Name/Version: `unifi-mcp-server` / `0.1.0`
+- Server Name/Version: `unifi-mcp` / `0.1.0`
 - OpenAPI Spec: UniFi Network v10.1.84
 
 ## Resources
