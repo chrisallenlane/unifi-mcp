@@ -132,17 +132,10 @@ func (t *GetWiFiBroadcast) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetWiFiBroadcast) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"wifiBroadcastId": map[string]interface{}{
-				"type":        "string",
-				"description": "WiFi broadcast UUID",
-			},
-		},
-		"required": []string{"wifiBroadcastId"},
-	}
+	return siteAndIDSchema(
+		"wifiBroadcastId",
+		"WiFi broadcast UUID",
+	)
 }
 
 // Execute runs the tool.

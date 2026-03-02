@@ -126,6 +126,25 @@ func paginationSchema() map[string]interface{} {
 	}
 }
 
+// siteAndIDSchema returns the standard JSON schema for operations
+// that take a siteId and a single resource ID.
+func siteAndIDSchema(
+	idName string,
+	idDesc string,
+) map[string]interface{} {
+	return map[string]interface{}{
+		"type": "object",
+		"properties": map[string]interface{}{
+			"siteId": siteIDSchema(),
+			idName: map[string]interface{}{
+				"type":        "string",
+				"description": idDesc,
+			},
+		},
+		"required": []string{idName},
+	}
+}
+
 // listSchema returns the standard JSON schema for list operations
 // with siteId + pagination parameters.
 func listSchema() map[string]interface{} {

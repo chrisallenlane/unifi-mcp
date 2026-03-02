@@ -146,17 +146,7 @@ func (t *GetDNSPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetDNSPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"dnsPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS policy UUID",
-			},
-		},
-		"required": []string{"dnsPolicyId"},
-	}
+	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
 // Execute runs the tool.
@@ -578,17 +568,7 @@ func (t *DeleteDNSPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteDNSPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"dnsPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "DNS policy UUID",
-			},
-		},
-		"required": []string{"dnsPolicyId"},
-	}
+	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
 // Execute runs the tool.

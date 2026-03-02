@@ -136,17 +136,10 @@ func (t *GetTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetTrafficMatchingList) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID",
-			},
-		},
-		"required": []string{"trafficMatchingListId"},
-	}
+	return siteAndIDSchema(
+		"trafficMatchingListId",
+		"Traffic matching list UUID",
+	)
 }
 
 // Execute runs the tool.
@@ -418,17 +411,10 @@ func (t *DeleteTrafficMatchingList) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteTrafficMatchingList) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"trafficMatchingListId": map[string]interface{}{
-				"type":        "string",
-				"description": "Traffic matching list UUID to delete",
-			},
-		},
-		"required": []string{"trafficMatchingListId"},
-	}
+	return siteAndIDSchema(
+		"trafficMatchingListId",
+		"Traffic matching list UUID to delete",
+	)
 }
 
 // Execute runs the tool.

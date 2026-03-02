@@ -129,17 +129,7 @@ func (t *GetDevice) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetDevice) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"deviceId": map[string]interface{}{
-				"type":        "string",
-				"description": "Device UUID",
-			},
-		},
-		"required": []string{"deviceId"},
-	}
+	return siteAndIDSchema("deviceId", "Device UUID")
 }
 
 // Execute runs the tool.
@@ -315,17 +305,7 @@ func (t *RemoveDevice) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *RemoveDevice) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"deviceId": map[string]interface{}{
-				"type":        "string",
-				"description": "Device UUID",
-			},
-		},
-		"required": []string{"deviceId"},
-	}
+	return siteAndIDSchema("deviceId", "Device UUID")
 }
 
 // Execute runs the tool.
@@ -598,17 +578,7 @@ func (t *GetDeviceStatistics) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetDeviceStatistics) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"deviceId": map[string]interface{}{
-				"type":        "string",
-				"description": "Device UUID",
-			},
-		},
-		"required": []string{"deviceId"},
-	}
+	return siteAndIDSchema("deviceId", "Device UUID")
 }
 
 // Execute runs the tool.

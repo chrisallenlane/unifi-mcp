@@ -436,17 +436,10 @@ func (t *GetFirewallPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetFirewallPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"firewallPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "Firewall policy UUID",
-			},
-		},
-		"required": []string{"firewallPolicyId"},
-	}
+	return siteAndIDSchema(
+		"firewallPolicyId",
+		"Firewall policy UUID",
+	)
 }
 
 // Execute runs the tool.
@@ -717,17 +710,10 @@ func (t *DeleteFirewallPolicy) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteFirewallPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"firewallPolicyId": map[string]interface{}{
-				"type":        "string",
-				"description": "Firewall policy UUID to delete",
-			},
-		},
-		"required": []string{"firewallPolicyId"},
-	}
+	return siteAndIDSchema(
+		"firewallPolicyId",
+		"Firewall policy UUID to delete",
+	)
 }
 
 // Execute runs the tool.

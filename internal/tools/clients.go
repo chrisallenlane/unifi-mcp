@@ -136,17 +136,7 @@ func (t *GetClient) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetClient) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"clientId": map[string]interface{}{
-				"type":        "string",
-				"description": "Client UUID",
-			},
-		},
-		"required": []string{"clientId"},
-	}
+	return siteAndIDSchema("clientId", "Client UUID")
 }
 
 // Execute runs the tool.

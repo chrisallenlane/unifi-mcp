@@ -130,17 +130,7 @@ func (t *GetNetwork) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetNetwork) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"networkId": map[string]interface{}{
-				"type":        "string",
-				"description": "Network UUID",
-			},
-		},
-		"required": []string{"networkId"},
-	}
+	return siteAndIDSchema("networkId", "Network UUID")
 }
 
 // Execute runs the tool.
@@ -559,17 +549,7 @@ func (t *GetNetworkReferences) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetNetworkReferences) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"networkId": map[string]interface{}{
-				"type":        "string",
-				"description": "Network UUID",
-			},
-		},
-		"required": []string{"networkId"},
-	}
+	return siteAndIDSchema("networkId", "Network UUID")
 }
 
 // Execute runs the tool.

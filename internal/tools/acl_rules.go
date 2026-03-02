@@ -130,17 +130,7 @@ func (t *GetACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetACLRule) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-		},
-		"required": []string{"aclRuleId"},
-	}
+	return siteAndIDSchema("aclRuleId", "ACL rule UUID")
 }
 
 // Execute runs the tool.
@@ -471,17 +461,7 @@ func (t *DeleteACLRule) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteACLRule) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"aclRuleId": map[string]interface{}{
-				"type":        "string",
-				"description": "ACL rule UUID",
-			},
-		},
-		"required": []string{"aclRuleId"},
-	}
+	return siteAndIDSchema("aclRuleId", "ACL rule UUID")
 }
 
 // Execute runs the tool.

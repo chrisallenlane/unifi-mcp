@@ -128,17 +128,7 @@ func (t *GetVoucher) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *GetVoucher) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"voucherId": map[string]interface{}{
-				"type":        "string",
-				"description": "Voucher UUID",
-			},
-		},
-		"required": []string{"voucherId"},
-	}
+	return siteAndIDSchema("voucherId", "Voucher UUID")
 }
 
 // Execute runs the tool.
@@ -515,17 +505,7 @@ func (t *DeleteVoucher) Description() string {
 
 // InputSchema returns the JSON schema for the tool's input.
 func (t *DeleteVoucher) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
-		"type": "object",
-		"properties": map[string]interface{}{
-			"siteId": siteIDSchema(),
-			"voucherId": map[string]interface{}{
-				"type":        "string",
-				"description": "Voucher UUID",
-			},
-		},
-		"required": []string{"voucherId"},
-	}
+	return siteAndIDSchema("voucherId", "Voucher UUID")
 }
 
 // Execute runs the tool.
