@@ -159,12 +159,37 @@
       "insights": ["All 8 original survivors killed: descriptions, formatting, delete message, empty ConnectionStateFilter handling"]
     },
     "internal/tools/firewall_policy_ordering.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/firewall_policy_ordering_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-02T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 3,
+          "killed": 3,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 2,
+          "killed": 2,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 4,
+          "killed": 4,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 12,
+          "killed": 12,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All 10 original survivors killed: numbering, header, siteID/destZone/beforeAfter UUID validation, network errors"]
     },
     "internal/tools/networks.go": {
       "status": "pending",
@@ -273,10 +298,10 @@
   },
   "global_statistics": {
     "total_modules": 19,
-    "completed_modules": 5,
-    "total_mutations": 102,
-    "total_killed": 101,
+    "completed_modules": 6,
+    "total_mutations": 123,
+    "total_killed": 122,
     "total_survived": 1,
-    "overall_score": 99.0
+    "overall_score": 99.2
   }
 }

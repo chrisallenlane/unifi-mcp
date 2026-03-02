@@ -171,6 +171,240 @@ func TestUpdateFirewallPolicyOrdering_InputSchema(t *testing.T) {
 	}
 }
 
+func TestGetFirewallPolicyOrdering_Execute_Formatting(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"orderedFirewallPolicyIds": map[string]interface{}{
+					"beforeSystemDefined": []string{
+						"ccc00000-0000-0000-0000-000000000001",
+					},
+					"afterSystemDefined": []string{
+						"ccc00000-0000-0000-0000-000000000002",
+					},
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetFirewallPolicyOrdering(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(result, "Policy Ordering:") {
+		t.Errorf(
+			"result should contain 'Policy Ordering:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(
+		result,
+		"1. ccc00000-0000-0000-0000-000000000001",
+	) {
+		t.Errorf(
+			"result should contain 1-based numbering for before: %s",
+			result,
+		)
+	}
+	if !strings.Contains(
+		result,
+		"1. ccc00000-0000-0000-0000-000000000002",
+	) {
+		t.Errorf(
+			"result should contain 1-based numbering for after: %s",
+			result,
+		)
+	}
+}
+
+func TestGetFirewallPolicyOrdering_Execute_NoSiteID(t *testing.T) {
+	tool := &GetFirewallPolicyOrdering{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error when no site ID")
+	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
+}
+
+func TestGetFirewallPolicyOrdering_Execute_InvalidDestZone(
+	t *testing.T,
+) {
+	tool := &GetFirewallPolicyOrdering{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "not-valid"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid destination zone ID")
+	}
+	if !strings.Contains(err.Error(), "destinationZoneId") {
+		t.Errorf(
+			"error should mention destinationZoneId: %v",
+			err,
+		)
+	}
+}
+
+func TestGetFirewallPolicyOrdering_Execute_NetworkError(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewGetFirewallPolicyOrdering(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to get policy ordering",
+	) {
+		t.Errorf("error should contain expected message: %v", err)
+	}
+}
+
+func TestUpdateFirewallPolicyOrdering_Execute_NoSiteID(
+	t *testing.T,
+) {
+	tool := &UpdateFirewallPolicyOrdering{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002", "beforeSystemDefined": [], "afterSystemDefined": []}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error when no site ID")
+	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
+}
+
+func TestUpdateFirewallPolicyOrdering_Execute_InvalidDestZone(
+	t *testing.T,
+) {
+	tool := &UpdateFirewallPolicyOrdering{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "not-valid", "beforeSystemDefined": [], "afterSystemDefined": []}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid destination zone ID")
+	}
+	if !strings.Contains(err.Error(), "destinationZoneId") {
+		t.Errorf(
+			"error should mention destinationZoneId: %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateFirewallPolicyOrdering_Execute_InvalidBeforeUUID(
+	t *testing.T,
+) {
+	tool := &UpdateFirewallPolicyOrdering{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002", "beforeSystemDefined": ["not-valid"], "afterSystemDefined": []}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid before UUID")
+	}
+	if !strings.Contains(err.Error(), "beforeSystemDefined") {
+		t.Errorf(
+			"error should mention beforeSystemDefined: %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateFirewallPolicyOrdering_Execute_InvalidAfterUUID(
+	t *testing.T,
+) {
+	tool := &UpdateFirewallPolicyOrdering{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002", "beforeSystemDefined": [], "afterSystemDefined": ["not-valid"]}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid after UUID")
+	}
+	if !strings.Contains(err.Error(), "afterSystemDefined") {
+		t.Errorf(
+			"error should mention afterSystemDefined: %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateFirewallPolicyOrdering_Execute_NetworkError(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewUpdateFirewallPolicyOrdering(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"sourceZoneId": "aaa00000-0000-0000-0000-000000000001", "destinationZoneId": "aaa00000-0000-0000-0000-000000000002", "beforeSystemDefined": [], "afterSystemDefined": []}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to update policy ordering",
+	) {
+		t.Errorf("error should contain expected message: %v", err)
+	}
+}
+
 func TestGetFirewallPolicyOrdering_Execute_EmptyBefore(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
