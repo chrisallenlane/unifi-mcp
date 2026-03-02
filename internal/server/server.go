@@ -257,6 +257,37 @@ func (s *Server) registerTools() {
 		s.client,
 		s.defaultSiteID,
 	)
+	s.tools["list_devices"] = tools.NewListDevices(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_device"] = tools.NewGetDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["adopt_device"] = tools.NewAdoptDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["remove_device"] = tools.NewRemoveDevice(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_device_action"] = tools.NewExecuteDeviceAction(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["execute_port_action"] = tools.NewExecutePortAction(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["get_device_statistics"] = tools.NewGetDeviceStatistics(
+		s.client,
+		s.defaultSiteID,
+	)
+	s.tools["list_pending_devices"] = tools.NewListPendingDevices(
+		s.client,
+	)
 }
 
 // Run starts the MCP server and processes requests
