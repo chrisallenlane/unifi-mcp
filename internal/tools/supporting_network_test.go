@@ -77,6 +77,9 @@ func TestListWans_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 // --- list_vpn_tunnels tests ---

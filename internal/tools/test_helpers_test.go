@@ -52,3 +52,19 @@ func emptyPaginatedResponse() map[string]interface{} {
 		"totalCount": 0,
 	}
 }
+
+// requireContains asserts that a string slice contains the
+// given value.
+func requireContains(
+	t *testing.T,
+	slice []string,
+	value string,
+) {
+	t.Helper()
+	for _, s := range slice {
+		if s == value {
+			return
+		}
+	}
+	t.Errorf("%q should be in required fields", value)
+}

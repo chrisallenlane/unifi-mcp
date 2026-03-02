@@ -91,6 +91,9 @@ func TestListFirewallZones_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestListFirewallZones_DefaultSiteFallback(t *testing.T) {
@@ -174,6 +177,9 @@ func TestGetFirewallZone_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "firewallZoneId") {
+		t.Errorf("error should mention firewallZoneId: %v", err)
+	}
 }
 
 func TestGetFirewallZone_InputSchema(t *testing.T) {
@@ -183,15 +189,7 @@ func TestGetFirewallZone_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "firewallZoneId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("firewallZoneId should be required")
-	}
+	requireContains(t, required, "firewallZoneId")
 }
 
 func TestCreateFirewallZone_Execute(t *testing.T) {
@@ -307,6 +305,9 @@ func TestUpdateFirewallZone_Execute_MissingZoneID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing zone ID")
 	}
+	if !strings.Contains(err.Error(), "firewallZoneId") {
+		t.Errorf("error should mention firewallZoneId: %v", err)
+	}
 }
 
 func TestDeleteFirewallZone_Execute(t *testing.T) {
@@ -341,6 +342,9 @@ func TestDeleteFirewallZone_Execute_MissingZoneID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing zone ID")
 	}
+	if !strings.Contains(err.Error(), "firewallZoneId") {
+		t.Errorf("error should mention firewallZoneId: %v", err)
+	}
 }
 
 func TestDeleteFirewallZone_InputSchema(t *testing.T) {
@@ -350,15 +354,7 @@ func TestDeleteFirewallZone_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "firewallZoneId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("firewallZoneId should be required")
-	}
+	requireContains(t, required, "firewallZoneId")
 }
 
 func TestListFirewallZones_Execute_APIError(t *testing.T) {

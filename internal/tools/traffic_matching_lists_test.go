@@ -75,6 +75,9 @@ func TestListTrafficMatchingLists_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetTrafficMatchingList_Execute(t *testing.T) {
@@ -113,6 +116,9 @@ func TestGetTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing traffic matching list ID")
 	}
+	if !strings.Contains(err.Error(), "trafficMatchingListId") {
+		t.Errorf("error should mention trafficMatchingListId: %v", err)
+	}
 }
 
 func TestGetTrafficMatchingList_InputSchema(t *testing.T) {
@@ -122,15 +128,7 @@ func TestGetTrafficMatchingList_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "trafficMatchingListId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("trafficMatchingListId should be required")
-	}
+	requireContains(t, required, "trafficMatchingListId")
 }
 
 func TestCreateTrafficMatchingList_Execute(t *testing.T) {
@@ -184,6 +182,9 @@ func TestCreateTrafficMatchingList_Execute_NoSiteID(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when no site ID")
+	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
 	}
 }
 
@@ -246,6 +247,9 @@ func TestUpdateTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing traffic matching list ID")
 	}
+	if !strings.Contains(err.Error(), "trafficMatchingListId") {
+		t.Errorf("error should mention trafficMatchingListId: %v", err)
+	}
 }
 
 func TestUpdateTrafficMatchingList_InputSchema(t *testing.T) {
@@ -255,15 +259,7 @@ func TestUpdateTrafficMatchingList_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "trafficMatchingListId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("trafficMatchingListId should be required")
-	}
+	requireContains(t, required, "trafficMatchingListId")
 }
 
 func TestDeleteTrafficMatchingList_Execute(t *testing.T) {
@@ -298,6 +294,9 @@ func TestDeleteTrafficMatchingList_Execute_MissingID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing traffic matching list ID")
 	}
+	if !strings.Contains(err.Error(), "trafficMatchingListId") {
+		t.Errorf("error should mention trafficMatchingListId: %v", err)
+	}
 }
 
 func TestDeleteTrafficMatchingList_InputSchema(t *testing.T) {
@@ -307,15 +306,7 @@ func TestDeleteTrafficMatchingList_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "trafficMatchingListId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("trafficMatchingListId should be required")
-	}
+	requireContains(t, required, "trafficMatchingListId")
 }
 
 func TestListTrafficMatchingLists_Execute_APIError(t *testing.T) {

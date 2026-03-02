@@ -82,6 +82,9 @@ func TestListVouchers_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetVoucher_Execute(t *testing.T) {
@@ -142,6 +145,9 @@ func TestGetVoucher_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "voucherId") {
+		t.Errorf("error should mention voucherId: %v", err)
+	}
 }
 
 func TestGetVoucher_InputSchema(t *testing.T) {
@@ -151,15 +157,7 @@ func TestGetVoucher_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "voucherId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("voucherId should be required")
-	}
+	requireContains(t, required, "voucherId")
 }
 
 func TestCreateVouchers_Execute(t *testing.T) {
@@ -216,22 +214,8 @@ func TestCreateVouchers_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundName := false
-	foundTime := false
-	for _, r := range required {
-		if r == "name" {
-			foundName = true
-		}
-		if r == "timeLimitMinutes" {
-			foundTime = true
-		}
-	}
-	if !foundName {
-		t.Error("name should be required")
-	}
-	if !foundTime {
-		t.Error("timeLimitMinutes should be required")
-	}
+	requireContains(t, required, "name")
+	requireContains(t, required, "timeLimitMinutes")
 }
 
 func TestDeleteVouchers_Execute(t *testing.T) {
@@ -271,6 +255,9 @@ func TestDeleteVouchers_Execute_MissingFilter(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when filter missing")
 	}
+	if !strings.Contains(err.Error(), "filter") {
+		t.Errorf("error should mention filter: %v", err)
+	}
 }
 
 func TestDeleteVouchers_InputSchema(t *testing.T) {
@@ -280,15 +267,7 @@ func TestDeleteVouchers_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "filter" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("filter should be required")
-	}
+	requireContains(t, required, "filter")
 }
 
 func TestDeleteVoucher_Execute(t *testing.T) {
@@ -327,6 +306,9 @@ func TestDeleteVoucher_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "voucherId") {
+		t.Errorf("error should mention voucherId: %v", err)
+	}
 }
 
 func TestDeleteVoucher_InputSchema(t *testing.T) {
@@ -336,15 +318,7 @@ func TestDeleteVoucher_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "voucherId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("voucherId should be required")
-	}
+	requireContains(t, required, "voucherId")
 }
 
 func TestGetVoucher_Execute_WithOptionalFields(t *testing.T) {

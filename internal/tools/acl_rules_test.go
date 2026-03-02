@@ -84,6 +84,9 @@ func TestListACLRules_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetACLRule_Execute(t *testing.T) {
@@ -153,6 +156,9 @@ func TestGetACLRule_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "aclRuleId") {
+		t.Errorf("error should mention aclRuleId: %v", err)
+	}
 }
 
 func TestGetACLRule_InputSchema(t *testing.T) {
@@ -162,15 +168,7 @@ func TestGetACLRule_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "aclRuleId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("aclRuleId should be required")
-	}
+	requireContains(t, required, "aclRuleId")
 }
 
 func TestCreateACLRule_Execute(t *testing.T) {
@@ -225,22 +223,8 @@ func TestCreateACLRule_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundType := false
-	foundName := false
-	for _, r := range required {
-		if r == "type" {
-			foundType = true
-		}
-		if r == "name" {
-			foundName = true
-		}
-	}
-	if !foundType {
-		t.Error("type should be required")
-	}
-	if !foundName {
-		t.Error("name should be required")
-	}
+	requireContains(t, required, "type")
+	requireContains(t, required, "name")
 }
 
 func TestUpdateACLRule_Execute(t *testing.T) {
@@ -292,6 +276,9 @@ func TestUpdateACLRule_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "aclRuleId") {
+		t.Errorf("error should mention aclRuleId: %v", err)
+	}
 }
 
 func TestUpdateACLRule_InputSchema(t *testing.T) {
@@ -301,15 +288,7 @@ func TestUpdateACLRule_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "aclRuleId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("aclRuleId should be required")
-	}
+	requireContains(t, required, "aclRuleId")
 }
 
 func TestDeleteACLRule_Execute(t *testing.T) {
@@ -345,6 +324,9 @@ func TestDeleteACLRule_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "aclRuleId") {
+		t.Errorf("error should mention aclRuleId: %v", err)
+	}
 }
 
 func TestDeleteACLRule_InputSchema(t *testing.T) {
@@ -354,15 +336,7 @@ func TestDeleteACLRule_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "aclRuleId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("aclRuleId should be required")
-	}
+	requireContains(t, required, "aclRuleId")
 }
 
 func TestGetACLRuleOrdering_Execute(t *testing.T) {
@@ -470,15 +444,7 @@ func TestUpdateACLRuleOrdering_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "orderedAclRuleIds" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("orderedAclRuleIds should be required")
-	}
+	requireContains(t, required, "orderedAclRuleIds")
 }
 
 func TestGetACLRule_Execute_WithAllFilters(t *testing.T) {

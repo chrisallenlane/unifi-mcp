@@ -101,6 +101,9 @@ func TestListNetworks_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetNetwork_Execute(t *testing.T) {
@@ -165,6 +168,9 @@ func TestGetNetwork_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "networkId") {
+		t.Errorf("error should mention networkId: %v", err)
+	}
 }
 
 func TestGetNetwork_InputSchema(t *testing.T) {
@@ -174,15 +180,7 @@ func TestGetNetwork_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "networkId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("networkId should be required")
-	}
+	requireContains(t, required, "networkId")
 }
 
 func TestCreateNetwork_Execute(t *testing.T) {
@@ -235,22 +233,8 @@ func TestCreateNetwork_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundName := false
-	foundMgmt := false
-	for _, r := range required {
-		if r == "name" {
-			foundName = true
-		}
-		if r == "management" {
-			foundMgmt = true
-		}
-	}
-	if !foundName {
-		t.Error("name should be required")
-	}
-	if !foundMgmt {
-		t.Error("management should be required")
-	}
+	requireContains(t, required, "name")
+	requireContains(t, required, "management")
 }
 
 func TestUpdateNetwork_Execute(t *testing.T) {
@@ -300,6 +284,9 @@ func TestUpdateNetwork_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "networkId") {
+		t.Errorf("error should mention networkId: %v", err)
+	}
 }
 
 func TestUpdateNetwork_InputSchema(t *testing.T) {
@@ -309,15 +296,7 @@ func TestUpdateNetwork_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "networkId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("networkId should be required")
-	}
+	requireContains(t, required, "networkId")
 }
 
 func TestDeleteNetwork_Execute(t *testing.T) {
@@ -353,6 +332,9 @@ func TestDeleteNetwork_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "networkId") {
+		t.Errorf("error should mention networkId: %v", err)
+	}
 }
 
 func TestDeleteNetwork_InputSchema(t *testing.T) {
@@ -362,15 +344,7 @@ func TestDeleteNetwork_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "networkId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("networkId should be required")
-	}
+	requireContains(t, required, "networkId")
 }
 
 func TestGetNetworkReferences_Execute(t *testing.T) {
@@ -468,6 +442,9 @@ func TestGetNetworkReferences_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "networkId") {
+		t.Errorf("error should mention networkId: %v", err)
+	}
 }
 
 func TestGetNetworkReferences_InputSchema(t *testing.T) {
@@ -477,15 +454,7 @@ func TestGetNetworkReferences_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "networkId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("networkId should be required")
-	}
+	requireContains(t, required, "networkId")
 }
 
 // --- optional field branches ---

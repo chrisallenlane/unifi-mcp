@@ -47,6 +47,12 @@ func TestResolveSiteID(t *testing.T) {
 			defaultID: "",
 			wantErr:   true,
 		},
+		{
+			name:      "invalid default UUID",
+			explicit:  "",
+			defaultID: "not-a-uuid",
+			wantErr:   true,
+		},
 	}
 
 	for _, tt := range tests {

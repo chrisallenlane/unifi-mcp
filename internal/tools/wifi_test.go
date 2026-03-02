@@ -97,6 +97,9 @@ func TestListWiFiBroadcasts_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetWiFiBroadcast_Execute(t *testing.T) {
@@ -168,6 +171,9 @@ func TestGetWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "wifiBroadcastId") {
+		t.Errorf("error should mention wifiBroadcastId: %v", err)
+	}
 }
 
 func TestGetWiFiBroadcast_InputSchema(t *testing.T) {
@@ -177,15 +183,7 @@ func TestGetWiFiBroadcast_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "wifiBroadcastId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("wifiBroadcastId should be required")
-	}
+	requireContains(t, required, "wifiBroadcastId")
 }
 
 func TestCreateWiFiBroadcast_Execute(t *testing.T) {
@@ -245,22 +243,8 @@ func TestCreateWiFiBroadcast_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundName := false
-	foundSec := false
-	for _, r := range required {
-		if r == "name" {
-			foundName = true
-		}
-		if r == "securityConfiguration" {
-			foundSec = true
-		}
-	}
-	if !foundName {
-		t.Error("name should be required")
-	}
-	if !foundSec {
-		t.Error("securityConfiguration should be required")
-	}
+	requireContains(t, required, "name")
+	requireContains(t, required, "securityConfiguration")
 }
 
 func TestUpdateWiFiBroadcast_Execute(t *testing.T) {
@@ -317,6 +301,9 @@ func TestUpdateWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "wifiBroadcastId") {
+		t.Errorf("error should mention wifiBroadcastId: %v", err)
+	}
 }
 
 func TestUpdateWiFiBroadcast_InputSchema(t *testing.T) {
@@ -326,15 +313,7 @@ func TestUpdateWiFiBroadcast_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "wifiBroadcastId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("wifiBroadcastId should be required")
-	}
+	requireContains(t, required, "wifiBroadcastId")
 }
 
 func TestDeleteWiFiBroadcast_Execute(t *testing.T) {
@@ -372,6 +351,9 @@ func TestDeleteWiFiBroadcast_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "wifiBroadcastId") {
+		t.Errorf("error should mention wifiBroadcastId: %v", err)
+	}
 }
 
 func TestDeleteWiFiBroadcast_InputSchema(t *testing.T) {
@@ -381,15 +363,7 @@ func TestDeleteWiFiBroadcast_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "wifiBroadcastId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("wifiBroadcastId should be required")
-	}
+	requireContains(t, required, "wifiBroadcastId")
 }
 
 func TestGetWiFiBroadcast_Execute_WithOptionalFields(t *testing.T) {

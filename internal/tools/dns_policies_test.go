@@ -171,6 +171,9 @@ func TestListDNSPolicies_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetDNSPolicy_Execute(t *testing.T) {
@@ -222,6 +225,9 @@ func TestGetDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "dnsPolicyId") {
+		t.Errorf("error should mention dnsPolicyId: %v", err)
+	}
 }
 
 func TestGetDNSPolicy_InputSchema(t *testing.T) {
@@ -231,15 +237,7 @@ func TestGetDNSPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "dnsPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("dnsPolicyId should be required")
-	}
+	requireContains(t, required, "dnsPolicyId")
 }
 
 func TestCreateDNSPolicy_Execute(t *testing.T) {
@@ -290,22 +288,8 @@ func TestCreateDNSPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundType := false
-	foundEnabled := false
-	for _, r := range required {
-		if r == "type" {
-			foundType = true
-		}
-		if r == "enabled" {
-			foundEnabled = true
-		}
-	}
-	if !foundType {
-		t.Error("type should be required")
-	}
-	if !foundEnabled {
-		t.Error("enabled should be required")
-	}
+	requireContains(t, required, "type")
+	requireContains(t, required, "enabled")
 }
 
 func TestUpdateDNSPolicy_Execute(t *testing.T) {
@@ -353,6 +337,9 @@ func TestUpdateDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "dnsPolicyId") {
+		t.Errorf("error should mention dnsPolicyId: %v", err)
+	}
 }
 
 func TestUpdateDNSPolicy_InputSchema(t *testing.T) {
@@ -362,15 +349,7 @@ func TestUpdateDNSPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "dnsPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("dnsPolicyId should be required")
-	}
+	requireContains(t, required, "dnsPolicyId")
 }
 
 func TestDeleteDNSPolicy_Execute(t *testing.T) {
@@ -406,6 +385,9 @@ func TestDeleteDNSPolicy_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "dnsPolicyId") {
+		t.Errorf("error should mention dnsPolicyId: %v", err)
+	}
 }
 
 func TestDeleteDNSPolicy_InputSchema(t *testing.T) {
@@ -415,15 +397,7 @@ func TestDeleteDNSPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "dnsPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("dnsPolicyId should be required")
-	}
+	requireContains(t, required, "dnsPolicyId")
 }
 
 func TestListDNSPolicies_Execute_APIError(t *testing.T) {

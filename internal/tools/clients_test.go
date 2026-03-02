@@ -94,6 +94,9 @@ func TestListClients_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetClient_Execute(t *testing.T) {
@@ -152,6 +155,9 @@ func TestGetClient_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "clientId") {
+		t.Errorf("error should mention clientId: %v", err)
+	}
 }
 
 func TestGetClient_InputSchema(t *testing.T) {
@@ -161,15 +167,7 @@ func TestGetClient_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "clientId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("clientId should be required")
-	}
+	requireContains(t, required, "clientId")
 }
 
 func TestExecuteClientAction_Execute(t *testing.T) {
@@ -213,6 +211,9 @@ func TestExecuteClientAction_Execute_MissingAction(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when action missing")
 	}
+	if !strings.Contains(err.Error(), "action") {
+		t.Errorf("error should mention action: %v", err)
+	}
 }
 
 func TestExecuteClientAction_InputSchema(t *testing.T) {
@@ -222,22 +223,8 @@ func TestExecuteClientAction_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundClient := false
-	foundAction := false
-	for _, r := range required {
-		if r == "clientId" {
-			foundClient = true
-		}
-		if r == "action" {
-			foundAction = true
-		}
-	}
-	if !foundClient {
-		t.Error("clientId should be required")
-	}
-	if !foundAction {
-		t.Error("action should be required")
-	}
+	requireContains(t, required, "clientId")
+	requireContains(t, required, "action")
 }
 
 // --- optional field branches ---
@@ -274,15 +261,21 @@ func TestListClients_Execute_WithOptionalFields(t *testing.T) {
 			result,
 		)
 	}
+	if !strings.Contains(result, "192.168.1.100") {
+		t.Errorf(
+			"result should contain IP address: %s",
+			result,
+		)
+	}
 	if !strings.Contains(result, "Connected At:") {
 		t.Errorf(
 			"result should contain 'Connected At:': %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "192.168.1.100") {
+	if !strings.Contains(result, "2025-01-01") {
 		t.Errorf(
-			"result should contain IP address: %s",
+			"result should contain connected-at date: %s",
 			result,
 		)
 	}
@@ -335,6 +328,35 @@ func TestGetClient_Execute_APIError(t *testing.T) {
 	if !strings.Contains(err.Error(), "500") {
 		t.Errorf(
 			"error should contain '500': %v",
+			err,
+		)
+	}
+}
+
+func TestExecuteClientAction_Execute_TransportError(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewExecuteClientAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "aaa00000-0000-0000-0000-000000000001", "action": "AUTHORIZE_GUEST_ACCESS"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on transport failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to execute client action",
+	) {
+		t.Errorf(
+			"error should wrap with context: %v",
 			err,
 		)
 	}

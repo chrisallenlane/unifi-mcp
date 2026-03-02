@@ -100,6 +100,9 @@ func TestListDevices_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID provided")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 // --- get_device ---
@@ -157,6 +160,9 @@ func TestGetDevice_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "deviceId") {
+		t.Errorf("error should mention deviceId: %v", err)
+	}
 }
 
 func TestGetDevice_InputSchema(t *testing.T) {
@@ -166,15 +172,7 @@ func TestGetDevice_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "deviceId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("deviceId should be required")
-	}
+	requireContains(t, required, "deviceId")
 }
 
 // --- adopt_device ---
@@ -228,6 +226,9 @@ func TestAdoptDevice_Execute_MissingMac(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when macAddress missing")
 	}
+	if !strings.Contains(err.Error(), "macAddress") {
+		t.Errorf("error should mention macAddress: %v", err)
+	}
 }
 
 func TestAdoptDevice_InputSchema(t *testing.T) {
@@ -237,15 +238,7 @@ func TestAdoptDevice_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "macAddress" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("macAddress should be required")
-	}
+	requireContains(t, required, "macAddress")
 }
 
 // --- remove_device ---
@@ -283,6 +276,9 @@ func TestRemoveDevice_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "deviceId") {
+		t.Errorf("error should mention deviceId: %v", err)
+	}
 }
 
 func TestRemoveDevice_InputSchema(t *testing.T) {
@@ -292,15 +288,7 @@ func TestRemoveDevice_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "deviceId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("deviceId should be required")
-	}
+	requireContains(t, required, "deviceId")
 }
 
 // --- execute_device_action ---
@@ -340,6 +328,9 @@ func TestExecuteDeviceAction_Execute_MissingAction(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when action missing")
 	}
+	if !strings.Contains(err.Error(), "action") {
+		t.Errorf("error should mention action: %v", err)
+	}
 }
 
 func TestExecuteDeviceAction_Execute_InvalidUUID(t *testing.T) {
@@ -353,6 +344,9 @@ func TestExecuteDeviceAction_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "deviceId") {
+		t.Errorf("error should mention deviceId: %v", err)
+	}
 }
 
 func TestExecuteDeviceAction_InputSchema(t *testing.T) {
@@ -362,22 +356,8 @@ func TestExecuteDeviceAction_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundDevice := false
-	foundAction := false
-	for _, r := range required {
-		if r == "deviceId" {
-			foundDevice = true
-		}
-		if r == "action" {
-			foundAction = true
-		}
-	}
-	if !foundDevice {
-		t.Error("deviceId should be required")
-	}
-	if !foundAction {
-		t.Error("action should be required")
-	}
+	requireContains(t, required, "deviceId")
+	requireContains(t, required, "action")
 }
 
 // --- execute_port_action ---
@@ -420,6 +400,9 @@ func TestExecutePortAction_Execute_MissingPortIdx(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when portIdx missing")
 	}
+	if !strings.Contains(err.Error(), "portIdx") {
+		t.Errorf("error should mention portIdx: %v", err)
+	}
 }
 
 func TestExecutePortAction_Execute_MissingAction(t *testing.T) {
@@ -432,6 +415,9 @@ func TestExecutePortAction_Execute_MissingAction(t *testing.T) {
 	)
 	if err == nil {
 		t.Fatal("expected error when action missing")
+	}
+	if !strings.Contains(err.Error(), "action") {
+		t.Errorf("error should mention action: %v", err)
 	}
 }
 
@@ -446,6 +432,9 @@ func TestExecutePortAction_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "deviceId") {
+		t.Errorf("error should mention deviceId: %v", err)
+	}
 }
 
 func TestExecutePortAction_InputSchema(t *testing.T) {
@@ -455,28 +444,9 @@ func TestExecutePortAction_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	foundDevice := false
-	foundPort := false
-	foundAction := false
-	for _, r := range required {
-		switch r {
-		case "deviceId":
-			foundDevice = true
-		case "portIdx":
-			foundPort = true
-		case "action":
-			foundAction = true
-		}
-	}
-	if !foundDevice {
-		t.Error("deviceId should be required")
-	}
-	if !foundPort {
-		t.Error("portIdx should be required")
-	}
-	if !foundAction {
-		t.Error("action should be required")
-	}
+	requireContains(t, required, "deviceId")
+	requireContains(t, required, "portIdx")
+	requireContains(t, required, "action")
 }
 
 // --- get_device_statistics ---
@@ -531,6 +501,9 @@ func TestGetDeviceStatistics_Execute_InvalidUUID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for invalid UUID")
 	}
+	if !strings.Contains(err.Error(), "deviceId") {
+		t.Errorf("error should mention deviceId: %v", err)
+	}
 }
 
 func TestGetDeviceStatistics_InputSchema(t *testing.T) {
@@ -540,15 +513,7 @@ func TestGetDeviceStatistics_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "deviceId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("deviceId should be required")
-	}
+	requireContains(t, required, "deviceId")
 }
 
 // --- optional field branches ---
@@ -593,9 +558,21 @@ func TestGetDevice_Execute_WithOptionalFields(t *testing.T) {
 			result,
 		)
 	}
+	if !strings.Contains(result, "2025-01-01") {
+		t.Errorf(
+			"result should contain adopted-at date: %s",
+			result,
+		)
+	}
 	if !strings.Contains(result, "Provisioned At:") {
 		t.Errorf(
 			"result should contain 'Provisioned At:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2025-01-02") {
+		t.Errorf(
+			"result should contain provisioned-at date: %s",
 			result,
 		)
 	}
@@ -630,6 +607,107 @@ func TestGetDeviceStatistics_Execute_WithNextHeartbeat(t *testing.T) {
 			"result should contain 'Next Heartbeat:': %s",
 			result,
 		)
+	}
+	if !strings.Contains(result, "2026-03-01") {
+		t.Errorf(
+			"result should contain next-heartbeat date: %s",
+			result,
+		)
+	}
+}
+
+// --- transport error tests ---
+
+func TestAdoptDevice_Execute_TransportError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewAdoptDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"macAddress": "aa:bb:cc:dd:ee:ff"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error on transport failure")
+	}
+	if !strings.Contains(err.Error(), "failed to adopt device") {
+		t.Errorf("error should wrap with context: %v", err)
+	}
+}
+
+func TestRemoveDevice_Execute_TransportError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewRemoveDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on transport failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to remove device",
+	) {
+		t.Errorf("error should wrap with context: %v", err)
+	}
+}
+
+func TestExecuteDeviceAction_Execute_TransportError(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewExecuteDeviceAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001", "action": "restart"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on transport failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to execute device action",
+	) {
+		t.Errorf("error should wrap with context: %v", err)
+	}
+}
+
+func TestExecutePortAction_Execute_TransportError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewExecutePortAction(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001", "portIdx": 2, "action": "cycle_poe"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error on transport failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to execute port action",
+	) {
+		t.Errorf("error should wrap with context: %v", err)
 	}
 }
 

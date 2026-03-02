@@ -93,6 +93,9 @@ func TestListFirewallPolicies_Execute_NoSiteID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error when no site ID")
 	}
+	if !strings.Contains(err.Error(), "siteId") {
+		t.Errorf("error should mention siteId: %v", err)
+	}
 }
 
 func TestGetFirewallPolicy_Execute(t *testing.T) {
@@ -128,6 +131,9 @@ func TestGetFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
 	}
+	if !strings.Contains(err.Error(), "firewallPolicyId") {
+		t.Errorf("error should mention firewallPolicyId: %v", err)
+	}
 }
 
 func TestGetFirewallPolicy_InputSchema(t *testing.T) {
@@ -137,15 +143,7 @@ func TestGetFirewallPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "firewallPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("firewallPolicyId should be required")
-	}
+	requireContains(t, required, "firewallPolicyId")
 }
 
 func TestCreateFirewallPolicy_Execute(t *testing.T) {
@@ -273,6 +271,26 @@ func TestCreateFirewallPolicy_Execute_MissingName(t *testing.T) {
 	}
 }
 
+func TestCreateFirewallPolicy_Execute_MissingActionType(
+	t *testing.T,
+) {
+	tool := &CreateFirewallPolicy{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Test", "enabled": true, "action": {}, "source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"}, "destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"}, "ipProtocolScope": {"ipVersion": "IPV4"}, "loggingEnabled": false}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing action.type")
+	}
+	if !strings.Contains(err.Error(), "action.type is required") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
 func TestCreateFirewallPolicy_InputSchema(t *testing.T) {
 	tool := &CreateFirewallPolicy{}
 	schema := tool.InputSchema()
@@ -328,6 +346,27 @@ func TestUpdateFirewallPolicy_Execute_MissingPolicyID(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
 	}
+	if !strings.Contains(err.Error(), "firewallPolicyId") {
+		t.Errorf("error should mention firewallPolicyId: %v", err)
+	}
+}
+
+func TestUpdateFirewallPolicy_Execute_MissingName(t *testing.T) {
+	tool := &UpdateFirewallPolicy{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"firewallPolicyId": "ccc00000-0000-0000-0000-000000000001", "enabled": true, "action": {"type": "ALLOW"}, "source": {"zoneId": "aaa00000-0000-0000-0000-000000000001"}, "destination": {"zoneId": "aaa00000-0000-0000-0000-000000000002"}, "ipProtocolScope": {"ipVersion": "IPV4"}, "loggingEnabled": false}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for missing name")
+	}
+	if !strings.Contains(err.Error(), "name is required") {
+		t.Errorf("unexpected error: %v", err)
+	}
 }
 
 func TestDeleteFirewallPolicy_Execute(t *testing.T) {
@@ -364,6 +403,9 @@ func TestDeleteFirewallPolicy_Execute_MissingPolicyID(
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
 	}
+	if !strings.Contains(err.Error(), "firewallPolicyId") {
+		t.Errorf("error should mention firewallPolicyId: %v", err)
+	}
 }
 
 func TestDeleteFirewallPolicy_InputSchema(t *testing.T) {
@@ -373,15 +415,7 @@ func TestDeleteFirewallPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "firewallPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("firewallPolicyId should be required")
-	}
+	requireContains(t, required, "firewallPolicyId")
 }
 
 func TestPatchFirewallPolicy_Execute(t *testing.T) {
@@ -424,6 +458,9 @@ func TestPatchFirewallPolicy_Execute_MissingPolicyID(
 	if err == nil {
 		t.Fatal("expected error for missing policy ID")
 	}
+	if !strings.Contains(err.Error(), "firewallPolicyId") {
+		t.Errorf("error should mention firewallPolicyId: %v", err)
+	}
 }
 
 func TestPatchFirewallPolicy_InputSchema(t *testing.T) {
@@ -433,15 +470,7 @@ func TestPatchFirewallPolicy_InputSchema(t *testing.T) {
 	if !ok {
 		t.Fatal("required should be a string slice")
 	}
-	found := false
-	for _, r := range required {
-		if r == "firewallPolicyId" {
-			found = true
-		}
-	}
-	if !found {
-		t.Error("firewallPolicyId should be required")
-	}
+	requireContains(t, required, "firewallPolicyId")
 }
 
 func TestCreateFirewallPolicy_Execute_InvalidSourceZoneID(
@@ -553,39 +582,39 @@ func TestGetFirewallPolicy_Execute_WithOptionalFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(result, "Description:") {
+	if !strings.Contains(result, "Test policy description") {
 		t.Errorf(
-			"result should contain 'Description:': %s",
+			"result should contain description value: %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "Connection State Filter:") {
+	if !strings.Contains(result, "NEW") {
 		t.Errorf(
-			"result should contain 'Connection State Filter:': %s",
+			"result should contain connection state filter: %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "IPsec Filter:") {
+	if !strings.Contains(result, "MATCH_ENCRYPTED") {
 		t.Errorf(
-			"result should contain 'IPsec Filter:': %s",
+			"result should contain ipsec filter value: %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "Schedule Mode:") {
+	if !strings.Contains(result, "ALWAYS") {
 		t.Errorf(
-			"result should contain 'Schedule Mode:': %s",
+			"result should contain schedule mode value: %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "Source Traffic Filter:") {
+	if !strings.Contains(result, "NETWORK") {
 		t.Errorf(
-			"result should contain 'Source Traffic Filter:': %s",
+			"result should contain source traffic filter: %s",
 			result,
 		)
 	}
-	if !strings.Contains(result, "Destination Traffic Filter:") {
+	if !strings.Contains(result, "IP_ADDRESS") {
 		t.Errorf(
-			"result should contain 'Destination Traffic Filter:': %s",
+			"result should contain destination traffic filter: %s",
 			result,
 		)
 	}

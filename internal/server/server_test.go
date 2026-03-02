@@ -182,6 +182,60 @@ func TestHandleListTools(t *testing.T) {
 	}
 }
 
+func TestRegisterTools_Count(t *testing.T) {
+	s := newTestServer(t)
+	if len(s.tools) != 67 {
+		t.Errorf(
+			"expected 67 registered tools, got %d",
+			len(s.tools),
+		)
+	}
+}
+
+func TestHandleCallTool_MissingArguments(t *testing.T) {
+	s := newTestServer(t)
+	s.tools["test_tool"] = &stubTool{result: "ok"}
+
+	params := map[string]interface{}{
+		"name": "test_tool",
+	}
+	paramsJSON, _ := json.Marshal(params)
+
+	req := &JSONRPCRequest{
+		JSONRPC: "2.0",
+		ID:      10,
+		Method:  "tools/call",
+		Params:  paramsJSON,
+	}
+
+	resp := s.handleRequest(context.Background(), req)
+
+	if resp.Error != nil {
+		t.Fatalf("unexpected error: %+v", resp.Error)
+	}
+
+	result, ok := resp.Result.(map[string]interface{})
+	if !ok {
+		t.Fatal("result should be a map")
+	}
+
+	content, ok := result["content"].([]map[string]interface{})
+	if !ok {
+		t.Fatal("content should be a slice of maps")
+	}
+
+	if len(content) != 1 {
+		t.Fatalf("content length = %d, want 1", len(content))
+	}
+
+	if content[0]["text"] != "ok" {
+		t.Errorf(
+			"content text = %v, want 'ok'",
+			content[0]["text"],
+		)
+	}
+}
+
 func TestHandleUnknownMethod(t *testing.T) {
 	s := newTestServer(t)
 
@@ -514,6 +568,21 @@ func TestRun_EncodeFail(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "broken pipe") {
 		t.Errorf("error should contain cause: %v", err)
+	}
+}
+
+func TestRun_MalformedJSON_EncodeFail(t *testing.T) {
+	s := newTestServer(t)
+
+	stdin := strings.NewReader("{invalid json}\n")
+
+	err := s.Run(context.Background(), stdin, failWriter{})
+	if err != nil {
+		t.Fatalf(
+			"Run should not return error for malformed JSON "+
+				"encode failure, got: %v",
+			err,
+		)
 	}
 }
 

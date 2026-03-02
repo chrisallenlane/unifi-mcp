@@ -53,6 +53,9 @@ func TestGetInfo_Execute_Error(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error for unauthorized response")
 	}
+	if !strings.Contains(err.Error(), "401") {
+		t.Errorf("error should contain status code: %v", err)
+	}
 }
 
 func TestGetInfo_Execute_APIError(t *testing.T) {

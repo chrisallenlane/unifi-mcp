@@ -71,6 +71,9 @@ func TestGetFirewallPolicyOrdering_Execute_MissingParams(
 	if err == nil {
 		t.Fatal("expected error for missing params")
 	}
+	if !strings.Contains(err.Error(), "sourceZoneId") {
+		t.Errorf("error should mention sourceZoneId: %v", err)
+	}
 }
 
 func TestGetFirewallPolicyOrdering_InputSchema(t *testing.T) {
@@ -147,6 +150,9 @@ func TestUpdateFirewallPolicyOrdering_Execute_MissingParams(
 	)
 	if err == nil {
 		t.Fatal("expected error for missing params")
+	}
+	if !strings.Contains(err.Error(), "sourceZoneId") {
+		t.Errorf("error should mention sourceZoneId: %v", err)
 	}
 }
 
