@@ -425,3 +425,236 @@ func TestListCountries_Execute_APIError(t *testing.T) {
 		t.Errorf("error should contain status code: %v", err)
 	}
 }
+
+// --- description tests ---
+
+func TestListRadiusProfiles_Description(t *testing.T) {
+	tool := NewListRadiusProfiles(nil, "")
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "RADIUS") {
+		t.Errorf("description should mention RADIUS: %s", desc)
+	}
+}
+
+// --- invalid JSON tests ---
+
+func TestListRadiusProfiles_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListRadiusProfiles{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListDeviceTags_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListDeviceTags{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListDpiCategories_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListDpiCategories{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListDpiApplications_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListDpiApplications{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListCountries_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListCountries{}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+// --- network error tests ---
+
+func TestListRadiusProfiles_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListRadiusProfiles(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list RADIUS profiles") {
+		t.Errorf(
+			"error should contain 'failed to list RADIUS profiles': %v",
+			err,
+		)
+	}
+}
+
+func TestListDeviceTags_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListDeviceTags(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list device tags") {
+		t.Errorf(
+			"error should contain 'failed to list device tags': %v",
+			err,
+		)
+	}
+}
+
+func TestListDpiCategories_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListDpiCategories(client)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list DPI categories") {
+		t.Errorf(
+			"error should contain 'failed to list DPI categories': %v",
+			err,
+		)
+	}
+}
+
+func TestListDpiApplications_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListDpiApplications(client)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list DPI applications") {
+		t.Errorf(
+			"error should contain 'failed to list DPI applications': %v",
+			err,
+		)
+	}
+}
+
+func TestListCountries_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListCountries(client)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list countries") {
+		t.Errorf(
+			"error should contain 'failed to list countries': %v",
+			err,
+		)
+	}
+}
+
+// --- formatting tests ---
+
+func TestListRadiusProfiles_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":       "ddd00000-0000-0000-0000-000000000001",
+					"name":     "Corp RADIUS",
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
+				},
+				map[string]interface{}{
+					"id":       "ddd00000-0000-0000-0000-000000000002",
+					"name":     "Guest RADIUS",
+					"metadata": map[string]string{"origin": "USER_DEFINED"},
+				},
+			))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListRadiusProfiles(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "RADIUS Profiles (2 of 2):") {
+		t.Errorf(
+			"result should contain header 'RADIUS Profiles (2 of 2):': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "1. Corp RADIUS") {
+		t.Errorf(
+			"result should contain '1. Corp RADIUS': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Guest RADIUS") {
+		t.Errorf(
+			"result should contain '2. Guest RADIUS': %s",
+			result,
+		)
+	}
+}

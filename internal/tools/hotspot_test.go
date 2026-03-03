@@ -402,6 +402,225 @@ func TestCreateVouchers_Execute_EmptyResult(t *testing.T) {
 	}
 }
 
+// --- formatting and coverage tests ---
+
+func TestListVouchers_Description(t *testing.T) {
+	tool := &ListVouchers{}
+	d := tool.Description()
+	if d == "" {
+		t.Fatal("description should not be empty")
+	}
+	if !strings.Contains(d, "oucher") {
+		t.Errorf(
+			"description should mention vouchers: %s",
+			d,
+		)
+	}
+}
+
+func TestListVouchers_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListVouchers{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListVouchers_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":                   "aaa00000-0000-0000-0000-000000000001",
+						"code":                 "ABCD-1234",
+						"name":                 "Guest WiFi",
+						"timeLimitMinutes":     60,
+						"expired":              false,
+						"authorizedGuestCount": 0,
+						"createdAt":            "2026-03-01T10:00:00Z",
+					},
+					{
+						"id":                   "aaa00000-0000-0000-0000-000000000002",
+						"code":                 "WXYZ-5678",
+						"name":                 "Event Pass",
+						"timeLimitMinutes":     120,
+						"expired":              false,
+						"authorizedGuestCount": 0,
+						"createdAt":            "2026-03-01T11:00:00Z",
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 11,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListVouchers(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify header uses totalCount, not len(data)
+	if !strings.Contains(result, "Vouchers (2 of 11):") {
+		t.Errorf(
+			"result should contain 'Vouchers (2 of 11):': %s",
+			result,
+		)
+	}
+
+	// verify numbering
+	if !strings.Contains(result, "1. Code: ABCD-1234") {
+		t.Errorf(
+			"result should contain '1. Code: ABCD-1234': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Code: WXYZ-5678") {
+		t.Errorf(
+			"result should contain '2. Code: WXYZ-5678': %s",
+			result,
+		)
+	}
+}
+
+func TestListVouchers_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewListVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list vouchers") {
+		t.Errorf(
+			"error should contain 'failed to list vouchers': %v",
+			err,
+		)
+	}
+}
+
+func TestGetVoucher_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetVoucher(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"voucherId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to get voucher") {
+		t.Errorf(
+			"error should contain 'failed to get voucher': %v",
+			err,
+		)
+	}
+}
+
+func TestCreateVouchers_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewCreateVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Event Pass", "timeLimitMinutes": 60}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to create vouchers") {
+		t.Errorf(
+			"error should contain 'failed to create vouchers': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteVouchers_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewDeleteVouchers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"filter": "expired eq true"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to delete vouchers") {
+		t.Errorf(
+			"error should contain 'failed to delete vouchers': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteVoucher_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewDeleteVoucher(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"voucherId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to delete voucher") {
+		t.Errorf(
+			"error should contain 'failed to delete voucher': %v",
+			err,
+		)
+	}
+}
+
 func TestListVouchers_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

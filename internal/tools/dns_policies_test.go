@@ -400,6 +400,222 @@ func TestDeleteDNSPolicy_InputSchema(t *testing.T) {
 	requireContains(t, required, "dnsPolicyId")
 }
 
+func TestListDNSPolicies_Description(t *testing.T) {
+	tool := &ListDNSPolicies{}
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should return a non-empty string")
+	}
+	if !strings.Contains(desc, "DNS") {
+		t.Errorf(
+			"Description() should contain 'DNS': %s",
+			desc,
+		)
+	}
+}
+
+func TestListDNSPolicies_Execute_InvalidJSON(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+			t.Fatal("API should not be called for invalid JSON")
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListDNSPolicies(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListDNSPolicies_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListDNSPolicies(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list DNS policies") {
+		t.Errorf(
+			"error should contain 'failed to list DNS policies': %v",
+			err,
+		)
+	}
+}
+
+func TestGetDNSPolicy_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewGetDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to get DNS policy") {
+		t.Errorf(
+			"error should contain 'failed to get DNS policy': %v",
+			err,
+		)
+	}
+}
+
+func TestCreateDNSPolicy_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewCreateDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"type": "A_RECORD", "enabled": true}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to create DNS policy") {
+		t.Errorf(
+			"error should contain 'failed to create DNS policy': %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateDNSPolicy_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewUpdateDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001", "type": "A_RECORD", "enabled": true}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to update DNS policy") {
+		t.Errorf(
+			"error should contain 'failed to update DNS policy': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteDNSPolicy_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewDeleteDNSPolicy(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"dnsPolicyId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to delete DNS policy") {
+		t.Errorf(
+			"error should contain 'failed to delete DNS policy': %v",
+			err,
+		)
+	}
+}
+
+func TestListDNSPolicies_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			// totalCount (10) != len(data) (2) to exercise the
+			// "%d of %d" header path.
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":      "aaa00000-0000-0000-0000-000000000001",
+						"type":    "A_RECORD",
+						"domain":  "nas.local",
+						"enabled": true,
+						"metadata": map[string]string{
+							"origin": "USER_DEFINED",
+						},
+					},
+					{
+						"id":      "aaa00000-0000-0000-0000-000000000002",
+						"type":    "CNAME_RECORD",
+						"domain":  "wiki.local",
+						"enabled": false,
+						"metadata": map[string]string{
+							"origin": "USER_DEFINED",
+						},
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 10,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListDNSPolicies(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify header reflects actual count vs total
+	if !strings.Contains(result, "DNS Policies (2 of 10):") {
+		t.Errorf(
+			"result should contain 'DNS Policies (2 of 10):': %s",
+			result,
+		)
+	}
+
+	// Verify 1-based item numbering
+	if !strings.Contains(result, "1. A_RECORD") {
+		t.Errorf(
+			"result should contain '1. A_RECORD': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. CNAME_RECORD") {
+		t.Errorf(
+			"result should contain '2. CNAME_RECORD': %s",
+			result,
+		)
+	}
+}
+
 func TestListDNSPolicies_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

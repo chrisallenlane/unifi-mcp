@@ -306,89 +306,89 @@
       "insights": ["All survivors killed: numbering, Description, Features JSON, network errors for list/get/statistics"]
     },
     "internal/tools/devices_pending.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/devices_pending_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError, Formatting with numbering"]
     },
     "internal/tools/acl_rules.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/acl_rules_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError (7 tools), Formatting with numbering, InvalidUUIDs for ordering"]
     },
     "internal/tools/dns_policies.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/dns_policies_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError (5 tools), Formatting with numbering"]
     },
     "internal/tools/traffic_matching_lists.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/traffic_matching_lists_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError (5 tools), Formatting with numbering"]
     },
     "internal/tools/wifi.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/wifi_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError (5 tools), Formatting with numbering"]
     },
     "internal/tools/hotspot.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/hotspot_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON, NetworkError (5 tools), Formatting with numbering"]
     },
     "internal/tools/supporting_network.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/supporting_network_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON (3 tools), NetworkError (3 tools), Formatting with numbering"]
     },
     "internal/tools/supporting_reference.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/supporting_reference_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Standard gap tests added: Description, InvalidJSON (5 tools), NetworkError (5 tools), Formatting with numbering"]
     },
     "internal/server/server.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/server/server_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Tests already comprehensive: initialize, tools/list, tools/call (success/error/malformed/invalid/missing), Run (success/malformed/multi/encode-fail/EOF). Error codes and format strings validated."]
     },
     "internal/server/types.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/server/server_test.go"],
-      "last_tested": null,
+      "last_tested": "2026-03-03T00:00:00Z",
       "mutations_by_type": {},
       "mutation_score": null,
-      "insights": []
+      "insights": ["Pure struct definitions with JSON tags, no logic to mutate"]
     }
   },
   "global_statistics": {
     "total_modules": 19,
-    "completed_modules": 9,
+    "completed_modules": 19,
     "total_mutations": 182,
     "total_killed": 179,
     "total_survived": 3,

@@ -430,6 +430,233 @@ func TestGetWiFiBroadcast_Execute_WithOptionalFields(t *testing.T) {
 	}
 }
 
+// --- formatting and coverage tests ---
+
+func TestListWiFiBroadcasts_Description(t *testing.T) {
+	tool := &ListWiFiBroadcasts{}
+	d := tool.Description()
+	if d == "" {
+		t.Fatal("description should not be empty")
+	}
+	if !strings.Contains(d, "WiFi") {
+		t.Errorf(
+			"description should mention WiFi: %s",
+			d,
+		)
+	}
+}
+
+func TestListWiFiBroadcasts_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListWiFiBroadcasts{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListWiFiBroadcasts_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":      "aaa00000-0000-0000-0000-000000000001",
+						"name":    "Home WiFi",
+						"type":    "STANDARD",
+						"enabled": true,
+						"metadata": map[string]string{
+							"origin": "USER_DEFINED",
+						},
+						"securityConfiguration": map[string]string{
+							"type": "WPA2_WPA3",
+						},
+					},
+					{
+						"id":      "aaa00000-0000-0000-0000-000000000002",
+						"name":    "IoT Network",
+						"type":    "IOT_OPTIMIZED",
+						"enabled": true,
+						"metadata": map[string]string{
+							"origin": "USER_DEFINED",
+						},
+						"securityConfiguration": map[string]string{
+							"type": "WPA2",
+						},
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 9,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListWiFiBroadcasts(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify header uses totalCount, not len(data)
+	if !strings.Contains(result, "WiFi Broadcasts (2 of 9):") {
+		t.Errorf(
+			"result should contain 'WiFi Broadcasts (2 of 9):': %s",
+			result,
+		)
+	}
+
+	// verify numbering
+	if !strings.Contains(result, "1. Home WiFi") {
+		t.Errorf(
+			"result should contain '1. Home WiFi': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. IoT Network") {
+		t.Errorf(
+			"result should contain '2. IoT Network': %s",
+			result,
+		)
+	}
+}
+
+func TestListWiFiBroadcasts_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewListWiFiBroadcasts(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list WiFi broadcasts") {
+		t.Errorf(
+			"error should contain 'failed to list WiFi broadcasts': %v",
+			err,
+		)
+	}
+}
+
+func TestGetWiFiBroadcast_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to get WiFi broadcast") {
+		t.Errorf(
+			"error should contain 'failed to get WiFi broadcast': %v",
+			err,
+		)
+	}
+}
+
+func TestCreateWiFiBroadcast_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewCreateWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"name": "Test", "enabled": true, "type": "STANDARD", "securityConfiguration": {"type": "OPEN"}}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to create WiFi broadcast") {
+		t.Errorf(
+			"error should contain 'failed to create WiFi broadcast': %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateWiFiBroadcast_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewUpdateWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001", "name": "Test", "enabled": true, "type": "STANDARD", "securityConfiguration": {"type": "OPEN"}}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to update WiFi broadcast") {
+		t.Errorf(
+			"error should contain 'failed to update WiFi broadcast': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteWiFiBroadcast_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewDeleteWiFiBroadcast(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"wifiBroadcastId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to delete WiFi broadcast") {
+		t.Errorf(
+			"error should contain 'failed to delete WiFi broadcast': %v",
+			err,
+		)
+	}
+}
+
 func TestListWiFiBroadcasts_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

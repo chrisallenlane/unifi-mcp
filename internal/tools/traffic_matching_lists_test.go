@@ -309,6 +309,226 @@ func TestDeleteTrafficMatchingList_InputSchema(t *testing.T) {
 	requireContains(t, required, "trafficMatchingListId")
 }
 
+// --- formatting and coverage tests ---
+
+func TestListTrafficMatchingLists_Description(t *testing.T) {
+	tool := &ListTrafficMatchingLists{}
+	d := tool.Description()
+	if d == "" {
+		t.Fatal("description should not be empty")
+	}
+	if !strings.Contains(d, "raffic") {
+		t.Errorf(
+			"description should mention traffic: %s",
+			d,
+		)
+	}
+}
+
+func TestListTrafficMatchingLists_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListTrafficMatchingLists{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListTrafficMatchingLists_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewListTrafficMatchingLists(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list traffic matching lists") {
+		t.Errorf(
+			"error should contain 'failed to list traffic matching lists': %v",
+			err,
+		)
+	}
+}
+
+func TestListTrafficMatchingLists_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":   "ddd00000-0000-0000-0000-000000000001",
+						"name": "Block List",
+						"type": "IPV4_ADDRESSES",
+					},
+					{
+						"id":   "ddd00000-0000-0000-0000-000000000002",
+						"name": "Allow List",
+						"type": "IPV6_ADDRESSES",
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 7,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListTrafficMatchingLists(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify header uses totalCount, not len(data)
+	if !strings.Contains(result, "Traffic Matching Lists (2 of 7):") {
+		t.Errorf(
+			"result should contain 'Traffic Matching Lists (2 of 7):': %s",
+			result,
+		)
+	}
+
+	// verify numbering
+	if !strings.Contains(result, "1. ") {
+		t.Errorf(
+			"result should contain '1. ': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. ") {
+		t.Errorf(
+			"result should contain '2. ': %s",
+			result,
+		)
+	}
+}
+
+func TestGetTrafficMatchingList_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to get traffic matching list") {
+		t.Errorf(
+			"error should contain 'failed to get traffic matching list': %v",
+			err,
+		)
+	}
+}
+
+func TestCreateTrafficMatchingList_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewCreateTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{"name": "Test List", "type": "IPV4_ADDRESSES"}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to create traffic matching list",
+	) {
+		t.Errorf(
+			"error should contain 'failed to create traffic matching list': %v",
+			err,
+		)
+	}
+}
+
+func TestUpdateTrafficMatchingList_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewUpdateTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001", "name": "Test", "type": "IPV4_ADDRESSES"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to update traffic matching list",
+	) {
+		t.Errorf(
+			"error should contain 'failed to update traffic matching list': %v",
+			err,
+		)
+	}
+}
+
+func TestDeleteTrafficMatchingList_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewDeleteTrafficMatchingList(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"trafficMatchingListId": "ddd00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to delete traffic matching list",
+	) {
+		t.Errorf(
+			"error should contain 'failed to delete traffic matching list': %v",
+			err,
+		)
+	}
+}
+
 func TestListTrafficMatchingLists_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

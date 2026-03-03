@@ -279,3 +279,168 @@ func TestListVpnServers_Execute_APIError(t *testing.T) {
 		t.Errorf("error should contain status code: %v", err)
 	}
 }
+
+// --- description tests ---
+
+func TestListWans_Description(t *testing.T) {
+	tool := NewListWans(nil, "")
+	desc := tool.Description()
+	if desc == "" {
+		t.Fatal("Description() should not be empty")
+	}
+	if !strings.Contains(desc, "WAN") {
+		t.Errorf("description should mention WAN: %s", desc)
+	}
+}
+
+// --- invalid JSON tests ---
+
+func TestListWans_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListWans{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListVpnTunnels_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListVpnTunnels{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListVpnServers_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListVpnServers{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+// --- network error tests ---
+
+func TestListWans_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListWans(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list WANs") {
+		t.Errorf(
+			"error should contain 'failed to list WANs': %v",
+			err,
+		)
+	}
+}
+
+func TestListVpnTunnels_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListVpnTunnels(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list VPN tunnels") {
+		t.Errorf(
+			"error should contain 'failed to list VPN tunnels': %v",
+			err,
+		)
+	}
+}
+
+func TestListVpnServers_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {}),
+	)
+	srv.Close()
+
+	tool := NewListVpnServers(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(err.Error(), "failed to list VPN servers") {
+		t.Errorf(
+			"error should contain 'failed to list VPN servers': %v",
+			err,
+		)
+	}
+}
+
+// --- formatting tests ---
+
+func TestListWans_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(paginatedResponse(
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000001",
+					"name": "Primary WAN",
+				},
+				map[string]interface{}{
+					"id":   "aaa00000-0000-0000-0000-000000000002",
+					"name": "Failover WAN",
+				},
+			))
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListWans(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(result, "WANs (2 of 2):") {
+		t.Errorf(
+			"result should contain header 'WANs (2 of 2):': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "1. Primary WAN") {
+		t.Errorf(
+			"result should contain '1. Primary WAN': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. Failover WAN") {
+		t.Errorf(
+			"result should contain '2. Failover WAN': %s",
+			result,
+		)
+	}
+}
