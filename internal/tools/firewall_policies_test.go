@@ -683,6 +683,329 @@ func TestCreateFirewallPolicy_Execute_WithAllOptionalFields(
 	}
 }
 
+// TestBuildRequestBody_SourceIPAddressFilter verifies that when
+// source.trafficFilter.type is IP_ADDRESS and an ipAddressFilter is provided,
+// the built request body includes the ipAddressFilter with the correct
+// addresses. This test FAILS against the current code because
+// policyTrafficFilterParams does not have an IpAddressFilter field.
+func TestBuildRequestBody_SourceIPAddressFilter(t *testing.T) {
+	var gotBody map[string]any
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test IP Address Filter",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000001",
+			"trafficFilter": {
+				"type": "IP_ADDRESS",
+				"ipAddressFilter": {
+					"type": "IP_ADDRESSES",
+					"matchOpposite": false,
+					"items": [{"cidr": "192.168.1.0/24"}]
+				}
+			}
+		},
+		"destination": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000002"
+		},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	src, ok := gotBody["source"].(map[string]any)
+	if !ok {
+		t.Fatal("request body should have source object")
+	}
+	tf, ok := src["trafficFilter"].(map[string]any)
+	if !ok {
+		t.Fatal("request body source.trafficFilter should be set")
+	}
+	if tf["type"] != "IP_ADDRESS" {
+		t.Errorf(
+			"source.trafficFilter.type = %v, want IP_ADDRESS",
+			tf["type"],
+		)
+	}
+	// This assertion FAILS with the current code: ipAddressFilter is dropped
+	// because policyTrafficFilterParams has no field for it.
+	if tf["ipAddressFilter"] == nil {
+		t.Error(
+			"source.trafficFilter.ipAddressFilter should be set" +
+				" when type is IP_ADDRESS",
+		)
+	}
+}
+
+// TestBuildRequestBody_DestinationDomainFilter verifies that when
+// destination.trafficFilter.type is DOMAIN and a domainFilter is provided,
+// the built request body includes the domainFilter with the correct domains.
+// This test FAILS against the current code because policyTrafficFilterParams
+// does not have a DomainFilter field.
+func TestBuildRequestBody_DestinationDomainFilter(t *testing.T) {
+	var gotBody map[string]any
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test Domain Filter",
+		"enabled": true,
+		"action": {"type": "BLOCK"},
+		"source": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000001"
+		},
+		"destination": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000002",
+			"trafficFilter": {
+				"type": "DOMAIN",
+				"domainFilter": {
+					"type": "DOMAINS",
+					"domains": ["example.com", "evil.test"]
+				}
+			}
+		},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	dst, ok := gotBody["destination"].(map[string]any)
+	if !ok {
+		t.Fatal("request body should have destination object")
+	}
+	tf, ok := dst["trafficFilter"].(map[string]any)
+	if !ok {
+		t.Fatal("request body destination.trafficFilter should be set")
+	}
+	if tf["type"] != "DOMAIN" {
+		t.Errorf(
+			"destination.trafficFilter.type = %v, want DOMAIN",
+			tf["type"],
+		)
+	}
+	// This assertion FAILS with the current code: domainFilter is dropped
+	// because policyTrafficFilterParams has no field for it.
+	if tf["domainFilter"] == nil {
+		t.Error(
+			"destination.trafficFilter.domainFilter should be set" +
+				" when type is DOMAIN",
+		)
+	}
+	df, ok := tf["domainFilter"].(map[string]any)
+	if ok {
+		domains, ok := df["domains"].([]any)
+		if !ok || len(domains) != 2 {
+			t.Errorf(
+				"domainFilter.domains = %v, want 2 entries",
+				df["domains"],
+			)
+		}
+	}
+}
+
+// TestBuildRequestBody_SourceMACAddressFilter verifies that when
+// source.trafficFilter.type is MAC_ADDRESS and a macAddressFilter is provided,
+// the built request body includes the macAddressFilter with the correct MAC
+// addresses. This test FAILS against the current code because
+// policyTrafficFilterParams does not have a MacAddressFilter field.
+func TestBuildRequestBody_SourceMACAddressFilter(t *testing.T) {
+	var gotBody map[string]any
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test MAC Address Filter",
+		"enabled": true,
+		"action": {"type": "BLOCK"},
+		"source": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000001",
+			"trafficFilter": {
+				"type": "MAC_ADDRESS",
+				"macAddressFilter": {
+					"macAddresses": ["aa:bb:cc:dd:ee:ff", "11:22:33:44:55:66"]
+				}
+			}
+		},
+		"destination": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000002"
+		},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	src, ok := gotBody["source"].(map[string]any)
+	if !ok {
+		t.Fatal("request body should have source object")
+	}
+	tf, ok := src["trafficFilter"].(map[string]any)
+	if !ok {
+		t.Fatal("request body source.trafficFilter should be set")
+	}
+	if tf["type"] != "MAC_ADDRESS" {
+		t.Errorf(
+			"source.trafficFilter.type = %v, want MAC_ADDRESS",
+			tf["type"],
+		)
+	}
+	// This assertion FAILS with the current code: macAddressFilter is dropped
+	// because policyTrafficFilterParams has no field for it.
+	if tf["macAddressFilter"] == nil {
+		t.Error(
+			"source.trafficFilter.macAddressFilter should be set" +
+				" when type is MAC_ADDRESS",
+		)
+	}
+	maf, ok := tf["macAddressFilter"].(map[string]any)
+	if ok {
+		macs, ok := maf["macAddresses"].([]any)
+		if !ok || len(macs) != 2 {
+			t.Errorf(
+				"macAddressFilter.macAddresses = %v, want 2 entries",
+				maf["macAddresses"],
+			)
+		}
+	}
+}
+
+// TestBuildRequestBody_SourceNetworkFilter verifies that when
+// source.trafficFilter.type is NETWORK and a networkFilter is provided, the
+// built request body includes the networkFilter with the correct network IDs.
+// This test FAILS against the current code because policyTrafficFilterParams
+// does not have a NetworkFilter field.
+func TestBuildRequestBody_SourceNetworkFilter(t *testing.T) {
+	var gotBody map[string]any
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, _ := io.ReadAll(r.Body)
+			json.Unmarshal(body, &gotBody)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			json.NewEncoder(w).Encode(mockPolicyJSON())
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewCreateFirewallPolicy(client, testSiteID)
+	args := `{
+		"name": "Test Network Filter",
+		"enabled": true,
+		"action": {"type": "ALLOW"},
+		"source": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000001",
+			"trafficFilter": {
+				"type": "NETWORK",
+				"networkFilter": {
+					"matchOpposite": false,
+					"networkIds": [
+						"bbb00000-0000-0000-0000-000000000001",
+						"bbb00000-0000-0000-0000-000000000002"
+					]
+				}
+			}
+		},
+		"destination": {
+			"zoneId": "aaa00000-0000-0000-0000-000000000002"
+		},
+		"ipProtocolScope": {"ipVersion": "IPV4"},
+		"loggingEnabled": false
+	}`
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(args),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	src, ok := gotBody["source"].(map[string]any)
+	if !ok {
+		t.Fatal("request body should have source object")
+	}
+	tf, ok := src["trafficFilter"].(map[string]any)
+	if !ok {
+		t.Fatal("request body source.trafficFilter should be set")
+	}
+	if tf["type"] != "NETWORK" {
+		t.Errorf(
+			"source.trafficFilter.type = %v, want NETWORK",
+			tf["type"],
+		)
+	}
+	// This assertion FAILS with the current code: networkFilter is dropped
+	// because policyTrafficFilterParams has no field for it.
+	if tf["networkFilter"] == nil {
+		t.Error(
+			"source.trafficFilter.networkFilter should be set" +
+				" when type is NETWORK",
+		)
+	}
+	nf, ok := tf["networkFilter"].(map[string]any)
+	if ok {
+		ids, ok := nf["networkIds"].([]any)
+		if !ok || len(ids) != 2 {
+			t.Errorf(
+				"networkFilter.networkIds = %v, want 2 entries",
+				nf["networkIds"],
+			)
+		}
+		if nf["matchOpposite"] != false {
+			t.Errorf(
+				"networkFilter.matchOpposite = %v, want false",
+				nf["matchOpposite"],
+			)
+		}
+	}
+}
+
 func TestListFirewallPolicies_Description(t *testing.T) {
 	tool := &ListFirewallPolicies{}
 	desc := tool.Description()

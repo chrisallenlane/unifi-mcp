@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -81,6 +82,121 @@ func formatPolicy(p *unifi.FirewallPolicy) string {
 	return b.String()
 }
 
+// trafficFilterSchema returns the JSON schema for a traffic filter object on
+// a firewall policy source or destination endpoint. The allowedTypes slice
+// lists the valid values for the discriminating "type" field; the valid nested
+// sub-objects depend on the type chosen:
+//
+//   - IP_ADDRESS   → ipAddressFilter  (type, matchOpposite, items)
+//   - DOMAIN       → domainFilter     (type, domains)
+//   - MAC_ADDRESS  → macAddressFilter (macAddresses)          [source only]
+//   - NETWORK      → networkFilter    (matchOpposite, networkIds)
+//   - PORT         → portFilter       (portRanges)
+func trafficFilterSchema(
+	direction string,
+	allowedTypes []string,
+) map[string]any {
+	return map[string]any{
+		"type": "object",
+		"description": fmt.Sprintf(
+			"Optional %s traffic filter. Set \"type\" to one of the"+
+				" allowed values, then include the corresponding"+
+				" nested filter object (e.g. ipAddressFilter when"+
+				" type is IP_ADDRESS).",
+			direction,
+		),
+		"properties": map[string]any{
+			"type": map[string]any{
+				"type":        "string",
+				"description": "Traffic filter discriminator",
+				"enum":        allowedTypes,
+			},
+			"ipAddressFilter": map[string]any{
+				"type":        "object",
+				"description": "Required when type is IP_ADDRESS",
+				"properties": map[string]any{
+					"type": map[string]any{
+						"type": "string",
+						"enum": []string{
+							"IP_ADDRESSES",
+							"TRAFFIC_MATCHING_LIST",
+						},
+					},
+					"matchOpposite": map[string]any{
+						"type": "boolean",
+						"description": "Match all addresses except" +
+							" the specified ones",
+					},
+					"items": map[string]any{
+						"type":        "array",
+						"description": "IP addresses, ranges, or subnets",
+						"items": map[string]any{
+							"type": "object",
+						},
+					},
+					"trafficMatchingListId": map[string]any{
+						"type":        "string",
+						"description": "UUID of a Traffic Matching List",
+					},
+				},
+				"required": []string{"type", "matchOpposite"},
+			},
+			"domainFilter": map[string]any{
+				"type":        "object",
+				"description": "Required when type is DOMAIN",
+				"properties": map[string]any{
+					"type": map[string]any{
+						"type": "string",
+						"enum": []string{"DOMAINS"},
+					},
+					"domains": map[string]any{
+						"type":        "array",
+						"description": "Domain names to match",
+						"items": map[string]any{
+							"type": "string",
+						},
+					},
+				},
+				"required": []string{"type", "domains"},
+			},
+			"macAddressFilter": map[string]any{
+				"type":        "object",
+				"description": "Required when type is MAC_ADDRESS (source only)",
+				"properties": map[string]any{
+					"macAddresses": map[string]any{
+						"type":        "array",
+						"description": "MAC addresses to match",
+						"items": map[string]any{
+							"type": "string",
+						},
+					},
+				},
+				"required": []string{"macAddresses"},
+			},
+			"networkFilter": map[string]any{
+				"type":        "object",
+				"description": "Required when type is NETWORK",
+				"properties": map[string]any{
+					"matchOpposite": map[string]any{
+						"type": "boolean",
+						"description": "Match all networks except" +
+							" the selected ones",
+					},
+					"networkIds": map[string]any{
+						"type":        "array",
+						"description": "Network UUIDs to match",
+						"items": map[string]any{
+							"type": "string",
+						},
+					},
+				},
+				"required": []string{"matchOpposite", "networkIds"},
+			},
+		},
+		"required": []string{"type"},
+	}
+}
+
 // policyInputSchema returns the common JSON schema properties for
 // create/update firewall policy tools.
 func policyInputSchema() map[string]interface{} {
@@ -109,45 +225,53 @@ func policyInputSchema() map[string]interface{} {
 			},
 			"required": []string{"type"},
 		},
-		"source": map[string]interface{}{
+		"source": map[string]any{
 			"type":        "object",
 			"description": "Traffic source",
-			"properties": map[string]interface{}{
-				"zoneId": map[string]interface{}{
+			"properties": map[string]any{
+				"zoneId": map[string]any{
 					"type":        "string",
 					"description": "Source firewall zone UUID",
 				},
-				"trafficFilter": map[string]interface{}{
-					"type":        "object",
-					"description": "Optional source traffic filter",
-					"properties": map[string]interface{}{
-						"type": map[string]interface{}{
-							"type":        "string",
-							"description": "Traffic filter type",
-						},
+				"trafficFilter": trafficFilterSchema(
+					"source",
+					[]string{
+						"PORT",
+						"NETWORK",
+						"MAC_ADDRESS",
+						"IP_ADDRESS",
+						"IPV6_IID",
+						"REGION",
+						"VPN_SERVER",
+						"SITE_TO_SITE_VPN_TUNNEL",
 					},
-				},
+				),
 			},
 			"required": []string{"zoneId"},
 		},
-		"destination": map[string]interface{}{
+		"destination": map[string]any{
 			"type":        "object",
 			"description": "Traffic destination",
-			"properties": map[string]interface{}{
-				"zoneId": map[string]interface{}{
+			"properties": map[string]any{
+				"zoneId": map[string]any{
 					"type":        "string",
 					"description": "Destination firewall zone UUID",
 				},
-				"trafficFilter": map[string]interface{}{
-					"type":        "object",
-					"description": "Optional destination traffic filter",
-					"properties": map[string]interface{}{
-						"type": map[string]interface{}{
-							"type":        "string",
-							"description": "Traffic filter type",
-						},
+				"trafficFilter": trafficFilterSchema(
+					"destination",
+					[]string{
+						"PORT",
+						"NETWORK",
+						"IP_ADDRESS",
+						"IPV6_IID",
+						"REGION",
+						"VPN_SERVER",
+						"SITE_TO_SITE_VPN_TUNNEL",
+						"DOMAIN",
+						"APPLICATION",
+						"APPLICATION_CATEGORY",
 					},
-				},
+				),
 			},
 			"required": []string{"zoneId"},
 		},
@@ -231,8 +355,8 @@ type policyActionParams struct {
 }
 
 type policyEndpointParams struct {
-	ZoneID        string                     `json:"zoneId"`
-	TrafficFilter *policyTrafficFilterParams `json:"trafficFilter,omitempty"`
+	ZoneID        string           `json:"zoneId"`
+	TrafficFilter *json.RawMessage `json:"trafficFilter,omitempty"`
 }
 
 type policyIPScopeParams struct {
@@ -243,20 +367,17 @@ type policyScheduleParams struct {
 	Mode string `json:"mode"`
 }
 
-type policyTrafficFilterParams struct {
-	Type string `json:"type"`
-}
-
-// buildRequestBody converts parsed params to the generated request type.
-func buildRequestBody(
-	params *policyParams,
-) (unifi.CreateOrUpdateFirewallPolicy, error) {
+// buildRequestBody converts parsed params to JSON bytes suitable for
+// forwarding directly to the UniFi API. It uses map[string]any so that
+// traffic filter objects — whose nested sub-objects are discriminated unions
+// not captured by the generated types — are forwarded verbatim.
+func buildRequestBody(params *policyParams) ([]byte, error) {
 	sourceZoneID, err := resolveUUID(
 		"source.zoneId",
 		params.Source.ZoneID,
 	)
 	if err != nil {
-		return unifi.CreateOrUpdateFirewallPolicy{}, err
+		return nil, err
 	}
 
 	destZoneID, err := resolveUUID(
@@ -264,67 +385,76 @@ func buildRequestBody(
 		params.Destination.ZoneID,
 	)
 	if err != nil {
-		return unifi.CreateOrUpdateFirewallPolicy{}, err
+		return nil, err
 	}
 
-	body := unifi.CreateOrUpdateFirewallPolicy{
-		Name:    params.Name,
-		Enabled: params.Enabled,
-		Action: unifi.FirewallPolicyAction{
-			Type: params.Action.Type,
-		},
-		Source: unifi.FirewallPolicySource{
-			ZoneId: sourceZoneID,
-		},
-		Destination: unifi.FirewallPolicyDestination{
-			ZoneId: destZoneID,
-		},
-		IpProtocolScope: unifi.FirewallPolicyIPProtocolScope{
-			IpVersion: params.IPProtocolScope.IPVersion,
-		},
-		LoggingEnabled: params.LoggingEnabled,
-		Description:    params.Description,
+	source := map[string]any{
+		"zoneId": sourceZoneID.String(),
 	}
-
 	if params.Source.TrafficFilter != nil {
-		body.Source.TrafficFilter = &unifi.FirewallPolicySourceTrafficFilter{
-			Type: params.Source.TrafficFilter.Type,
+		var tf any
+		if err := json.Unmarshal(
+			*params.Source.TrafficFilter,
+			&tf,
+		); err != nil {
+			return nil, fmt.Errorf(
+				"invalid source.trafficFilter: %w",
+				err,
+			)
 		}
+		source["trafficFilter"] = tf
 	}
 
+	destination := map[string]any{
+		"zoneId": destZoneID.String(),
+	}
 	if params.Destination.TrafficFilter != nil {
-		body.Destination.TrafficFilter = &unifi.FirewallPolicyDestinationTrafficFilter{
-			Type: params.Destination.TrafficFilter.Type,
+		var tf any
+		if err := json.Unmarshal(
+			*params.Destination.TrafficFilter,
+			&tf,
+		); err != nil {
+			return nil, fmt.Errorf(
+				"invalid destination.trafficFilter: %w",
+				err,
+			)
 		}
+		destination["trafficFilter"] = tf
+	}
+
+	body := map[string]any{
+		"name":    params.Name,
+		"enabled": params.Enabled,
+		"action": map[string]any{
+			"type": params.Action.Type,
+		},
+		"source":      source,
+		"destination": destination,
+		"ipProtocolScope": map[string]any{
+			"ipVersion": params.IPProtocolScope.IPVersion,
+		},
+		"loggingEnabled": params.LoggingEnabled,
+	}
+
+	if params.Description != nil {
+		body["description"] = *params.Description
 	}
 
 	if len(params.ConnectionStateFilter) > 0 {
-		filters := make(
-			[]unifi.CreateOrUpdateFirewallPolicyConnectionStateFilter,
-			len(params.ConnectionStateFilter),
-		)
-		for i, f := range params.ConnectionStateFilter {
-			filters[i] = unifi.CreateOrUpdateFirewallPolicyConnectionStateFilter(
-				f,
-			)
-		}
-		body.ConnectionStateFilter = &filters
+		body["connectionStateFilter"] = params.ConnectionStateFilter
 	}
 
 	if params.IpsecFilter != nil {
-		f := unifi.CreateOrUpdateFirewallPolicyIpsecFilter(
-			*params.IpsecFilter,
-		)
-		body.IpsecFilter = &f
+		body["ipsecFilter"] = *params.IpsecFilter
 	}
 
 	if params.Schedule != nil {
-		body.Schedule = &unifi.FirewallSchedule{
-			Mode: params.Schedule.Mode,
+		body["schedule"] = map[string]any{
+			"mode": params.Schedule.Mode,
 		}
 	}
 
-	return body, nil
+	return json.Marshal(body)
 }
 
 // ListFirewallPolicies implements the list_firewall_policies MCP tool.
@@ -556,15 +686,16 @@ func (t *CreateFirewallPolicy) Execute(
 		return "", err
 	}
 
-	body, err := buildRequestBody(&params)
+	bodyJSON, err := buildRequestBody(&params)
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := t.client.CreateFirewallPolicyWithResponse(
+	resp, err := t.client.CreateFirewallPolicyWithBodyWithResponse(
 		ctx,
 		siteID,
-		body,
+		"application/json",
+		bytes.NewReader(bodyJSON),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -659,16 +790,17 @@ func (t *UpdateFirewallPolicy) Execute(
 		return "", err
 	}
 
-	body, err := buildRequestBody(&params)
+	bodyJSON, err := buildRequestBody(&params)
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := t.client.UpdateFirewallPolicyWithResponse(
+	resp, err := t.client.UpdateFirewallPolicyWithBodyWithResponse(
 		ctx,
 		siteID,
 		policyID,
-		body,
+		"application/json",
+		bytes.NewReader(bodyJSON),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
