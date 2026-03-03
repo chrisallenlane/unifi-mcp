@@ -15,7 +15,7 @@ func FuzzParseArgs(f *testing.F) {
 	f.Add([]byte(`0`))
 	f.Add([]byte(``))
 
-	f.Fuzz(func(t *testing.T, data []byte) {
+	f.Fuzz(func(_ *testing.T, data []byte) {
 		var params struct {
 			SiteID string `json:"siteId"`
 			ID     string `json:"id"`
@@ -34,7 +34,7 @@ func FuzzResolveUUID(f *testing.F) {
 	f.Add("550e8400e29b41d4a716446655440000")
 	f.Add("\x00\x00\x00\x00")
 
-	f.Fuzz(func(t *testing.T, data string) {
+	f.Fuzz(func(_ *testing.T, data string) {
 		// Must not panic. Errors are acceptable.
 		_, _ = resolveUUID("testField", data)
 	})

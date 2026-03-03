@@ -32,11 +32,13 @@ unifi-mcp/
 │   ├── server/
 │   │   ├── server.go                # JSON-RPC server, request routing, tool registry
 │   │   ├── server_test.go
+│   │   ├── server_fuzz_test.go      # Fuzz tests for Run, handleCallTool
 │   │   └── types.go                 # JSON-RPC request/response types
 │   ├── tools/
 │   │   ├── tool.go                  # Tool interface
 │   │   ├── helpers.go               # baseTool struct, UUID helpers, siteId resolution, error helpers, shared schema builders
 │   │   ├── helpers_test.go
+│   │   ├── helpers_fuzz_test.go     # Fuzz tests for parseArgs, resolveUUID
 │   │   ├── test_helpers_test.go     # Shared test helpers (testClient, testSiteID)
 │   │   ├── info.go                  # get_info tool
 │   │   ├── info_test.go
@@ -69,7 +71,9 @@ unifi-mcp/
 │   │   ├── supporting_network.go    # 3 network supporting tools (WANs, VPN tunnels, VPN servers)
 │   │   ├── supporting_network_test.go
 │   │   ├── supporting_reference.go  # 5 reference supporting tools (RADIUS, device tags, DPI, countries)
-│   │   └── supporting_reference_test.go
+│   │   ├── supporting_reference_test.go
+│   │   ├── body_fields_test.go      # Tests for siteId/ID stripping from API request bodies
+│   │   └── bug17_18_test.go         # Tests for traffic matching list items and DNS policy fields
 │   └── unifi/
 │       ├── types.gen.go             # Generated model structs (DO NOT EDIT)
 │       └── client.gen.go            # Generated HTTP client (DO NOT EDIT)
@@ -146,6 +150,7 @@ Helper functions:
 - `resolveUUIDs(name, values)` - parses a slice of UUID strings
 - `unexpectedStatusError(statusCode, body)` - formats an error for bad status codes
 - `parseArgs(args, dst)` - unmarshals JSON-RPC args into a typed struct
+- `stripKeys(args, keys...)` - removes MCP-only keys (e.g. `siteId`) from raw JSON before forwarding to API
 - `siteIDSchema()` - standard JSON schema snippet for the `siteId` parameter
 - `paginationSchema()` - standard JSON schema snippet for `limit` and `offset` parameters
 - `siteAndIDSchema(idName, idDesc)` - schema for operations taking a siteId + one resource ID
@@ -226,6 +231,7 @@ make build-release # cross-compile release binaries for all platforms
 make install       # build and install to $GOPATH/bin
 make generate      # regenerate internal/unifi/ from api/unifi-network.json
 make coverage      # test coverage report (coverage.out + coverage.html)
+make fuzz          # run fuzz tests (FUZZ_TIME=10s by default)
 make sloc          # count source lines of code (requires scc)
 make clean         # remove compiled executables from dist/
 ```

@@ -1,5 +1,4 @@
 # Binaries
-go-mcp-server
 dist/
 *.exe
 *.dll
