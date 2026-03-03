@@ -356,11 +356,16 @@ func (t *CreateWiFiBroadcast) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.CreateWifiBroadcastWithBodyWithResponse(
 		ctx,
 		siteID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -453,12 +458,17 @@ func (t *UpdateWiFiBroadcast) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId", "wifiBroadcastId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.UpdateWifiBroadcastWithBodyWithResponse(
 		ctx,
 		siteID,
 		broadcastID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(

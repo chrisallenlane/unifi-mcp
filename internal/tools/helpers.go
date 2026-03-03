@@ -86,6 +86,27 @@ func unexpectedStatusError(
 	)
 }
 
+// stripKeys removes the named keys from a JSON object and returns the
+// re-encoded bytes. It is used by create/update tools to scrub
+// MCP-only parameters (siteId, resource ID fields) from the request
+// body before forwarding it to the UniFi API.
+func stripKeys(
+	args json.RawMessage,
+	keys ...string,
+) ([]byte, error) {
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal(args, &m); err != nil {
+		return nil, fmt.Errorf(
+			"failed to parse arguments: %w",
+			err,
+		)
+	}
+	for _, k := range keys {
+		delete(m, k)
+	}
+	return json.Marshal(m)
+}
+
 // parseArgs unmarshals JSON arguments into a destination struct.
 func parseArgs(
 	args json.RawMessage,

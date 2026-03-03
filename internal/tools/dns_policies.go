@@ -426,11 +426,16 @@ func (t *CreateDNSPolicy) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.CreateDnsPolicyWithBodyWithResponse(
 		ctx,
 		siteID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -519,12 +524,17 @@ func (t *UpdateDNSPolicy) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId", "dnsPolicyId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.UpdateDnsPolicyWithBodyWithResponse(
 		ctx,
 		siteID,
 		policyID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(

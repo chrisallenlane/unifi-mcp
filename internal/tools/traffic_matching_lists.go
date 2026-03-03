@@ -265,11 +265,16 @@ func (t *CreateTrafficMatchingList) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.CreateTrafficMatchingListWithBodyWithResponse(
 		ctx,
 		siteID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -360,12 +365,17 @@ func (t *UpdateTrafficMatchingList) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId", "trafficMatchingListId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.UpdateTrafficMatchingListWithBodyWithResponse(
 		ctx,
 		siteID,
 		listID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(

@@ -309,11 +309,16 @@ func (t *CreateNetwork) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.CreateNetworkWithBodyWithResponse(
 		ctx,
 		siteID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -404,12 +409,17 @@ func (t *UpdateNetwork) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId", "networkId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.UpdateNetworkWithBodyWithResponse(
 		ctx,
 		siteID,
 		networkID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(

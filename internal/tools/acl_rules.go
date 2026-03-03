@@ -317,11 +317,16 @@ func (t *CreateACLRule) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.CreateAclRuleWithBodyWithResponse(
 		ctx,
 		siteID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(
@@ -412,12 +417,17 @@ func (t *UpdateACLRule) Execute(
 		return "", err
 	}
 
+	body, err := stripKeys(args, "siteId", "aclRuleId")
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := t.client.UpdateAclRuleWithBodyWithResponse(
 		ctx,
 		siteID,
 		ruleID,
 		"application/json",
-		bytes.NewReader(args),
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return "", fmt.Errorf(

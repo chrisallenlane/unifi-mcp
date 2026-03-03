@@ -217,6 +217,114 @@ func TestParseArgs(t *testing.T) {
 	})
 }
 
+func TestStripKeys(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		keys    []string
+		want    map[string]json.RawMessage
+		wantErr bool
+	}{
+		{
+			name:  "strips single key",
+			input: `{"siteId":"abc","name":"test"}`,
+			keys:  []string{"siteId"},
+			want: map[string]json.RawMessage{
+				"name": json.RawMessage(`"test"`),
+			},
+		},
+		{
+			name:  "strips multiple keys",
+			input: `{"siteId":"abc","resourceId":"def","name":"test"}`,
+			keys:  []string{"siteId", "resourceId"},
+			want: map[string]json.RawMessage{
+				"name": json.RawMessage(`"test"`),
+			},
+		},
+		{
+			name:  "absent key is a no-op",
+			input: `{"name":"test"}`,
+			keys:  []string{"siteId"},
+			want: map[string]json.RawMessage{
+				"name": json.RawMessage(`"test"`),
+			},
+		},
+		{
+			name:  "no keys strips nothing",
+			input: `{"siteId":"abc","name":"test"}`,
+			keys:  nil,
+			want: map[string]json.RawMessage{
+				"siteId": json.RawMessage(`"abc"`),
+				"name":   json.RawMessage(`"test"`),
+			},
+		},
+		{
+			name:    "invalid JSON returns error",
+			input:   `{invalid}`,
+			keys:    []string{"siteId"},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := stripKeys(
+				json.RawMessage(tt.input),
+				tt.keys...,
+			)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf(
+					"error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+			}
+			if tt.wantErr {
+				return
+			}
+
+			var gotMap map[string]json.RawMessage
+			if err := json.Unmarshal(got, &gotMap); err != nil {
+				t.Fatalf(
+					"failed to unmarshal result: %v",
+					err,
+				)
+			}
+
+			if len(gotMap) != len(tt.want) {
+				t.Errorf(
+					"got %d keys, want %d",
+					len(gotMap),
+					len(tt.want),
+				)
+			}
+			for k, wantVal := range tt.want {
+				gotVal, ok := gotMap[k]
+				if !ok {
+					t.Errorf("missing key %q in result", k)
+					continue
+				}
+				if string(gotVal) != string(wantVal) {
+					t.Errorf(
+						"key %q: got %s, want %s",
+						k,
+						gotVal,
+						wantVal,
+					)
+				}
+			}
+			for k := range gotMap {
+				if _, ok := tt.want[k]; !ok {
+					t.Errorf(
+						"unexpected key %q in result",
+						k,
+					)
+				}
+			}
+		})
+	}
+}
+
 func TestListSchema(t *testing.T) {
 	schema := listSchema()
 
