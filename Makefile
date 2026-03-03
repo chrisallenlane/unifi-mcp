@@ -153,6 +153,17 @@ coverage:
 	@echo "HTML coverage report: coverage.html"
 	$(GO) tool cover -html=coverage.out -o coverage.html
 
+# fuzz duration per target (can be overridden)
+FUZZ_TIME ?= 10s
+
+## fuzz: run fuzz tests
+.PHONY: fuzz
+fuzz:
+	$(GO) test ./internal/tools/ -fuzz=FuzzParseArgs -fuzztime=$(FUZZ_TIME)
+	$(GO) test ./internal/tools/ -fuzz=FuzzResolveUUID -fuzztime=$(FUZZ_TIME)
+	$(GO) test ./internal/server/ -fuzz=FuzzRun -fuzztime=$(FUZZ_TIME)
+	$(GO) test ./internal/server/ -fuzz=FuzzHandleCallTool -fuzztime=$(FUZZ_TIME)
+
 ## check: format, lint, vet, and test
 .PHONY: check
 check: | fmt lint vet test
