@@ -31,7 +31,7 @@ func (t *ListDNSPolicies) Description() string {
 }
 
 // InputSchema returns the JSON schema for the tool's input.
-func (t *ListDNSPolicies) InputSchema() map[string]interface{} {
+func (t *ListDNSPolicies) InputSchema() map[string]any {
 	return listSchema()
 }
 
@@ -145,7 +145,7 @@ func (t *GetDNSPolicy) Description() string {
 }
 
 // InputSchema returns the JSON schema for the tool's input.
-func (t *GetDNSPolicy) InputSchema() map[string]interface{} {
+func (t *GetDNSPolicy) InputSchema() map[string]any {
 	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
@@ -318,10 +318,10 @@ func formatDNSRecordDetails(
 
 // dnsPolicyInputSchema returns the common JSON schema properties for
 // create/update DNS policy tools.
-func dnsPolicyInputSchema() map[string]interface{} {
-	return map[string]interface{}{
+func dnsPolicyInputSchema() map[string]any {
+	return map[string]any{
 		"siteId": siteIDSchema(),
-		"type": map[string]interface{}{
+		"type": map[string]any{
 			"type":        "string",
 			"description": "DNS record type",
 			"enum": []string{
@@ -334,45 +334,65 @@ func dnsPolicyInputSchema() map[string]interface{} {
 				"TXT_RECORD",
 			},
 		},
-		"enabled": map[string]interface{}{
+		"enabled": map[string]any{
 			"type":        "boolean",
 			"description": "Whether the policy is enabled",
 		},
-		"domain": map[string]interface{}{
+		"domain": map[string]any{
 			"type":        "string",
 			"description": "Domain name",
 		},
-		"address": map[string]interface{}{
+		"ipv4Address": map[string]any{
 			"type":        "string",
-			"description": "IP address (for A/AAAA records)",
+			"description": "IPv4 address (for A_RECORD)",
 		},
-		"target": map[string]interface{}{
+		"ipv6Address": map[string]any{
 			"type":        "string",
-			"description": "Target hostname (for CNAME/SRV records)",
+			"description": "IPv6 address (for AAAA_RECORD)",
 		},
-		"server": map[string]interface{}{
+		"targetDomain": map[string]any{
 			"type":        "string",
-			"description": "Mail server (for MX records)",
+			"description": "Target domain (for CNAME_RECORD)",
 		},
-		"priority": map[string]interface{}{
+		"mailServerDomain": map[string]any{
+			"type":        "string",
+			"description": "Mail server domain (for MX_RECORD)",
+		},
+		"serverDomain": map[string]any{
+			"type":        "string",
+			"description": "Server domain (for SRV_RECORD)",
+		},
+		"service": map[string]any{
+			"type":        "string",
+			"description": "Service name, e.g. _http (for SRV_RECORD)",
+		},
+		"protocol": map[string]any{
+			"type":        "string",
+			"description": "Protocol, e.g. _tcp (for SRV_RECORD)",
+		},
+		"priority": map[string]any{
 			"type":        "integer",
-			"description": "Priority (for MX/SRV records)",
+			"description": "Priority (for MX_RECORD and SRV_RECORD)",
 		},
-		"weight": map[string]interface{}{
+		"weight": map[string]any{
 			"type":        "integer",
-			"description": "Weight (for SRV records)",
+			"description": "Weight (for SRV_RECORD)",
 		},
-		"port": map[string]interface{}{
+		"port": map[string]any{
 			"type":        "integer",
-			"description": "Port (for SRV records)",
+			"description": "Port (for SRV_RECORD)",
 		},
-		"value": map[string]interface{}{
+		"text": map[string]any{
 			"type":        "string",
-			"description": "Text value (for TXT records)",
+			"description": "Text value (for TXT_RECORD)",
 		},
-		"forwardTo": map[string]interface{}{
+		"ipAddress": map[string]any{
 			"type":        "string",
-			"description": "DNS server to forward to (for FORWARD_DOMAIN)",
+			"description": "DNS server IP to forward to (for FORWARD_DOMAIN)",
+		},
+		"ttlSeconds": map[string]any{
+			"type":        "integer",
+			"description": "TTL in seconds (for A_RECORD, AAAA_RECORD, CNAME_RECORD)",
 		},
 	}
 }
@@ -398,8 +418,8 @@ func (t *CreateDNSPolicy) Description() string {
 }
 
 // InputSchema returns the JSON schema for the tool's input.
-func (t *CreateDNSPolicy) InputSchema() map[string]interface{} {
-	return map[string]interface{}{
+func (t *CreateDNSPolicy) InputSchema() map[string]any {
+	return map[string]any{
 		"type":       "object",
 		"properties": dnsPolicyInputSchema(),
 		"required":   []string{"type", "enabled"},
@@ -478,13 +498,13 @@ func (t *UpdateDNSPolicy) Description() string {
 }
 
 // InputSchema returns the JSON schema for the tool's input.
-func (t *UpdateDNSPolicy) InputSchema() map[string]interface{} {
+func (t *UpdateDNSPolicy) InputSchema() map[string]any {
 	props := dnsPolicyInputSchema()
-	props["dnsPolicyId"] = map[string]interface{}{
+	props["dnsPolicyId"] = map[string]any{
 		"type":        "string",
 		"description": "DNS policy UUID",
 	}
-	return map[string]interface{}{
+	return map[string]any{
 		"type":       "object",
 		"properties": props,
 		"required": []string{
@@ -577,7 +597,7 @@ func (t *DeleteDNSPolicy) Description() string {
 }
 
 // InputSchema returns the JSON schema for the tool's input.
-func (t *DeleteDNSPolicy) InputSchema() map[string]interface{} {
+func (t *DeleteDNSPolicy) InputSchema() map[string]any {
 	return siteAndIDSchema("dnsPolicyId", "DNS policy UUID")
 }
 
