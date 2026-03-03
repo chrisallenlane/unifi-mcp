@@ -362,6 +362,232 @@ func TestExecuteClientAction_Execute_TransportError(
 	}
 }
 
+// --- formatting and coverage tests ---
+
+func TestListClients_Description(t *testing.T) {
+	tool := &ListClients{}
+	d := tool.Description()
+	if d == "" {
+		t.Fatal("description should not be empty")
+	}
+	if !strings.Contains(d, "client") {
+		t.Errorf(
+			"description should mention clients: %s",
+			d,
+		)
+	}
+}
+
+func TestListClients_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListClients{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListClients_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewListClients(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to list clients",
+	) {
+		t.Errorf(
+			"error should contain 'failed to list clients': %v",
+			err,
+		)
+	}
+}
+
+func TestListClients_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":        "aaa00000-0000-0000-0000-000000000001",
+						"name":      "Laptop",
+						"type":      "WIRELESS",
+						"ipAddress": "10.0.0.1",
+					},
+					{
+						"id":   "aaa00000-0000-0000-0000-000000000002",
+						"name": "NAS",
+						"type": "WIRED",
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 8,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListClients(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify header uses totalCount
+	if !strings.Contains(
+		result,
+		"Connected Clients (2 of 8):",
+	) {
+		t.Errorf(
+			"result should contain 'Connected Clients (2 of 8):': %s",
+			result,
+		)
+	}
+
+	// verify numbering
+	if !strings.Contains(result, "1. Laptop") {
+		t.Errorf(
+			"result should contain '1. Laptop': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. NAS") {
+		t.Errorf(
+			"result should contain '2. NAS': %s",
+			result,
+		)
+	}
+}
+
+func TestGetClient_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetClient(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to get client",
+	) {
+		t.Errorf(
+			"error should contain 'failed to get client': %v",
+			err,
+		)
+	}
+}
+
+func TestGetClient_Execute_ConnectedAtAndAccess(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":          "aaa00000-0000-0000-0000-000000000001",
+				"name":        "Test",
+				"type":        "WIRELESS",
+				"ipAddress":   "10.0.0.1",
+				"connectedAt": "2026-03-01T10:00:00Z",
+				"access": map[string]interface{}{
+					"type": "STANDARD",
+				},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetClient(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "aaa00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify ConnectedAt is shown
+	if !strings.Contains(result, "Connected At:") {
+		t.Errorf(
+			"result should contain 'Connected At:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2026-03-01") {
+		t.Errorf(
+			"result should contain date: %s",
+			result,
+		)
+	}
+
+	// verify Access JSON is shown
+	if !strings.Contains(result, "Access:") {
+		t.Errorf(
+			"result should contain 'Access:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "STANDARD") {
+		t.Errorf(
+			"result should contain access type: %s",
+			result,
+		)
+	}
+}
+
+func TestExecuteClientAction_Execute_InvalidUUID(
+	t *testing.T,
+) {
+	tool := &ExecuteClientAction{
+		baseTool{defaultSiteID: testSiteID},
+	}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"clientId": "not-valid", "action": "AUTHORIZE_GUEST_ACCESS"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid UUID")
+	}
+	if !strings.Contains(err.Error(), "clientId") {
+		t.Errorf(
+			"error should mention clientId: %v",
+			err,
+		)
+	}
+}
+
 func TestExecuteClientAction_Execute_APIError(t *testing.T) {
 	client, srv := testClient(t,
 		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {

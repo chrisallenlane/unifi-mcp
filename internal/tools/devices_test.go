@@ -616,6 +616,244 @@ func TestGetDeviceStatistics_Execute_WithNextHeartbeat(t *testing.T) {
 	}
 }
 
+// --- formatting and coverage tests ---
+
+func TestListDevices_Description(t *testing.T) {
+	tool := &ListDevices{}
+	d := tool.Description()
+	if d == "" {
+		t.Fatal("description should not be empty")
+	}
+	if !strings.Contains(d, "device") {
+		t.Errorf(
+			"description should mention devices: %s",
+			d,
+		)
+	}
+}
+
+func TestListDevices_Execute_InvalidJSON(t *testing.T) {
+	tool := &ListDevices{baseTool{defaultSiteID: testSiteID}}
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{invalid`),
+	)
+	if err == nil {
+		t.Fatal("expected error for invalid JSON")
+	}
+}
+
+func TestListDevices_Execute_Formatting(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"data": []map[string]interface{}{
+					{
+						"id":                "bbb00000-0000-0000-0000-000000000001",
+						"name":              "Switch",
+						"model":             "US860W",
+						"macAddress":        "aa:bb:cc:dd:ee:ff",
+						"ipAddress":         "192.168.1.2",
+						"state":             "ONLINE",
+						"firmwareVersion":   "6.6.57",
+						"firmwareUpdatable": false,
+						"supported":         true,
+						"features":          []string{"switching"},
+						"interfaces":        []string{"ports"},
+					},
+					{
+						"id":                "bbb00000-0000-0000-0000-000000000002",
+						"name":              "AP",
+						"model":             "UAP",
+						"macAddress":        "11:22:33:44:55:66",
+						"ipAddress":         "192.168.1.3",
+						"state":             "ONLINE",
+						"firmwareUpdatable": true,
+						"supported":         true,
+						"features":          []string{"accessPoint"},
+						"interfaces":        []string{"radios"},
+					},
+				},
+				"count":      2,
+				"limit":      25,
+				"offset":     0,
+				"totalCount": 10,
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewListDevices(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify header uses totalCount
+	if !strings.Contains(
+		result,
+		"Adopted Devices (2 of 10):",
+	) {
+		t.Errorf(
+			"result should contain 'Adopted Devices (2 of 10):': %s",
+			result,
+		)
+	}
+
+	// verify numbering
+	if !strings.Contains(result, "1. Switch") {
+		t.Errorf(
+			"result should contain '1. Switch': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "2. AP") {
+		t.Errorf(
+			"result should contain '2. AP': %s",
+			result,
+		)
+	}
+}
+
+func TestListDevices_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewListDevices(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(`{}`),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to list devices",
+	) {
+		t.Errorf(
+			"error should contain 'failed to list devices': %v",
+			err,
+		)
+	}
+}
+
+func TestGetDevice_Execute_NetworkError(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetDevice(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to get device",
+	) {
+		t.Errorf(
+			"error should contain 'failed to get device': %v",
+			err,
+		)
+	}
+}
+
+func TestGetDevice_Execute_FeaturesJSON(t *testing.T) {
+	client, srv := testClient(t,
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"id":                "bbb00000-0000-0000-0000-000000000001",
+				"name":              "Switch",
+				"model":             "US860W",
+				"macAddress":        "aa:bb:cc:dd:ee:ff",
+				"ipAddress":         "192.168.1.2",
+				"state":             "ONLINE",
+				"firmwareUpdatable": false,
+				"supported":         true,
+				"features": map[string]interface{}{
+					"switching": true,
+				},
+				"interfaces": map[string]interface{}{},
+			})
+		}),
+	)
+	defer srv.Close()
+
+	tool := NewGetDevice(client, testSiteID)
+	result, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// verify Features JSON is included
+	if !strings.Contains(result, "Features:") {
+		t.Errorf(
+			"result should contain 'Features:': %s",
+			result,
+		)
+	}
+	if !strings.Contains(result, "switching") {
+		t.Errorf(
+			"result should contain feature key: %s",
+			result,
+		)
+	}
+}
+
+func TestGetDeviceStatistics_Execute_NetworkError(
+	t *testing.T,
+) {
+	client, srv := testClient(t,
+		http.HandlerFunc(
+			func(_ http.ResponseWriter, _ *http.Request) {},
+		),
+	)
+	srv.Close()
+
+	tool := NewGetDeviceStatistics(client, testSiteID)
+	_, err := tool.Execute(
+		context.Background(),
+		json.RawMessage(
+			`{"deviceId": "bbb00000-0000-0000-0000-000000000001"}`,
+		),
+	)
+	if err == nil {
+		t.Fatal("expected error for network failure")
+	}
+	if !strings.Contains(
+		err.Error(),
+		"failed to get device statistics",
+	) {
+		t.Errorf(
+			"error should contain 'failed to get device statistics': %v",
+			err,
+		)
+	}
+}
+
 // --- transport error tests ---
 
 func TestAdoptDevice_Execute_TransportError(t *testing.T) {

@@ -192,28 +192,118 @@
       "insights": ["All 10 original survivors killed: numbering, header, siteID/destZone/beforeAfter UUID validation, network errors"]
     },
     "internal/tools/networks.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/networks_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-03T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 11,
+          "killed": 11,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 1,
+          "killed": 1,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 5,
+          "killed": 5,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 4,
+          "killed": 2,
+          "survived": 2,
+          "examples": [
+            {
+              "line": 315,
+              "original": "\"application/json\"",
+              "mutated": "\"\"",
+              "result": "survived_declined",
+              "test_that_caught_it": null
+            },
+            {
+              "line": 411,
+              "original": "\"application/json\"",
+              "mutated": "\"\"",
+              "result": "survived_declined",
+              "test_that_caught_it": null
+            }
+          ]
+        }
+      },
+      "mutation_score": 90.5,
+      "insights": ["Content-type parameter mutations declined (internal HTTP client detail)", "Numbering, Description, network errors, formatting all killed by new tests"]
     },
     "internal/tools/clients.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/clients_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-03T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 6,
+          "killed": 6,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 1,
+          "killed": 1,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 2,
+          "killed": 2,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 10,
+          "killed": 10,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All 8 original survivors killed: numbering, ConnectedAt/Access nil checks, network errors, invalid UUID"]
     },
     "internal/tools/devices.go": {
-      "status": "pending",
+      "status": "completed",
       "covering_tests": ["internal/tools/devices_test.go"],
-      "last_tested": null,
-      "mutations_by_type": {},
-      "mutation_score": null,
-      "insights": []
+      "last_tested": "2026-03-03T00:00:00Z",
+      "mutations_by_type": {
+        "relational": {
+          "total": 6,
+          "killed": 6,
+          "survived": 0,
+          "examples": []
+        },
+        "arithmetic": {
+          "total": 1,
+          "killed": 1,
+          "survived": 0,
+          "examples": []
+        },
+        "constant": {
+          "total": 2,
+          "killed": 2,
+          "survived": 0,
+          "examples": []
+        },
+        "statement": {
+          "total": 10,
+          "killed": 10,
+          "survived": 0,
+          "examples": []
+        }
+      },
+      "mutation_score": 100.0,
+      "insights": ["All survivors killed: numbering, Description, Features JSON, network errors for list/get/statistics"]
     },
     "internal/tools/devices_pending.go": {
       "status": "pending",
@@ -298,10 +388,10 @@
   },
   "global_statistics": {
     "total_modules": 19,
-    "completed_modules": 6,
-    "total_mutations": 123,
-    "total_killed": 122,
-    "total_survived": 1,
-    "overall_score": 99.2
+    "completed_modules": 9,
+    "total_mutations": 182,
+    "total_killed": 179,
+    "total_survived": 3,
+    "overall_score": 98.4
   }
 }
