@@ -54,7 +54,7 @@ unifi-mcp/
 │   │   ├── networks_test.go
 │   │   ├── clients.go               # 3 client tools
 │   │   ├── clients_test.go
-│   │   ├── devices.go               # 7 device tools
+│   │   ├── devices.go               # 7 device tools (adopt, remove, get, list, actions, port, stats)
 │   │   ├── devices_test.go
 │   │   ├── devices_pending.go       # list_pending_devices tool
 │   │   ├── devices_pending_test.go
