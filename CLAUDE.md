@@ -276,7 +276,7 @@ Build-time only:
 ## Version Information
 
 - MCP Protocol Version: `2024-11-05`
-- Server Name/Version: `unifi-mcp` / `0.1.0`
+- Server Name/Version: `unifi-mcp` / `0.1.1`
 - OpenAPI Spec: UniFi Network v10.1.84
 
 ## Resources

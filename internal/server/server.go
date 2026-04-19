@@ -18,7 +18,7 @@ import (
 const (
 	MCPProtocolVersion   = "2024-11-05"
 	ServerName           = "unifi-mcp"
-	ServerVersion        = "0.1.0"
+	ServerVersion        = "0.1.1"
 	ToolExecutionTimeout = 30 * time.Second
 )
 
