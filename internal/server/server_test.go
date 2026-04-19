@@ -273,6 +273,52 @@ func TestHandleUnknownMethod(t *testing.T) {
 	}
 }
 
+// TestHandleNotification verifies that JSON-RPC notifications
+// (requests without an id) receive no response, per JSON-RPC
+// 2.0. The MCP handshake sends "notifications/initialized"
+// after initialize; strict clients abort the handshake if the
+// server replies to it.
+func TestHandleNotification(t *testing.T) {
+	s := newTestServer(t)
+
+	req := &JSONRPCRequest{
+		JSONRPC: "2.0",
+		ID:      nil,
+		Method:  "notifications/initialized",
+	}
+
+	resp := s.handleRequest(context.Background(), req)
+
+	if resp != nil {
+		t.Fatalf(
+			"Expected nil response for notification, got %+v",
+			resp,
+		)
+	}
+}
+
+// TestRun_NotificationNoResponse verifies that Run() writes
+// nothing to stdout for a notification.
+func TestRun_NotificationNoResponse(t *testing.T) {
+	s := newTestServer(t)
+
+	input := `{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}` +
+		"\n"
+	stdin := strings.NewReader(input)
+	var stdout bytes.Buffer
+
+	if err := s.Run(context.Background(), stdin, &stdout); err != nil {
+		t.Fatalf("Run() unexpected error: %v", err)
+	}
+
+	if stdout.Len() != 0 {
+		t.Errorf(
+			"expected no output for notification, got: %s",
+			stdout.String(),
+		)
+	}
+}
+
 func TestHandleCallTool_InvalidTool(t *testing.T) {
 	s := newTestServer(t)
 
